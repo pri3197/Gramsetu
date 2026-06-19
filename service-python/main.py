@@ -1,0 +1,105 @@
+import os
+import shutil
+import tempfile
+from fastapi import FastAPI, UploadFile, File, Query, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from classifier import BirdAudioClassifier
+from data_fetcher import DataFetcher
+
+app = FastAPI(
+    title="GramSetu AI & Data Service",
+    description="Python microservice for bird sound classification and public agricultural data aggregation",
+    version="1.0.0"
+)
+
+# Enable CORS for local cross-origin communication between services
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Initialize modules
+classifier = BirdAudioClassifier()
+
+@app.get("/")
+def read_root():
+    return {
+        "status": "healthy",
+        "service": "GramSetu Python API",
+        "endpoints": ["/health", "/classify-bird", "/prices", "/diseases"]
+    }
+
+@app.get("/health")
+def health_check():
+    return {"status": "UP", "timestamp": os.popen("date /T").read().strip()}
+
+@app.post("/classify-bird")
+async def classify_bird(file: UploadFile = File(...)):
+    """
+    Receives an audio file, analyzes it, and returns the classification result.
+    Supported extensions: .wav, .mp3, .webm, .m4a, etc.
+    """
+    # Verify file extension
+    ext = os.path.splitext(file.filename)[1].lower()
+    if ext not in [".wav", ".webm", ".mp3", ".ogg", ".m4a", ".aac", ".3gp"]:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"Unsupported file format '{ext}'. Please upload an audio file."
+        )
+
+    # Save to a temporary file
+    temp_dir = tempfile.gettempdir()
+    temp_file_path = os.path.join(temp_dir, f"upload_{os.urandom(8).hex()}{ext}")
+    
+    try:
+        with open(temp_file_path, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+        
+        # Run classification
+        result = classifier.classify(temp_file_path)
+        return result
+
+    except Exception as e:
+        print(f"Exception during file upload/analysis: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Audio analysis failed: {str(e)}")
+    
+    finally:
+        # Clean up temporary file
+        if os.path.exists(temp_file_path):
+            try:
+                os.remove(temp_file_path)
+            except Exception as cleanup_err:
+                print(f"Failed to delete temp file {temp_file_path}: {str(cleanup_err)}")
+
+@app.get("/prices")
+def get_mandi_prices(api_key: str = Query(None, description="API Key for data.gov.in (Optional)")):
+    """
+    Fetches the latest agricultural mandi prices in India.
+    Falls back to high-fidelity mock data if no key is provided or the service is offline.
+    """
+    fetcher = DataFetcher(api_key=api_key)
+    try:
+        prices = fetcher.fetch_mandi_prices()
+        return {"count": len(prices), "data": prices}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to fetch commodity prices: {str(e)}")
+
+@app.get("/diseases")
+def get_cattle_diseases():
+    """
+    Retrieves the latest cattle disease outbreaks and recommended vaccinations.
+    """
+    fetcher = DataFetcher()
+    try:
+        outbreaks = fetcher.fetch_cattle_disease_outbreaks()
+        return {"count": len(outbreaks), "data": outbreaks}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to fetch cattle disease outbreaks: {str(e)}")
+
+if __name__ == "__main__":
+    import uvicorn
+    # Local development server on port 8000
+    uvicorn.run(app, host="127.0.0.1", port=8000)
