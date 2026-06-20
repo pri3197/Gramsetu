@@ -1,7 +1,7 @@
 {
   "name": "GramSetu",
   "short_name": "GramSetu",
-  "description": "GramSetu Data Platform for Indian Farmers - Real-time market, weather, and cattle health data.",
+  "description": "Rural Professionals Data Bridge",
   "start_url": "/index.html",
   "id": "/?source=pwa",
   "display": "standalone",
