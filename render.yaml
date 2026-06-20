@@ -5,7 +5,7 @@ services:
     name: gramsetu-python
     env: docker
     dockerContext: service-python
-    dockerfilePath: Dockerfile
+    dockerfilePath: service-python/Dockerfile
     plan: free
     numInstances: 1
     # Expose internally or publicly
@@ -15,7 +15,7 @@ services:
     name: gramsetu-backend
     env: docker
     dockerContext: backend-java
-    dockerfilePath: Dockerfile
+    dockerfilePath: backend-java/Dockerfile
     plan: free
     numInstances: 1
     envVars:
