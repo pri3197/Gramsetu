@@ -2,22 +2,22 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;700;800&display=swap');
 
 :root {
-    --bg-primary: #0b0f19;
-    --bg-secondary: #131b2e;
-    --bg-glass: rgba(20, 30, 55, 0.65);
-    --bg-glass-hover: rgba(26, 39, 70, 0.8);
-    --border-glass: rgba(255, 255, 255, 0.08);
-    --text-primary: #f3f4f6;
-    --text-secondary: #9ca3af;
-    --color-accent: #10b981; /* Emerald Green */
-    --color-accent-rgb: 16, 185, 129;
-    --color-accent-light: #34d399;
-    --color-gold: #fbbf24; /* Amber Gold */
-    --color-danger: #ef4444; /* Coral Red */
-    --color-danger-rgb: 239, 68, 68;
+    --bg-primary: #f1f5f9; /* Soft grey-white background */
+    --bg-secondary: #ffffff; /* Clean white cards background */
+    --bg-glass: rgba(255, 255, 255, 0.85); /* Highly readable white glass */
+    --bg-glass-hover: rgba(255, 255, 255, 0.95);
+    --border-glass: rgba(0, 0, 0, 0.08); /* Dark subtle border */
+    --text-primary: #0f172a; /* High contrast charcoal black */
+    --text-secondary: #475569; /* Soft slate grey for descriptions */
+    --color-accent: #059669; /* Vibrant emerald green for light theme */
+    --color-accent-rgb: 5, 150, 105;
+    --color-accent-light: #10b981;
+    --color-gold: #d97706; /* Dark amber gold for contrast */
+    --color-danger: #dc2626; /* Deep crimson red */
+    --color-danger-rgb: 220, 38, 38;
     --font-heading: 'Outfit', sans-serif;
     --font-body: 'Inter', sans-serif;
-    --shadow-main: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    --shadow-main: 0 8px 32px 0 rgba(15, 23, 42, 0.06); /* Soft shadows */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -37,8 +37,12 @@ body {
     flex-direction: column;
     overflow-x: hidden;
     background-image: 
-        radial-gradient(circle at 10% 20%, rgba(16, 185, 129, 0.06) 0%, transparent 40%),
-        radial-gradient(circle at 90% 80%, rgba(59, 130, 246, 0.04) 0%, transparent 40%);
+        linear-gradient(rgba(241, 245, 249, 0.92), rgba(241, 245, 249, 0.95)), 
+        url('/uploads/farm_life_scene.png');
+    background-size: cover;
+    background-attachment: fixed;
+    background-position: center;
+    transition: background-image 0.5s ease-in-out;
 }
 
 /* Custom Scrollbar */
@@ -59,7 +63,7 @@ body {
 
 /* Header & Navigation */
 header {
-    background: rgba(11, 15, 25, 0.8);
+    background: rgba(255, 255, 255, 0.9);
     backdrop-filter: blur(12px);
     border-bottom: 1px solid var(--border-glass);
     position: sticky;
@@ -101,7 +105,7 @@ header {
     font-family: var(--font-heading);
     font-size: 1.6rem;
     font-weight: 700;
-    background: linear-gradient(to right, #ffffff, #a7f3d0);
+    background: linear-gradient(to right, #0f172a, #059669);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     letter-spacing: -0.5px;
@@ -168,15 +172,26 @@ main {
     to { opacity: 1; transform: translateY(0); }
 }
 
-/* Dashboard Cards */
 .hero-section {
-    margin-bottom: 2.5rem;
-    background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(19, 27, 46, 0.6));
-    border: 1px solid var(--border-glass);
-    border-radius: 20px;
-    padding: 2.5rem;
     position: relative;
+    width: 100vw;
+    left: 50%;
+    margin-left: -50vw;
+    margin-top: -2rem; /* offset main container's padding-top */
+    min-height: calc(100vh - 85px); /* 100vh minus header height */
+    display: flex;
+    align-items: center;
     overflow: hidden;
+    padding: 4.5rem;
+    margin-bottom: 2.5rem;
+    border: none;
+    border-radius: 0;
+}
+
+@media (max-width: 992px) {
+    .hero-section {
+        grid-template-columns: 1fr;
+    }
 }
 
 .hero-content {
@@ -247,7 +262,7 @@ main {
     font-family: var(--font-heading);
     font-size: 2rem;
     font-weight: 700;
-    color: #ffffff;
+    color: var(--color-accent);
     margin-top: 0.5rem;
 }
 
@@ -282,13 +297,13 @@ main {
     gap: 1rem;
 }
 
-/* Leaflet Dark Theme Adjustments */
+/* Leaflet Light Theme Adjustments */
 .leaflet-container {
-    background: #0f172a !important;
+    background: #e2e8f0 !important;
 }
 
 .leaflet-tile {
-    filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
+    filter: none !important;
 }
 
 .leaflet-popup-content-wrapper {
@@ -361,7 +376,7 @@ main {
 }
 
 .filter-group select, .filter-group input {
-    background: rgba(11, 15, 25, 0.6);
+    background: var(--bg-secondary);
     border: 1px solid var(--border-glass);
     color: var(--text-primary);
     padding: 0.6rem 0.9rem;
@@ -597,3 +612,334 @@ footer {
     align-items: center;
     gap: 0.5rem;
 }
+
+/* Bio Market Styling */
+.market-subnav {
+    border-bottom: 1px solid var(--border-glass);
+    padding-bottom: 1rem;
+}
+
+.subnav-btn {
+    background: rgba(255, 255, 255, 0.03) !important;
+    border: 1px solid var(--border-glass) !important;
+    color: var(--text-secondary) !important;
+    padding: 0.5rem 1rem !important;
+    font-size: 0.9rem !important;
+    transition: var(--transition-smooth);
+}
+
+.subnav-btn:hover {
+    color: var(--text-primary) !important;
+    background: rgba(255, 255, 255, 0.08) !important;
+}
+
+.subnav-btn.active {
+    color: var(--text-primary) !important;
+    background: rgba(16, 185, 129, 0.2) !important;
+    border-color: rgba(16, 185, 129, 0.4) !important;
+    box-shadow: 0 0 10px rgba(16, 185, 129, 0.15);
+}
+
+.market-sub-panel {
+    display: none;
+    animation: fadeIn 0.4s ease;
+}
+
+.market-sub-panel.active {
+    display: block;
+}
+
+/* Forms in glassmorphism cards */
+input[type="text"],
+input[type="password"],
+input[type="number"],
+input[type="email"],
+select,
+textarea {
+    background: var(--bg-secondary) !important;
+    border: 1px solid var(--border-glass) !important;
+    color: var(--text-primary) !important;
+    padding: 0.6rem 0.9rem;
+    border-radius: 8px;
+    outline: none;
+    font-family: var(--font-body);
+    transition: var(--transition-smooth);
+}
+
+input[type="text"]:focus,
+input[type="password"]:focus,
+input[type="number"]:focus,
+input[type="email"]:focus,
+select:focus,
+textarea:focus {
+    border-color: var(--color-accent) !important;
+    box-shadow: 0 0 8px rgba(16, 185, 129, 0.2) !important;
+}
+
+/* Lang Tab Styling */
+.lang-btn {
+    background: rgba(255, 255, 255, 0.03) !important;
+    border: 1px solid var(--border-glass) !important;
+    color: var(--text-secondary) !important;
+    padding: 0.4rem 0.8rem !important;
+    font-size: 0.85rem !important;
+}
+
+.lang-btn.active {
+    background: rgba(16, 185, 129, 0.15) !important;
+    border-color: rgba(16, 185, 129, 0.3) !important;
+    color: var(--text-primary) !important;
+}
+
+.lang-text {
+    display: none;
+    animation: fadeIn 0.3s ease;
+}
+
+.lang-text.active {
+    display: block;
+}
+
+/* Purity Checklist */
+.purity-test-section {
+    display: none;
+    animation: fadeIn 0.3s ease;
+}
+
+.purity-test-section.active {
+    display: block;
+}
+
+.grid-cols-2 {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+/* Fisheries Hub Styling */
+.fisheries-sub-panel {
+    display: none;
+    animation: fadeIn 0.4s ease;
+}
+
+.fisheries-sub-panel.active {
+    display: block;
+}
+
+.upload-dropzone {
+    transition: var(--transition-smooth);
+}
+
+.upload-dropzone:hover {
+    border-color: var(--color-accent-light) !important;
+    background: rgba(16, 185, 129, 0.05) !important;
+}
+
+/* Sightings List Gallery Scrollbar */
+#sightings-gallery-list::-webkit-scrollbar {
+    width: 5px;
+}
+
+#sightings-gallery-list::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+}
+
+#sightings-gallery-list::-webkit-scrollbar-thumb:hover {
+    background: var(--color-accent);
+}
+
+/* News Portal CSS Adjustments */
+.news-cards-grid {
+    margin-top: 1rem;
+}
+
+.news-filters-bar {
+    backdrop-filter: blur(10px);
+}
+
+.news-filters-bar .subnav-btn {
+    border-radius: 8px !important;
+}
+
+.news-cards-grid .card-glass {
+    min-height: 250px;
+}
+
+.news-cards-grid .card-title {
+    transition: var(--transition-smooth);
+}
+
+.news-cards-grid .card-glass:hover .card-title {
+    color: var(--color-accent-light) !important;
+}
+
+/* Groundwater Visualizer Styles */
+#gw-year-slider {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 6px;
+    border-radius: 5px;
+    background: rgba(0, 0, 0, 0.15);
+    outline: none;
+    margin: 10px 0;
+}
+
+#gw-year-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--color-accent);
+    cursor: pointer;
+    box-shadow: 0 0 10px rgba(5, 150, 105, 0.4);
+    transition: var(--transition-smooth);
+}
+
+#gw-year-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+    background: var(--color-accent-light);
+}
+
+#gw-year-slider::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--color-accent);
+    cursor: pointer;
+    box-shadow: 0 0 10px rgba(5, 150, 105, 0.4);
+    border: none;
+    transition: var(--transition-smooth);
+}
+
+#gw-year-slider::-moz-range-thumb:hover {
+    transform: scale(1.2);
+    background: var(--color-accent-light);
+}
+
+/* Simple-word Chart/Map Summary Box style */
+.chart-summary-box {
+    margin-top: 1rem;
+    padding: 1rem 1.25rem;
+    background: rgba(16, 185, 129, 0.04);
+    border-left: 4px solid var(--color-accent-light);
+    border-radius: 8px;
+    font-size: 0.9rem;
+    line-height: 1.55;
+    color: var(--text-secondary);
+    box-shadow: inset 0 0 10px rgba(16, 185, 129, 0.02);
+}
+
+.chart-summary-box strong {
+    color: var(--text-primary);
+    font-family: var(--font-heading);
+    font-weight: 600;
+}
+
+/* Subnav layout for Farming */
+.farming-subnav {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.farming-sub-panel {
+    display: none;
+    animation: fadeIn 0.4s ease;
+}
+
+.farming-sub-panel.active {
+    display: block;
+}
+
+/* Redesigned Navigation Gateway Cards */
+.navigation-card {
+    transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), 
+                box-shadow 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), 
+                border-color 0.3s ease, 
+                background-color 0.3s ease !important;
+    position: relative;
+    overflow: hidden;
+}
+
+.navigation-card:hover {
+    transform: translateY(-6px);
+    background: rgba(255, 255, 255, 0.05) !important;
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.18), 
+                0 0 20px rgba(16, 185, 129, 0.08) !important;
+}
+
+.navigation-card:active {
+    transform: translateY(-2px);
+}
+
+.navigation-card .card-icon {
+    font-size: 1.75rem;
+    margin-bottom: 0.75rem;
+    transition: transform 0.3s ease;
+}
+
+.navigation-card:hover .card-icon {
+    transform: scale(1.15) rotate(5deg);
+}
+
+.gateway-link {
+    transition: gap 0.3s ease, color 0.3s ease;
+}
+
+.navigation-card:hover .gateway-link {
+    gap: 8px !important;
+    text-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
+}
+
+/* Bio Market Marketplace Layout & Forms */
+#market-sub-marketplace {
+    margin-top: 1rem;
+}
+
+#market-product-grid .card-glass {
+    transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+#market-product-grid .card-glass:hover {
+    transform: translateY(-4px);
+    border-color: rgba(16, 185, 129, 0.3) !important;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
+}
+
+/* Form layouts styling */
+#seller-auth-section, #seller-dashboard-section, #seller-advertise-section {
+    border: 1px solid var(--border-glass);
+    transition: box-shadow 0.3s ease;
+}
+
+#seller-auth-section:hover, #seller-advertise-section:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+/* Checkbox alignment for purity test */
+.purity-test-section input[type="checkbox"] {
+    accent-color: var(--color-accent);
+    transition: transform 0.2s ease;
+}
+
+.purity-test-section input[type="checkbox"]:hover {
+    transform: scale(1.1);
+}
+
+/* Accessibility menu positioning & transitions */
+.accessibility-widget .access-btn:hover {
+    transform: scale(1.08) rotate(15deg);
+    background: var(--color-accent-light) !important;
+    box-shadow: 0 6px 20px rgba(5, 150, 105, 0.4) !important;
+}
+
+.accessibility-widget .access-menu {
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+
+

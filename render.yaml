@@ -19,6 +19,6 @@ services:
     plan: free
     numInstances: 1
     envVars:
-      - key: GRAMSETU_PYTHON_SERVICE_URL
+      - key: PYTHON_SERVICE_URL
         value: https://gramsetu-python.onrender.com
       # Dynamic profile overrides can go here if using PostgreSQL

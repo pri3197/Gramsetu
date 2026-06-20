@@ -1,6 +1,7 @@
 import os
 import shutil
 import tempfile
+import datetime
 from fastapi import FastAPI, UploadFile, File, Query, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from classifier import BirdAudioClassifier
@@ -34,7 +35,7 @@ def read_root():
 
 @app.get("/health")
 def health_check():
-    return {"status": "UP", "timestamp": os.popen("date /T").read().strip()}
+    return {"status": "UP", "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
 
 @app.post("/classify-bird")
 async def classify_bird(file: UploadFile = File(...)):
@@ -98,6 +99,54 @@ def get_cattle_diseases():
         return {"count": len(outbreaks), "data": outbreaks}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to fetch cattle disease outbreaks: {str(e)}")
+
+@app.get("/news")
+def get_news():
+    """
+    Scrapes and returns latest news on agriculture and fisheries.
+    """
+    fetcher = DataFetcher()
+    try:
+        articles = fetcher.fetch_news_articles()
+        return {"count": len(articles), "data": articles}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to fetch news articles: {str(e)}")
+
+@app.get("/weather/forecast")
+def get_weather_forecast():
+    """
+    Returns regional weather forecasts and El Nino impact reports.
+    """
+    fetcher = DataFetcher()
+    try:
+        forecasts = fetcher.fetch_weather_forecasts()
+        return {"count": len(forecasts), "data": forecasts}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to fetch weather forecasts: {str(e)}")
+
+@app.get("/weather/trends")
+def get_climate_trends():
+    """
+    Returns annual climate anomalies and rainfall deviations.
+    """
+    fetcher = DataFetcher()
+    try:
+        trends = fetcher.fetch_climate_trends()
+        return {"count": len(trends), "data": trends}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to fetch climate trends: {str(e)}")
+
+@app.get("/weather/groundwater")
+def get_groundwater_data():
+    """
+    Returns annual groundwater table levels and sewage mixing percentage for districts.
+    """
+    fetcher = DataFetcher()
+    try:
+        data = fetcher.fetch_groundwater_data()
+        return {"count": len(data), "data": data}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to fetch groundwater data: {str(e)}")
 
 if __name__ == "__main__":
     import uvicorn

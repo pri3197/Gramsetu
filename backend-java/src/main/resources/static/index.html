@@ -1,113 +1,1390 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="GramSetu is a premium data ecosystem for Indian farmers. Providing grain mandi market prices, cattle disease tracking, vaccine advisories, and bird sound mapping.">
-    <title>GramSetu - India's Rural Data Ecosystem</title>
-    
+
+
+
+    <meta name="description"
+        content="GramSetu is a premium data ecosystem for rural Indian professionals, including farmers, breeders, and bio-market traders. Providing grain prices, cattle disease tracking, vaccine advisories, and bird sound mapping.">
+    <title>GramSetu - India's Rural Professionals Data Bridge</title>
+
+
+
     <!-- CSS Dependencies -->
     <link rel="stylesheet" href="css/style.css">
-    
+
+
     <!-- Leaflet Map CSS -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
-    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
+
 <body>
+
 
     <!-- Header Navigation -->
     <header>
         <div class="nav-container">
-            <div class="logo-section" id="brand-logo">
+
+
+            <div class="logo-section" id="brand-logo" style="cursor: pointer;" onclick="switchTab('dashboard')">
                 <div class="logo-icon">GS</div>
                 <div class="logo-text">
-                    <h1>GramSetu</h1>
-                    <span class="logo-tagline">Farmer Data Bridge</span>
+                    <h1 id="lbl-auto-1">GramSetu</h1>
+
+
+                    <span id="lbl-auto-2" class="logo-tagline">Rural Professionals Data Bridge</span>
                 </div>
             </div>
-            
+
+
+
             <nav class="nav-tabs" aria-label="Main Navigation">
-                <button class="tab-btn active" onclick="switchTab('dashboard')" id="nav-btn-dashboard"><i class="fa-solid fa-chart-line"></i> Dashboard</button>
-                <button class="tab-btn" onclick="switchTab('cattle')" id="nav-btn-cattle"><i class="fa-solid fa-cow"></i> Cattle Health</button>
-                <button class="tab-btn" onclick="switchTab('mandi')" id="nav-btn-mandi"><i class="fa-solid fa-wheat-awn"></i> Mandi Prices</button>
-                <button class="tab-btn" onclick="switchTab('birds')" id="nav-btn-birds"><i class="fa-solid fa-feather-pointed"></i> Bird Acoustic Monitor</button>
-                <button class="tab-btn" onclick="switchTab('sources')" id="nav-btn-sources"><i class="fa-solid fa-circle-info"></i> Data Sources</button>
+
+
+
+
+
+
+                <button class="tab-btn active" onclick="switchTab('farming')" id="nav-btn-farming"><i
+                        class="fa-solid fa-tractor"></i> Farming</button>
+                <button class="tab-btn" onclick="switchTab('fisheries')" id="nav-btn-fisheries"><i
+                        class="fa-solid fa-ship"></i> Fishery</button>
+                <button class="tab-btn" onclick="switchTab('weather')" id="nav-btn-weather"><i
+                        class="fa-solid fa-cloud-sun-rain"></i> Weather Update</button>
+                <button class="tab-btn" onclick="switchTab('birds')" id="nav-btn-birds"><i
+                        class="fa-solid fa-feather-pointed"></i> Bird Acoustic</button>
+                <button class="tab-btn" onclick="switchTab('news')" id="nav-btn-news"><i
+                        class="fa-solid fa-newspaper"></i> News Portal</button>
+                <button class="tab-btn" onclick="switchTab('sources')" id="nav-btn-sources"><i
+                        class="fa-solid fa-circle-info"></i> Datasources</button>
             </nav>
+            <div class="header-actions" style="display: flex; align-items: center;">
+                <div
+                    style="display: flex; align-items: center; gap: 0.5rem; background: var(--bg-secondary); border: 1px solid var(--border-glass); padding: 0.4rem 0.8rem; border-radius: 12px; box-shadow: var(--shadow-main);">
+                    <i class="fa-solid fa-language" style="color: var(--color-accent); font-size: 1.1rem;"></i>
+                    <select id="header-language-select" onchange="translateUI(this.value)"
+                        style="background: transparent; border: none; color: var(--text-primary); font-family: var(--font-body); font-size: 0.88rem; font-weight: 600; outline: none; cursor: pointer;">
+                        <option value="en">English</option>
+                        <option value="hi">हिन्दी</option>
+                        <option value="mr">मराठी</option>
+                        <option value="ta">தமிழ்</option>
+                        <option value="bn">বাংলা</option>
+                        <option value="ml">മലയാളം</option>
+                        <option value="te">తెలుగు</option>
+                    </select>
+                </div>
+            </div>
         </div>
     </header>
+
 
     <!-- Main Content Container -->
     <main>
 
+
         <!-- DASHBOARD TAB -->
         <section id="panel-dashboard" class="tab-panel active" aria-labelledby="nav-btn-dashboard">
             <div class="hero-section">
-                <div class="hero-content">
-                    <h2 class="hero-title">Empowering Rural India with Live Data</h2>
-                    <p class="hero-desc">GramSetu connects local farmers to real-time grain market price listings, region-specific cattle health warnings, vaccination advice, and biological conservation mapping.</p>
-                    <button class="btn-primary" onclick="triggerManualSync()" id="btn-sync-data"><i class="fa-solid fa-rotate"></i> Sync Latest Datasets</button>
+
+
+
+
+
+                <!-- Morphing Visualizer Home Page Display -->
+                <div class="morph-visualizer-container"
+                    style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; overflow: hidden; display: flex; flex-direction: column;">
+                    <div class="morph-viewport" style="position: relative; flex: 1; overflow: hidden;">
+                        <img id="morph-img-farm" src="/uploads/farm_life_scene.png" alt="Farmer Farming"
+                            style="position: absolute; width: 100%; height: 100%; object-fit: cover; object-position: center; transition: opacity 2s ease-in-out; opacity: 1;">
+                        <img id="morph-img-sea" src="/uploads/sea_fishing_scene.jpg" alt="Fisherman at Sea"
+                            style="position: absolute; width: 100%; height: 100%; object-fit: cover; object-position: center; transition: opacity 2s ease-in-out; opacity: 0;">
+                        <canvas id="morph-canvas"
+                            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5;"></canvas>
+                        <!-- Gradient Overlay for Contrast -->
+                        <div
+                            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(90deg, rgba(15, 23, 42, 0.85) 0%, rgba(15, 23, 42, 0.4) 100%); z-index: 2; pointer-events: none;">
+                        </div>
+                    </div>
+                    <div class="morph-caption-bar"
+                        style="background: rgba(15, 23, 42, 0.9); padding: 0.75rem 1rem; border-top: 1px solid rgba(255,255,255,0.08); text-align: center; font-size: 0.88rem; font-weight: 600; font-family: var(--font-heading); color: var(--color-accent); height: 50px; display: flex; align-items: center; justify-content: center; z-index: 3;"
+                        id="morph-caption">
+                        Sowing the seeds of the land...
+                    </div>
+                </div>
+
+
+
+                <div class="hero-content" style="position: relative; z-index: 10; max-width: 600px; color: #ffffff;">
+                    <h2 class="hero-title" id="lbl-hero-title"
+                        style="color: #ffffff; text-shadow: 0 2px 10px rgba(0,0,0,0.6); margin-bottom: 1rem; font-size: 2.8rem; font-weight: 800; line-height: 1.2;">
+                        Empowering Rural India with Live Data</h2>
+                    <p class="hero-desc" id="lbl-hero-desc"
+                        style="color: #f1f5f9; text-shadow: 0 1px 6px rgba(0,0,0,0.6); margin-bottom: 2rem; font-size: 1.15rem; line-height: 1.6;">
+                        GramSetu connects rural professionals to real-time market rates, livestock health alerts,
+                        organic bio-trading, and citizen-science conservation mapping.</p>
+                    <button class="btn-primary" onclick="triggerManualSync()" id="btn-sync-data"
+                        style="box-shadow: 0 4px 12px rgba(5, 150, 105, 0.35);"><i class="fa-solid fa-rotate"></i> Sync
+                        Latest Datasets</button>
                 </div>
             </div>
 
-            <!-- Dashboard Stats Grid -->
-            <div class="grid-cols-3">
-                <div class="card-glass">
-                    <div class="card-icon"><i class="fa-solid fa-cow"></i></div>
-                    <h3 class="card-title">Cattle Disease Outbreaks</h3>
-                    <div class="card-number" id="stats-outbreaks-count">--</div>
-                    <p class="card-desc">Active livestock outbreaks mapped in Indian districts</p>
-                </div>
-                <div class="card-glass">
-                    <div class="card-icon"><i class="fa-solid fa-indian-rupee-sign"></i></div>
-                    <h3 class="card-title">Wheat Market Rate</h3>
-                    <div class="card-number" id="stats-wheat-price">₹ --</div>
-                    <p class="card-desc">Current average price per quintal in North Indian Mandis</p>
-                </div>
-                <div class="card-glass">
-                    <div class="card-icon"><i class="fa-solid fa-feather"></i></div>
-                    <h3 class="card-title">Rare Bird Sounds Recorded</h3>
-                    <div class="card-number" id="stats-bird-sightings">--</div>
-                    <p class="card-desc">Endangered and local birds mapped in the wild</p>
+
+
+            <!-- GramSetu Gateway Dashboard -->
+            <div style="margin-top: 3rem;">
+                <h3 class="card-title"
+                    style="margin-bottom: 1.5rem; text-align: center; font-size: 1.8rem; font-family: var(--font-heading); color: var(--color-accent);">
+                    <i class="fa-solid fa-layer-group"></i> GramSetu Community Portal Gateway
+                </h3>
+                <div class="grid-cols-3" style="gap: 1.5rem; margin-bottom: 2rem;">
+                    <div class="card-glass navigation-card" onclick="switchTab('farming')"
+                        style="cursor: pointer; display: flex; flex-direction: column; justify-content: space-between; min-height: 200px; border-bottom: 3px solid var(--color-accent);">
+                        <div>
+                            <div class="card-icon" style="color: var(--color-accent-light);"><i
+                                    class="fa-solid fa-tractor"></i></div>
+                            <h4 id="lbl-auto-3"
+                                style="font-family: var(--font-heading); font-size: 1.25rem; color: var(--text-primary); margin-top: 0.5rem; margin-bottom: 0.5rem;">
+                                Farming Advisors</h4>
+                            <p id="lbl-auto-4"
+                                style="color: var(--text-secondary); font-size: 0.9rem; line-height: 1.5;">Access mandi
+                                pricing maps, cattle health monitors, vaccine advisor bulletins, and organic bio trading
+                                markets.</p>
+                        </div>
+                        <span id="lbl-auto-5" class="gateway-link"
+                            style="color: var(--color-accent); font-weight: 600; font-size: 0.88rem; margin-top: 1rem; display: inline-flex; align-items: center; gap: 5px;">Enter
+                            Farming <i class="fa-solid fa-arrow-right-long"></i></span>
+                    </div>
+
+                    <div class="card-glass navigation-card" onclick="switchTab('fisheries')"
+                        style="cursor: pointer; display: flex; flex-direction: column; justify-content: space-between; min-height: 200px; border-bottom: 3px solid #3b82f6;">
+                        <div>
+                            <div class="card-icon" style="color: #3b82f6;"><i class="fa-solid fa-ship"></i></div>
+                            <h4 id="lbl-auto-6"
+                                style="font-family: var(--font-heading); font-size: 1.25rem; color: var(--text-primary); margin-top: 0.5rem; margin-bottom: 0.5rem;">
+                                Fishery Hub</h4>
+                            <p id="lbl-auto-7"
+                                style="color: var(--text-secondary); font-size: 0.9rem; line-height: 1.5;">Explore
+                                coastal depletion heatmaps, breeding calendar restriction rules, marine sightings, and
+                                coral reef protection guides.</p>
+                        </div>
+                        <span id="lbl-auto-8" class="gateway-link"
+                            style="color: #3b82f6; font-weight: 600; font-size: 0.88rem; margin-top: 1rem; display: inline-flex; align-items: center; gap: 5px;">Enter
+                            Fishery <i class="fa-solid fa-arrow-right-long"></i></span>
+                    </div>
+
+                    <div class="card-glass navigation-card" onclick="switchTab('weather')"
+                        style="cursor: pointer; display: flex; flex-direction: column; justify-content: space-between; min-height: 200px; border-bottom: 3px solid #fbbf24;">
+                        <div>
+                            <div class="card-icon" style="color: #fbbf24;"><i class="fa-solid fa-cloud-sun-rain"></i>
+                            </div>
+                            <h4 id="lbl-auto-9"
+                                style="font-family: var(--font-heading); font-size: 1.25rem; color: var(--text-primary); margin-top: 0.5rem; margin-bottom: 0.5rem;">
+                                Weather & Groundwater</h4>
+                            <p id="lbl-auto-10"
+                                style="color: var(--text-secondary); font-size: 0.9rem; line-height: 1.5;">Check
+                                real-time regional monsoonal forecasts, El Niño advisories, groundwater levels, and
+                                sewage mixing maps.</p>
+                        </div>
+                        <span id="lbl-auto-11" class="gateway-link"
+                            style="color: #fbbf24; font-weight: 600; font-size: 0.88rem; margin-top: 1rem; display: inline-flex; align-items: center; gap: 5px;">Enter
+                            Weather <i class="fa-solid fa-arrow-right-long"></i></span>
+                    </div>
+
+                    <div class="card-glass navigation-card" onclick="switchTab('birds')"
+                        style="cursor: pointer; display: flex; flex-direction: column; justify-content: space-between; min-height: 200px; border-bottom: 3px solid #f87171;">
+                        <div>
+                            <div class="card-icon" style="color: #f87171;"><i class="fa-solid fa-feather-pointed"></i>
+                            </div>
+                            <h4 id="lbl-auto-12"
+                                style="font-family: var(--font-heading); font-size: 1.25rem; color: var(--text-primary); margin-top: 0.5rem; margin-bottom: 0.5rem;">
+                                Acoustic Tracker</h4>
+                            <p id="lbl-auto-13"
+                                style="color: var(--text-secondary); font-size: 0.9rem; line-height: 1.5;">Use
+                                microphone-enabled AI audio classification to record bird sounds, identify species, and
+                                pin them to census maps.</p>
+                        </div>
+                        <span id="lbl-auto-14" class="gateway-link"
+                            style="color: #f87171; font-weight: 600; font-size: 0.88rem; margin-top: 1rem; display: inline-flex; align-items: center; gap: 5px;">Enter
+                            Acoustics <i class="fa-solid fa-arrow-right-long"></i></span>
+                    </div>
+
+                    <div class="card-glass navigation-card" onclick="switchTab('news')"
+                        style="cursor: pointer; display: flex; flex-direction: column; justify-content: space-between; min-height: 200px; border-bottom: 3px solid #a7f3d0;">
+                        <div>
+                            <div class="card-icon" style="color: #a7f3d0;"><i class="fa-solid fa-newspaper"></i></div>
+                            <h4 id="lbl-auto-15"
+                                style="font-family: var(--font-heading); font-size: 1.25rem; color: var(--text-primary); margin-top: 0.5rem; margin-bottom: 0.5rem;">
+                                News Portal</h4>
+                            <p id="lbl-auto-16"
+                                style="color: var(--text-secondary); font-size: 0.9rem; line-height: 1.5;">Read local
+                                and global news stories, updates on sustainable practices, farming regulations, and
+                                climate reports.</p>
+                        </div>
+                        <span id="lbl-auto-17" class="gateway-link"
+                            style="color: var(--color-accent-light); font-weight: 600; font-size: 0.88rem; margin-top: 1rem; display: inline-flex; align-items: center; gap: 5px;">Enter
+                            News <i class="fa-solid fa-arrow-right-long"></i></span>
+                    </div>
+
+                    <div class="card-glass navigation-card" onclick="switchTab('sources')"
+                        style="cursor: pointer; display: flex; flex-direction: column; justify-content: space-between; min-height: 200px; border-bottom: 3px solid #cbd5e1;">
+                        <div>
+                            <div class="card-icon" style="color: #cbd5e1;"><i class="fa-solid fa-circle-info"></i></div>
+                            <h4 id="lbl-auto-18"
+                                style="font-family: var(--font-heading); font-size: 1.25rem; color: var(--text-primary); margin-top: 0.5rem; margin-bottom: 0.5rem;">
+                                Integrated Datasources</h4>
+                            <p id="lbl-auto-19"
+                                style="color: var(--text-secondary); font-size: 0.9rem; line-height: 1.5;">Review the
+                                verification sources, API endpoints, governmental platforms, and census studies backing
+                                GramSetu.</p>
+                        </div>
+                        <span id="lbl-auto-20" class="gateway-link"
+                            style="color: var(--text-secondary); font-weight: 600; font-size: 0.88rem; margin-top: 1rem; display: inline-flex; align-items: center; gap: 5px;">Enter
+                            Datasources <i class="fa-solid fa-arrow-right-long"></i></span>
+                    </div>
                 </div>
             </div>
-            
-            <div class="card-glass" style="margin-top: 2rem;">
-                <h3 class="card-title" style="margin-bottom: 1rem;"><i class="fa-solid fa-bullhorn"></i> Regional Advisory Board</h3>
-                <p style="color: var(--text-secondary); line-height: 1.6;">
-                    <strong>Alert (Cattle Vaccination Needed):</strong> Foot & Mouth Disease outbreaks are trending high in Gujarat and Rajasthan. Farmers are strongly advised to secure trivalent vaccinations. 
-                    <br><br>
-                    <strong>Market Trend:</strong> Grains prices (Rice and Barley) remain stable. Wheat arrivals in Ludhiana Mandi are recording strong values this week.
+
+            <!-- Community Citizen-Data Pipeline -->
+            <div class="card-glass" style="margin-top: 2rem; padding: 2rem;">
+                <h3 class="card-title" style="margin-bottom: 1.5rem;"><i class="fa-solid fa-diagram-project"></i>
+                    GramSetu Citizen Science Pipeline</h3>
+                <p id="lbl-auto-21"
+                    style="color: var(--text-secondary); font-size: 0.95rem; line-height: 1.6; margin-bottom: 1.5rem;">
+                    GramSetu coordinates rural data collections from multiple stakeholders to construct an ecological
+                    and agricultural monitoring mesh. We leverage automated schedules and manual field reports to drive
+                    community awareness.
                 </p>
+                <div
+                    style="display: flex; gap: 2rem; justify-content: space-between; flex-wrap: wrap; text-align: center;">
+                    <div style="flex: 1; min-width: 150px;">
+                        <div
+                            style="font-size: 2.2rem; color: var(--color-accent); font-weight: 800; font-family: var(--font-heading);">
+                            1</div>
+                        <strong id="lbl-auto-22"
+                            style="color: var(--text-primary); display:block; margin-top:0.25rem; font-family: var(--font-heading);">Collect</strong>
+                        <span id="lbl-auto-23"
+                            style="color: var(--text-secondary); font-size: 0.85rem; line-height:1.4; display:block; margin-top:0.25rem;">Farmers
+                            log products, veterinarians report outbreaks, citizens record avian acoustics.</span>
+                    </div>
+                    <div style="flex: 1; min-width: 150px;">
+                        <div
+                            style="font-size: 2.2rem; color: #3b82f6; font-weight: 800; font-family: var(--font-heading);">
+                            2</div>
+                        <strong id="lbl-auto-24"
+                            style="color: var(--text-primary); display:block; margin-top:0.25rem; font-family: var(--font-heading);">Sync
+                            & Process</strong>
+                        <span id="lbl-auto-25"
+                            style="color: var(--text-secondary); font-size: 0.85rem; line-height:1.4; display:block; margin-top:0.25rem;">Data
+                            is synced with official sources (data.gov.in, DAHD, CMFRI) and processed by AI
+                            engines.</span>
+                    </div>
+                    <div style="flex: 1; min-width: 150px;">
+                        <div
+                            style="font-size: 2.2rem; color: #fbbf24; font-weight: 800; font-family: var(--font-heading);">
+                            3</div>
+                        <strong id="lbl-auto-26"
+                            style="color: var(--text-primary); display:block; margin-top:0.25rem; font-family: var(--font-heading);">Advise
+                            & Empower</strong>
+                        <span id="lbl-auto-27"
+                            style="color: var(--text-secondary); font-size: 0.85rem; line-height:1.4; display:block; margin-top:0.25rem;">Interactive
+                            maps, vaccine directives, and purity testing guides empower community action.</span>
+                    </div>
+                </div>
             </div>
         </section>
 
-        <!-- CATTLE HEALTH MAP TAB -->
-        <section id="panel-cattle" class="tab-panel" aria-labelledby="nav-btn-cattle">
-            <h2 class="hero-title" style="font-size: 2rem; margin-bottom: 0.5rem;"><i class="fa-solid fa-cow"></i> Cattle Disease Outbreaks & Vaccination Advisor</h2>
-            <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">Explore active livestock outbreaks on the interactive heat-intensity map. Select an outbreak location to view immediate local veterinary guidance and immunization actions.</p>
-            
-            <div class="map-layout">
-                <div class="map-pane" id="cattle-heatmap-container"></div>
-                <div class="map-sidebar">
-                    <div class="card-glass" style="flex: 1;" id="cattle-advisory-box">
-                        <h3 class="card-title"><i class="fa-solid fa-hand-holding-medical"></i> Vaccine Advisor</h3>
-                        <p style="color: var(--text-secondary); margin-top: 1rem;" id="cattle-advisory-prompt">Click on an active marker on the map to display district-specific vaccine needs and veterinarian guidelines.</p>
-                        
-                        <div id="cattle-advisory-content" style="display: none; margin-top: 1rem;">
-                            <h4 id="adv-district-title" style="font-family: var(--font-heading); color: #ffffff; margin-bottom: 0.75rem;">District: --</h4>
-                            <p style="margin-bottom: 0.5rem;"><strong>Disease Profile:</strong> <span id="adv-disease-name" class="status-badge critical">--</span></p>
-                            <p style="margin-bottom: 0.5rem;"><strong>Active Cases:</strong> <span id="adv-cases-count">--</span> cattle</p>
-                            <p style="margin-bottom: 0.5rem;"><strong>Severity:</strong> <span id="adv-severity-label">--</span></p>
-                            <p style="margin-bottom: 0.75rem;"><strong>Spread Vector:</strong> <span id="adv-transmission-desc">--</span></p>
-                            
-                            <hr style="border-color: var(--border-glass); margin: 1rem 0;">
-                            
-                            <h4 style="color: var(--color-accent-light); margin-bottom: 0.5rem;"><i class="fa-solid fa-syringe"></i> Immunization Directive</h4>
-                            <p style="margin-bottom: 0.75rem;">The following vaccines must be distributed immediately to all bovine herds in this district:</p>
-                            <div id="adv-vaccines-list" style="color: #ffffff; font-weight: 600; background: rgba(255,255,255,0.05); padding: 0.75rem; border-radius: 8px; border-left: 3px solid var(--color-accent);">
-                                --
+        <!-- FARMING TAB -->
+        <section id="panel-farming" class="tab-panel" aria-labelledby="nav-btn-farming">
+            <h2 class="hero-title" style="font-size: 2rem; margin-bottom: 0.5rem;"><i class="fa-solid fa-tractor"></i>
+                Farming Dashboard & Advisors</h2>
+            <p id="lbl-auto-28" style="color: var(--text-secondary); margin-bottom: 2rem;">Access agricultural mandi
+                rates with interactive maps, livestock disease tracking maps, and organic marketplaces.</p>
+
+            <!-- Dashboard Stats Grid (Farming Context) -->
+            <div class="grid-cols-3">
+                <div class="card-glass">
+                    <div class="card-icon"><i class="fa-solid fa-cow"></i></div>
+                    <h3 id="lbl-auto-29" class="card-title">Cattle Disease Outbreaks</h3>
+                    <div class="card-number" id="stats-outbreaks-count">767</div>
+                    <p id="lbl-auto-30" class="card-desc">Active livestock outbreaks mapped in Indian districts</p>
+                </div>
+                <div class="card-glass">
+                    <div class="card-icon"><i class="fa-solid fa-indian-rupee-sign"></i></div>
+                    <h3 id="lbl-auto-31" class="card-title">Wheat Market Rate</h3>
+                    <div class="card-number" id="stats-wheat-price">₹ 2299</div>
+                    <p id="lbl-auto-32" class="card-desc">Current average price per quintal in North Indian Mandis</p>
+                </div>
+                <div class="card-glass">
+                    <div class="card-icon"><i class="fa-solid fa-feather"></i></div>
+                    <h3 id="lbl-auto-33" class="card-title">Rare Bird Sounds Recorded</h3>
+                    <div class="card-number" id="stats-bird-sightings">8</div>
+                    <p id="lbl-auto-34" class="card-desc">Endangered and local birds mapped in the wild</p>
+                </div>
+            </div>
+
+            <!-- Regional Advisory Board (Farming Context) -->
+            <div class="card-glass" style="margin-top: 2rem; margin-bottom: 2rem;">
+                <h3 class="card-title" style="margin-bottom: 1rem;"><i class="fa-solid fa-bullhorn"></i> Regional
+                    Advisory Board</h3>
+                <p style="color: var(--text-secondary); line-height: 1.6;">
+                    <strong id="lbl-auto-35">Alert (Cattle Vaccination Needed):</strong> Foot & Mouth Disease outbreaks
+                    are trending high in Gujarat and Rajasthan. Farmers are strongly advised to secure trivalent
+                    vaccinations.
+                    <br><br>
+                    <strong id="lbl-auto-36">Market Trend:</strong> Grains prices (Rice and Barley) remain stable. Wheat
+                    arrivals in Ludhiana Mandi are recording strong values this week.
+                </p>
+            </div>
+
+            <div class="farming-container">
+                <!-- Sub Navigation inside tab -->
+                <div class="farming-subnav" style="display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
+                    <button class="btn-primary subnav-btn active" onclick="switchFarmingSubView('mandi')"
+                        id="btn-farm-sub-mandi"><i class="fa-solid fa-wheat-awn"></i> Mandi Prices</button>
+                    <button class="btn-primary subnav-btn" onclick="switchFarmingSubView('cattle')"
+                        id="btn-farm-sub-cattle"><i class="fa-solid fa-cow"></i> Livestock Health</button>
+                    <button class="btn-primary subnav-btn" onclick="switchFarmingSubView('market')"
+                        id="btn-farm-sub-market"><i class="fa-solid fa-store"></i> Bio Market</button>
+                </div>
+
+                <!-- Sub-panel: Mandi Prices -->
+                <div id="farming-sub-mandi" class="farming-sub-panel active">
+                    <h2 class="hero-title" style="font-size: 1.75rem; margin-bottom: 0.5rem;" id="lbl-mandi-title"><i
+                            class="fa-solid fa-wheat-awn"></i> Grain Market Rates (Agricultural Mandis)</h2>
+                    <p style="color: var(--text-secondary); margin-bottom: 1.5rem;" id="lbl-mandi-subtitle">Current
+                        mandi prices per quintal (100 kilograms) across Indian states, aggregated weekly directly from
+                        government databases.</p>
+                    <div class="filter-bar">
+                        <div class="filter-group">
+                            <label id="lbl-auto-37" for="filter-state">State</label>
+                            <select id="filter-state" onchange="applyFilters()">
+                                <option value="all">All States</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label id="lbl-auto-38" for="filter-commodity">Grain / Commodity</label>
+                            <select id="filter-commodity" onchange="applyFilters()">
+                                <option value="all">All Grains</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label id="lbl-auto-39" for="search-market">Search Mandi</label>
+                            <input type="text" id="search-market" placeholder="Type market or district..."
+                                oninput="applyFilters()">
+                        </div>
+                    </div>
+
+                    <div id="mandi-prices-map"
+                        style="height: 400px; border-radius: 12px; border: 1px solid var(--border-glass); background: #e2e8f0; z-index: 1; margin-bottom: 1.5rem;">
+                    </div>
+
+                    <div class="table-container">
+                        <table id="mandi-prices-table">
+                            <thead>
+                                <tr>
+                                    <th id="lbl-auto-40">State</th>
+                                    <th id="lbl-auto-41">District / Market</th>
+                                    <th id="lbl-auto-42">Commodity</th>
+                                    <th id="lbl-auto-43">Variety</th>
+                                    <th id="lbl-auto-44">Min Price (₹)</th>
+                                    <th id="lbl-auto-45">Max Price (₹)</th>
+                                    <th id="lbl-auto-46">Average Modal Rate (₹)</th>
+                                    <th id="lbl-auto-47">Last Synced</th>
+                                </tr>
+                            </thead>
+                            <tbody id="mandi-prices-body">
+                                <tr>
+                                    <td id="lbl-auto-48" colspan="8"
+                                        style="text-align: center; color: var(--text-secondary); padding: 3rem;">Loading
+                                        market rate database...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="chart-summary-box" style="margin-top: 1.5rem;">
+                        <strong><i class="fa-solid fa-circle-question"></i> Mandi Prices Map Summary:</strong> This map
+                        displays real-time average market rates for agricultural commodities in various state mandis.
+                        Red circles indicate higher average rates than normal, green circles show cheaper prices, and
+                        orange indicates stable averages.
+                    </div>
+                </div>
+
+                <!-- Sub-panel: Livestock Health -->
+                <div id="farming-sub-cattle" class="farming-sub-panel">
+                    <h2 class="hero-title" style="font-size: 1.75rem; margin-bottom: 0.5rem;"><i
+                            class="fa-solid fa-cow"></i> Cattle Disease Outbreaks & Vaccination Advisor</h2>
+                    <p id="lbl-auto-49" style="color: var(--text-secondary); margin-bottom: 1.5rem;">Explore active
+                        livestock outbreaks on the interactive heat-intensity map. Select an outbreak location to view
+                        immediate local veterinary guidance and immunization actions.</p>
+
+                    <div class="map-layout" style="height: 500px; margin-bottom: 1.5rem;">
+                        <div class="map-pane" id="cattle-heatmap-container" style="flex: 1; height: 100%; z-index: 1;">
+                        </div>
+                        <div class="map-sidebar">
+                            <div class="card-glass"
+                                style="flex: 1; height: 100%; display: flex; flex-direction: column;"
+                                id="cattle-advisory-box">
+                                <h3 class="card-title"><i class="fa-solid fa-hand-holding-medical"></i> Vaccine Advisor
+                                </h3>
+                                <p style="color: var(--text-secondary); margin-top: 1rem;" id="cattle-advisory-prompt">
+                                    Click on an active marker on the map to display district-specific vaccine needs and
+                                    veterinarian guidelines.</p>
+
+                                <div id="cattle-advisory-content" style="display: none; margin-top: 1rem;">
+                                    <h4 id="adv-district-title"
+                                        style="font-family: var(--font-heading); color: var(--text-primary); margin-bottom: 0.75rem;">
+                                        District: --</h4>
+                                    <p style="margin-bottom: 0.5rem;"><strong>Disease Profile:</strong> <span
+                                            id="adv-disease-name" class="status-badge critical">--</span></p>
+                                    <p style="margin-bottom: 0.5rem;"><strong>Active Cases:</strong> <span
+                                            id="adv-cases-count">--</span> cattle</p>
+                                    <p style="margin-bottom: 0.5rem;"><strong>Severity:</strong> <span
+                                            id="adv-severity-label">--</span></p>
+                                    <p style="margin-bottom: 0.75rem;"><strong>Spread Vector:</strong> <span
+                                            id="adv-transmission-desc">--</span></p>
+
+                                    <hr style="border-color: var(--border-glass); margin: 1rem 0;">
+
+                                    <h4 style="color: var(--color-accent-light); margin-bottom: 0.5rem;"><i
+                                            class="fa-solid fa-syringe"></i> Immunization Directive</h4>
+                                    <p id="lbl-auto-54" style="margin-bottom: 0.75rem;">The following vaccines must be
+                                        distributed immediately to all bovine herds in this district:</p>
+                                    <div id="adv-vaccines-list"
+                                        style="color: var(--text-primary); font-weight: 600; background: rgba(var(--color-accent-rgb), 0.08); padding: 0.75rem; border-radius: 8px; border-left: 3px solid var(--color-accent);">
+                                        --
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="chart-summary-box">
+                        <strong><i class="fa-solid fa-circle-question"></i> Livestock Disease Map Summary:</strong> This
+                        map monitors active cattle disease outbreaks (like Foot-and-Mouth or Lumpy Skin disease) across
+                        Indian districts. Red highlights high-severity areas with immediate vaccination requirements,
+                        orange indicates moderate spread, and blue is low.
+                    </div>
+                </div>
+
+                <!-- Sub-panel: Bio Market -->
+                <div id="farming-sub-market" class="farming-sub-panel">
+                    <h2 class="hero-title" style="font-size: 1.75rem; margin-bottom: 0.5rem;"><i
+                            class="fa-solid fa-store"></i> Organic Bio Market & Authenticity Portal</h2>
+                    <p id="lbl-auto-55" style="color: var(--text-secondary); margin-bottom: 1.5rem;">Browse and trade
+                        certified organic produce directly with regional farmers, or test your crop purity at home.</p>
+
+                    <!-- Bio Market Sub-Navigation -->
+                    <div class="market-subnav"
+                        style="display: flex; gap: 1rem; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-glass); padding-bottom: 1rem;">
+                        <button class="btn-primary subnav-btn active" onclick="switchMarketSubView('marketplace')"
+                            id="btn-sub-marketplace"><i class="fa-solid fa-basket-shopping"></i> Marketplace</button>
+                        <button class="btn-primary subnav-btn" onclick="switchMarketSubView('purity')"
+                            id="btn-sub-purity"><i class="fa-solid fa-flask"></i> Purity Test Kit</button>
+                    </div>
+
+                    <!-- Bio Market Panel: Marketplace -->
+                    <div id="market-sub-marketplace" class="market-sub-panel active">
+                        <!-- Filters & Auth switcher -->
+                        <div class="filter-bar"
+                            style="margin-bottom: 2rem; justify-content: space-between; flex-wrap: wrap;">
+                            <div style="display: flex; gap: 1rem; flex-wrap: wrap; flex: 1;">
+                                <div class="filter-group">
+                                    <label id="lbl-auto-56" for="market-search">Search Produce</label>
+                                    <input type="text" id="market-search" placeholder="Search product or seller..."
+                                        oninput="filterMarketProducts()">
+                                </div>
+                                <div class="filter-group">
+                                    <label id="lbl-auto-57" for="market-filter-category">Category</label>
+                                    <select id="market-filter-category" onchange="filterMarketProducts()">
+                                        <option value="all">All Categories</option>
+                                        <option value="Veggies">Veggies</option>
+                                        <option value="Fruits">Fruits</option>
+                                        <option value="Animal By-Product">Animal By-Product</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Split Column Grid Layout -->
+                        <div
+                            style="display: grid; grid-template-columns: 350px 1fr; gap: 2rem; margin-bottom: 2rem; align-items: start;">
+                            <!-- Left Column: Seller Dashboard, Login/Registration forms -->
+                            <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                                <!-- Authentication Card -->
+                                <div class="card-glass" id="seller-auth-section" style="padding: 1.5rem;">
+                                    <!-- Login Form -->
+                                    <div id="seller-login-form">
+                                        <h3 class="card-title" style="margin-bottom: 1rem;"><i
+                                                class="fa-solid fa-right-to-bracket"></i> Seller Sign In</h3>
+                                        <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                                            <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+                                                <label id="lbl-auto-58" for="login-username"
+                                                    style="font-size: 0.8rem; color: var(--text-secondary);">Username</label>
+                                                <input type="text" id="login-username" placeholder="Enter username">
+                                            </div>
+                                            <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+                                                <label id="lbl-auto-59" for="login-password"
+                                                    style="font-size: 0.8rem; color: var(--text-secondary);">Password</label>
+                                                <input type="password" id="login-password" placeholder="Enter password">
+                                            </div>
+                                            <button class="btn-primary" style="margin-top: 0.5rem;"
+                                                onclick="handleSellerLogin()"><i
+                                                    class="fa-solid fa-arrow-right-to-bracket"></i> Sign In</button>
+                                            <p id="lbl-auto-60"
+                                                style="font-size: 0.8rem; color: var(--text-secondary); text-align: center; margin-top: 0.5rem;">
+                                                New seller? <a id="lbl-auto-61" href="#"
+                                                    onclick="toggleAuthForm('register')"
+                                                    style="color: var(--color-accent-light);">Create Account</a></p>
+                                        </div>
+                                    </div>
+
+                                    <!-- Registration Form -->
+                                    <div id="seller-register-form" style="display: none;">
+                                        <h3 class="card-title" style="margin-bottom: 1rem;"><i
+                                                class="fa-solid fa-user-plus"></i> Seller Registration</h3>
+                                        <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                                            <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+                                                <label id="lbl-auto-62" for="reg-username"
+                                                    style="font-size: 0.8rem; color: var(--text-secondary);">Username</label>
+                                                <input type="text" id="reg-username" placeholder="Choose username">
+                                            </div>
+                                            <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+                                                <label id="lbl-auto-63" for="reg-password"
+                                                    style="font-size: 0.8rem; color: var(--text-secondary);">Password</label>
+                                                <input type="password" id="reg-password" placeholder="Choose password">
+                                            </div>
+                                            <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+                                                <label id="lbl-auto-64" for="reg-name"
+                                                    style="font-size: 0.8rem; color: var(--text-secondary);">Full Name /
+                                                    Farm Name</label>
+                                                <input type="text" id="reg-name" placeholder="Enter name">
+                                            </div>
+                                            <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+                                                <label id="lbl-auto-65" for="reg-contact"
+                                                    style="font-size: 0.8rem; color: var(--text-secondary);">Contact /
+                                                    Location</label>
+                                                <input type="text" id="reg-contact" placeholder="Phone, location...">
+                                            </div>
+                                            <button class="btn-primary" style="margin-top: 0.5rem;"
+                                                onclick="handleSellerRegister()"><i class="fa-solid fa-user-check"></i>
+                                                Register Account</button>
+                                            <p id="lbl-auto-66"
+                                                style="font-size: 0.8rem; color: var(--text-secondary); text-align: center; margin-top: 0.5rem;">
+                                                Already registered? <a id="lbl-auto-67" href="#"
+                                                    onclick="toggleAuthForm('login')"
+                                                    style="color: var(--color-accent-light);">Sign In</a></p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Seller Dashboard Dashboard Panel -->
+                                <div class="card-glass" id="seller-dashboard-section"
+                                    style="display: none; padding: 1.5rem;">
+                                    <h3 class="card-title" style="margin-bottom: 0.5rem;"><i
+                                            class="fa-solid fa-id-card"></i> Seller Dashboard</h3>
+                                    <p id="seller-welcome-msg"
+                                        style="color: var(--text-primary); font-weight: 600; font-size: 0.95rem; margin-bottom: 0.25rem;">
+                                        Welcome, Seller</p>
+                                    <p id="seller-contact-msg"
+                                        style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 1rem;">
+                                        Contact: --</p>
+                                    <button class="btn-primary" style="background: var(--color-danger); color: white;"
+                                        onclick="handleSellerLogout()"><i class="fa-solid fa-right-from-bracket"></i>
+                                        Sign Out</button>
+                                </div>
+
+                                <!-- Post Advertisement Card -->
+                                <div class="card-glass" id="seller-advertise-section" style="padding: 1.5rem;">
+                                    <h3 class="card-title" style="margin-bottom: 0.75rem;"><i
+                                            class="fa-solid fa-bullhorn"></i> Post Bio Advertisement</h3>
+
+                                    <p id="advertise-blocked-msg"
+                                        style="color: var(--text-secondary); font-size: 0.88rem; line-height: 1.5;">
+                                        Only registered and signed-in sellers can post organic bio product
+                                        advertisements. Please log in or register an account above.
+                                    </p>
+
+                                    <div id="advertise-form"
+                                        style="display: none; flex-direction: column; gap: 0.75rem;">
+                                        <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+                                            <label id="lbl-auto-68" for="prod-title"
+                                                style="font-size: 0.8rem; color: var(--text-secondary);">Product
+                                                Title</label>
+                                            <input type="text" id="prod-title" placeholder="E.g. Organic Basmati Rice">
+                                        </div>
+                                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+                                            <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+                                                <label id="lbl-auto-69" for="prod-category"
+                                                    style="font-size: 0.8rem; color: var(--text-secondary);">Category</label>
+                                                <select id="prod-category">
+                                                    <option value="Veggies">Veggies</option>
+                                                    <option value="Fruits">Fruits</option>
+                                                    <option value="Animal By-Product">Animal By-Product</option>
+                                                </select>
+                                            </div>
+                                            <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+                                                <label id="lbl-auto-70" for="prod-unit"
+                                                    style="font-size: 0.8rem; color: var(--text-secondary);">Unit</label>
+                                                <select id="prod-unit">
+                                                    <option value="kg">Kilogram (kg)</option>
+                                                    <option value="quintal">Quintal</option>
+                                                    <option value="litre">Litre (L)</option>
+                                                    <option value="box">Box</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+                                            <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+                                                <label id="lbl-auto-71" for="prod-price"
+                                                    style="font-size: 0.8rem; color: var(--text-secondary);">Price per
+                                                    Unit (₹)</label>
+                                                <input type="number" id="prod-price" min="1" placeholder="Price">
+                                            </div>
+                                            <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+                                                <label id="lbl-auto-72" for="prod-qty"
+                                                    style="font-size: 0.8rem; color: var(--text-secondary);">Quantity
+                                                    Available</label>
+                                                <input type="number" id="prod-qty" min="1" placeholder="Quantity">
+                                            </div>
+                                        </div>
+                                        <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+                                            <label id="lbl-auto-73" for="prod-desc"
+                                                style="font-size: 0.8rem; color: var(--text-secondary);">Description /
+                                                Standards Met</label>
+                                            <textarea id="prod-desc" rows="3"
+                                                placeholder="Describe organic composting, certifications, yield details..."></textarea>
+                                        </div>
+                                        <button class="btn-primary" style="margin-top: 0.5rem;"
+                                            onclick="submitBioProduct()"><i class="fa-solid fa-paper-plane"></i> Publish
+                                            Bio Listing</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Right Column: Product Listing Grid -->
+                            <div style="display: flex; flex-direction: column; gap: 1rem;">
+                                <h3 class="card-title"><i class="fa-solid fa-shop"></i> Organic Offerings</h3>
+                                <div id="market-product-grid"
+                                    style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1rem;">
+                                    <!-- Rendered dynamically -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bio Market Panel: Purity Test Kit -->
+                    <div id="market-sub-purity" class="market-sub-panel">
+                        <div class="card-glass">
+                            <h3 class="card-title" style="margin-bottom: 0.5rem;"><i class="fa-solid fa-flask"></i>
+                                Interactive Bio Purity Test Kit</h3>
+                            <p id="lbl-auto-74"
+                                style="color: var(--text-secondary); margin-bottom: 1.5rem; font-size: 0.95rem;">Select
+                                a product category to perform step-by-step home examinations to check if your product
+                                contains synthetic additives, chemical dyes, or heavy pesticides.</p>
+
+                            <div class="filter-group" style="max-width: 400px; margin-bottom: 1.5rem;">
+                                <label id="lbl-auto-75" for="purity-category-select">Select Product Category to
+                                    Test</label>
+                                <select id="purity-category-select" onchange="switchPurityCategory()">
+                                    <option value="milk">Dairy & Milk Products</option>
+                                    <option value="veggies">Fresh Vegetables & Fruits</option>
+                                    <option value="grains">Grains & Pulses</option>
+                                </select>
+                            </div>
+
+                            <!-- Milk Tests -->
+                            <div id="purity-test-milk" class="purity-test-section active">
+                                <h4 style="color: var(--color-accent-light); margin-bottom: 1rem;"><i
+                                        class="fa-solid fa-glass-water"></i> Home Testing Steps for Organic Dairy</h4>
+                                <div style="display: flex; flex-direction: column; gap: 1rem;">
+                                    <div
+                                        style="display: flex; gap: 1rem; align-items: flex-start; background: rgba(255,255,255,0.02); padding: 1rem; border-radius: 8px;">
+                                        <input type="checkbox" id="milk-test-1"
+                                            style="margin-top: 0.35rem; width: 18px; height: 18px; cursor: pointer;">
+                                        <div>
+                                            <strong id="lbl-auto-76" style="color: var(--text-primary);">Step 1: Slanted
+                                                Flow Test (Water/Adulteration Check)</strong>
+                                            <p id="lbl-auto-77"
+                                                style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 0.25rem;">
+                                                Put a drop of milk on a polished, slanting surface. Organic milk flows
+                                                slowly and leaves a clear white trail behind. Adulterated water-mixed
+                                                milk flows instantly without leaving a trail. <span id="lbl-auto-78"
+                                                    style="color: var(--color-accent-light);">Check if it leaves a
+                                                    trail.</span></p>
+                                        </div>
+                                    </div>
+                                    <div
+                                        style="display: flex; gap: 1rem; align-items: flex-start; background: rgba(255,255,255,0.02); padding: 1rem; border-radius: 8px;">
+                                        <input type="checkbox" id="milk-test-2"
+                                            style="margin-top: 0.35rem; width: 18px; height: 18px; cursor: pointer;">
+                                        <div>
+                                            <strong id="lbl-auto-79" style="color: var(--text-primary);">Step 2: Starch
+                                                Check (Flour/Thickener Additive)</strong>
+                                            <p id="lbl-auto-80"
+                                                style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 0.25rem;">
+                                                Boil a small sample of milk, let it cool, and add 2 drops of Iodine
+                                                solution. Pure bio milk remains white/light-cream. Starch-adulterated
+                                                milk turns dark blue. <span id="lbl-auto-81"
+                                                    style="color: var(--color-accent-light);">Check if it remained white
+                                                    (No Blue Color).</span></p>
+                                        </div>
+                                    </div>
+                                    <div
+                                        style="display: flex; gap: 1rem; align-items: flex-start; background: rgba(255,255,255,0.02); padding: 1rem; border-radius: 8px;">
+                                        <input type="checkbox" id="milk-test-3"
+                                            style="margin-top: 0.35rem; width: 18px; height: 18px; cursor: pointer;">
+                                        <div>
+                                            <strong id="lbl-auto-82" style="color: var(--text-primary);">Step 3:
+                                                Synthetic Foam Test (Detergent Check)</strong>
+                                            <p id="lbl-auto-83"
+                                                style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 0.25rem;">
+                                                Shake 5ml of milk vigorously in a glass container. Pure milk forms a
+                                                thin layer of foam that dissolves quickly. Synthetic milk (made with
+                                                detergent/urea) creates a thick, soapy lather that stays for minutes.
+                                                <span id="lbl-auto-84" style="color: var(--color-accent-light);">Check
+                                                    if it is free of dense, persistent lather.</span>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Veggies & Fruits Tests -->
+                            <div id="purity-test-veggies" class="purity-test-section">
+                                <h4 style="color: var(--color-accent-light); margin-bottom: 1rem;"><i
+                                        class="fa-solid fa-apple-whole"></i> Home Testing Steps for Organic Vegetables &
+                                    Fruits</h4>
+                                <div style="display: flex; flex-direction: column; gap: 1rem;">
+                                    <div
+                                        style="display: flex; gap: 1rem; align-items: flex-start; background: rgba(255,255,255,0.02); padding: 1rem; border-radius: 8px;">
+                                        <input type="checkbox" id="veggie-test-1"
+                                            style="margin-top: 0.35rem; width: 18px; height: 18px; cursor: pointer;">
+                                        <div>
+                                            <strong id="lbl-auto-85" style="color: var(--text-primary);">Step 1:
+                                                Dye/Malachite Green Rubbing Test</strong>
+                                            <p id="lbl-auto-86"
+                                                style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 0.25rem;">
+                                                Take a cotton ball soaked in vegetable oil and rub it firmly over the
+                                                outer skin of green vegetables (chilies, peas, spinach) or sweet
+                                                potatoes. If the cotton turns green or red, chemical dyes are present.
+                                                <span id="lbl-auto-87" style="color: var(--color-accent-light);">Check
+                                                    if the cotton remained clean (No Color transfer).</span>
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div
+                                        style="display: flex; gap: 1rem; align-items: flex-start; background: rgba(255,255,255,0.02); padding: 1rem; border-radius: 8px;">
+                                        <input type="checkbox" id="veggie-test-2"
+                                            style="margin-top: 0.35rem; width: 18px; height: 18px; cursor: pointer;">
+                                        <div>
+                                            <strong id="lbl-auto-88" style="color: var(--text-primary);">Step 2: Natural
+                                                Blemishes & Variations</strong>
+                                            <p id="lbl-auto-89"
+                                                style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 0.25rem;">
+                                                Examine the shapes and surfaces. Pesticide-free organic vegetables are
+                                                rarely identical or perfectly polished. They feature minor color
+                                                variations, natural marks, and realistic sizes. <span id="lbl-auto-90"
+                                                    style="color: var(--color-accent-light);">Check if the batch has
+                                                    natural variations (Not artificially uniform/super shiny).</span>
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div
+                                        style="display: flex; gap: 1rem; align-items: flex-start; background: rgba(255,255,255,0.02); padding: 1rem; border-radius: 8px;">
+                                        <input type="checkbox" id="veggie-test-3"
+                                            style="margin-top: 0.35rem; width: 18px; height: 18px; cursor: pointer;">
+                                        <div>
+                                            <strong id="lbl-auto-91" style="color: var(--text-primary);">Step 3: Aroma
+                                                and Quick Decay Checks</strong>
+                                            <p id="lbl-auto-92"
+                                                style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 0.25rem;">
+                                                Sniff the product. Organic tomatoes, apples, and herbs have a strong,
+                                                sweet earthy smell. Chemically forced crops look ripe but smell
+                                                completely blank. Furthermore, organic veggies decay naturally within a
+                                                few days. <span id="lbl-auto-93"
+                                                    style="color: var(--color-accent-light);">Check if they possess a
+                                                    natural aroma and normal shelf-life.</span></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Grains Tests -->
+                            <div id="purity-test-grains" class="purity-test-section">
+                                <h4 style="color: var(--color-accent-light); margin-bottom: 1rem;"><i
+                                        class="fa-solid fa-wheat-awn"></i> Home Testing Steps for Organic Grains &
+                                    Pulses</h4>
+                                <div style="display: flex; flex-direction: column; gap: 1rem;">
+                                    <div
+                                        style="display: flex; gap: 1rem; align-items: flex-start; background: rgba(255,255,255,0.02); padding: 1rem; border-radius: 8px;">
+                                        <input type="checkbox" id="grain-test-1"
+                                            style="margin-top: 0.35rem; width: 18px; height: 18px; cursor: pointer;">
+                                        <div>
+                                            <strong id="lbl-auto-94" style="color: var(--text-primary);">Step 1: Color
+                                                Release Soak Test</strong>
+                                            <p id="lbl-auto-95"
+                                                style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 0.25rem;">
+                                                Soak 2 tablespoons of grains/pulses (like Tur Dal or Rice) in warm water
+                                                for 15 minutes. Polished grains treated with chemical dyes (like Metanil
+                                                Yellow) will bleed color, turning the water cloudy yellow/red. <span
+                                                    id="lbl-auto-96" style="color: var(--color-accent-light);">Check if
+                                                    water remains clear.</span></p>
+                                        </div>
+                                    </div>
+                                    <div
+                                        style="display: flex; gap: 1rem; align-items: flex-start; background: rgba(255,255,255,0.02); padding: 1rem; border-radius: 8px;">
+                                        <input type="checkbox" id="grain-test-2"
+                                            style="margin-top: 0.35rem; width: 18px; height: 18px; cursor: pointer;">
+                                        <div>
+                                            <strong id="lbl-auto-97" style="color: var(--text-primary);">Step 2: Natural
+                                                Storage Insect Test</strong>
+                                            <p id="lbl-auto-98"
+                                                style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 0.25rem;">
+                                                Check if the storage has ever attracted minor insect activity. Heavily
+                                                fumigated grains sprayed with methyl bromide or aluminum phosphide stay
+                                                completely sterile for months, whereas organic grains stored naturally
+                                                are susceptible to normal biodiverse elements over time. <span
+                                                    id="lbl-auto-99" style="color: var(--color-accent-light);">Check if
+                                                    it behaves like a normal biological crop.</span></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Score Calculation Action -->
+                            <div style="margin-top: 2rem; display: flex; flex-direction: column; gap: 1rem;">
+                                <button class="btn-primary" onclick="calculatePurityScore()"
+                                    style="width: fit-content;"><i class="fa-solid fa-calculator"></i> Calculate Bio
+                                    Purity Confidence</button>
+
+                                <div id="purity-result-card" class="result-card"
+                                    style="margin-top: 0.5rem; background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.2);">
+                                    <h4 id="purity-score-label"
+                                        style="font-family: var(--font-heading); font-size: 1.3rem; margin-bottom: 0.5rem;">
+                                        Bio Confidence Score: --</h4>
+                                    <p id="purity-feedback-text"
+                                        style="color: var(--text-secondary); font-size: 0.9rem; line-height: 1.5;">Check
+                                        boxes above based on your home testing observations to verify purity.</p>
+                                </div>
+                            </div>
+
+                            <!-- Organic Standards Definition Card (moved here) -->
+                            <div
+                                style="margin-top: 2.5rem; border-top: 1px solid var(--border-glass); padding-top: 1.5rem;">
+                                <div
+                                    style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 1rem;">
+                                    <h4
+                                        style="margin: 0; font-family: var(--font-heading); color: var(--color-accent-light);">
+                                        <i class="fa-solid fa-certificate"></i> Organic & Bio Standards Definition
+                                    </h4>
+
+                                    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                                        <button class="btn-primary lang-btn active" onclick="switchLanguage('en')"
+                                            id="lang-btn-en">English</button>
+                                        <button class="btn-primary lang-btn" onclick="switchLanguage('hi')"
+                                            id="lang-btn-hi">Hindi</button>
+                                        <button class="btn-primary lang-btn" onclick="switchLanguage('pb')"
+                                            id="lang-btn-pb">Punjabi</button>
+                                        <button class="btn-primary lang-btn" onclick="switchLanguage('ta')"
+                                            id="lang-btn-ta">Tamil</button>
+                                        <button class="btn-primary lang-btn" onclick="switchLanguage('bn')"
+                                            id="lang-btn-bn">Bengali</button>
+                                    </div>
+                                </div>
+
+                                <div id="lang-content"
+                                    style="background: rgba(255,255,255,0.01); padding: 1.5rem; border-radius: 12px; border-left: 4px solid var(--color-accent); line-height: 1.7; font-size: 0.9rem;">
+                                    <!-- English Default -->
+                                    <div id="lang-en" class="lang-text active">
+                                        <p><strong id="lbl-auto-100">Bio (Organic)</strong> products are grown and
+                                            produced using natural ecological processes and materials. Crucially, they
+                                            are cultivated <strong id="lbl-auto-101">without synthetic chemical
+                                                fertilizers, artificial pesticides, growth hormones, veterinary
+                                                antibiotics, or Genetically Modified Organisms (GMOs)</strong>.</p>
+                                        <p id="lbl-auto-102" style="margin-top: 0.75rem;">By relying on compost manure,
+                                            crop rotation, and biological pest controls, organic husbandry fosters soil
+                                            health, protects local water tables, and ensures premium nutritional value
+                                            for consumers.</p>
+                                    </div>
+                                    <!-- Hindi -->
+                                    <div id="lang-hi" class="lang-text">
+                                        <p><strong id="lbl-auto-103">बायो (जैविक)</strong> उत्पाद प्राकृतिक पारिस्थितिक
+                                            प्रक्रियाओं और सामग्रियों का उपयोग करके उगाए और उत्पादित किए जाते हैं। मुख्य
+                                            रूप से, वे <strong id="lbl-auto-104">सिंथेटिक रासायनिक उर्वरकों, कृत्रिम
+                                                कीटनाशकों, विकास हार्मोन, पशु चिकित्सा एंटीबायोटिक दवाओं या आनुवंशिक रूप
+                                                से संशोधित जीवों (जीएमओ)</strong> के बिना खेती किए जाते हैं।</p>
+                                        <p id="lbl-auto-105" style="margin-top: 0.75rem;">खाद, फसल चक्र और जैविक कीट
+                                            नियंत्रण पर भरोसा करके, जैविक खेती मिट्टी के स्वास्थ्य को बढ़ावा देती है,
+                                            स्थानीय भूजल की रक्षा करती है और उपभोक्ताओं के लिए उच्च पोषण मूल्य सुनिश्चित
+                                            करती है।</p>
+                                    </div>
+                                    <!-- Punjabi -->
+                                    <div id="lang-pb" class="lang-text">
+                                        <p><strong id="lbl-auto-106">ਬਾਇਓ (ਜੈਵਿਕ)</strong> ਉਤਪਾਦ ਕੁਦਰਤੀ ਵਾਤਾਵਰਣ
+                                            ਪ੍ਰਕਿਰਿਆਵਾਂ ਅਤੇ ਸਮੱਗਰੀਆਂ ਦੀ ਵਰਤੋਂ ਕਰਕੇ ਉਗਾਏ ਅਤੇ ਤਿਆਰ ਕੀਤੇ ਜਾਂਦੇ ਹਨ। ਇਹ
+                                            <strong id="lbl-auto-107">ਸਿੰਥੈਟਿਕ ਰਸਾਇਣਕ ਖਾਦਾਂ, ਨਕਲੀ ਕੀਟਨਾਸ਼ਕਾਂ, ਵਿਕਾਸ
+                                                ਹਾਰਮੋਨਾਂ, ਪਸ਼ੂ ਚਿਕਿਤਸਾ ਐਂਟੀਬਾਇਓਟਿਕਸ, ਜਾਂ ਜੈਨੇਟਿਕ ਤੌਰ 'ਤੇ ਸੋਧੇ ਹੋਏ ਜੀਵਾਂ
+                                                (GMO)</strong> ਤੋਂ ਬਿਨਾਂ ਪੈਦਾ ਕੀਤੇ ਜਾਂਦੇ ਹਨ।
+                                        </p>
+                                        <p id="lbl-auto-108" style="margin-top: 0.75rem;">ਰੂੜੀ ਦੀ ਖਾਦ, ਫਸਲੀ ਚੱਕਰ ਅਤੇ
+                                            ਜੈਵਿਕ ਕੀਟ ਕੰਟਰੋਲ 'ਤੇ ਨਿਰਭਰ ਕਰਕੇ, ਜੈਵਿਕ ਖੇਤੀ ਮਿੱਟੀ ਦੀ ਸਿਹਤ ਨੂੰ ਸੁਧਾਰਦੀ ਹੈ,
+                                            ਪਾਣੀ ਦੀ ਰੱਖਿਆ ਕਰਦੀ ਹੈ ਅਤੇ ਖਪਤਕਾਰਾਂ ਲਈ ਉੱਚ ਪੱਧਰੀ ਪੋਸ਼ਣ ਯਕੀਨੀ ਬਣਾਉਂਦੀ ਹੈ।</p>
+                                    </div>
+                                    <!-- Tamil -->
+                                    <div id="lang-ta" class="lang-text">
+                                        <p><strong id="lbl-auto-109">பயோ (இயற்கை)</strong> தயாரிப்புகள் இயற்கை சூழலியல்
+                                            செயல்முறைகள் மற்றும் பொருட்களைப் பயன்படுத்தி உற்பத்தி செய்யப்படுகின்றன.
+                                            முக்கியமாக, அவை <strong id="lbl-auto-110">செயற்கை இரசாயன உரங்கள்,
+                                                பூச்சிக்கொல்லிகள், வளர்ச்சி ஹார்மோன்கள், கால்நடை நுண்ணுயிர் எதிர்ப்பிகள்
+                                                அல்லது மரபணு மாற்றப்பட்ட உயிரினங்கள் (GMO)</strong> இல்லாமல்
+                                            பயிரிடப்படுகின்றன.</p>
+                                        <p id="lbl-auto-111" style="margin-top: 0.75rem;">இயற்கை உரம், பயிர் சுழற்சி
+                                            மற்றும் உயிரியல் பூச்சி கட்டுப்பாடுகளை நம்பியிருப்பதன் மூலம், இயற்கை
+                                            விவசாயம் மண்ணின் ஆரோக்கியத்தை மேம்படுத்துகிறது, நிலத்தடி நீரைப்
+                                            பாதுகாக்கிறது மற்றும் நுகர்வோருக்கு பிரீமியம் ஊட்டச்சத்து மதிப்பை உறுதி
+                                            செய்கிறது.</p>
+                                    </div>
+                                    <!-- Bengali -->
+                                    <div id="lang-bn" class="lang-text">
+                                        <p><strong id="lbl-auto-112">বায়ো (জৈব)</strong> পণ্যগুলি প্রাকৃতিক পরিবেশগত
+                                            প্রক্রিয়া এবং উপাদান ব্যবহার করে চাষ ও প্রস্তুত করা হয়। এগুলো <strong
+                                                id="lbl-auto-113">কৃত্রিম সার, কীটনাশক, গ্রোথ হরমোন, অ্যান্টিবায়োটিক বা
+                                                জিনগতভাবে পরিবর্তিত জীব (GMO)</strong> ছাড়াই চাষ করা হয়।</p>
+                                        <p id="lbl-auto-114" style="margin-top: 0.75rem;">জৈব সার, ফসল আবর্তন এবং জৈবিক
+                                            উপায়ে কীটপতঙ্গ নিয়ন্ত্রণের মাধ্যমে জৈব চাষ মাটির উর্বরতা বাড়ায়, ভূগর্ভস্থ
+                                            পানি রক্ষা করে এবং ক্রেতাদের জন্য পুষ্টিকর ও নিরাপদ খাদ্যের নিশ্চয়তা দেয়।
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+        </section>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        <!-- FISHERIES HUB TAB -->
+        <section id="panel-fisheries" class="tab-panel" aria-labelledby="nav-btn-fisheries">
+            <h2 class="hero-title" style="font-size: 2rem; margin-bottom: 0.5rem;" id="lbl-fisheries-title"><i
+                    class="fa-solid fa-ship"></i> Fisheries Hub & Marine Ecosystem</h2>
+            <p style="color: var(--text-secondary); margin-bottom: 1.5rem;" id="lbl-fisheries-desc">Explore coastal fish
+                heatmap zones, breeding restriction calendars with multilingual conservation insights, ocean population
+                charts, and marine mammal sightings.</p>
+
+
+
+            <div class="fisheries-container">
+                <!-- Sub Navigation inside tab -->
+                <div class="fisheries-subnav" style="display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
+                    <button class="btn-primary subnav-btn active" onclick="switchFisheriesSubView('heatmap')"
+                        id="btn-fish-sub-heatmap"><i class="fa-solid fa-map-location-dot"></i> Coastal Depletion
+                        Heatmap</button>
+                    <button class="btn-primary subnav-btn" onclick="switchFisheriesSubView('calendar')"
+                        id="btn-fish-sub-calendar"><i class="fa-solid fa-calendar-days"></i> Overfishing
+                        Restrictions</button>
+                    <button class="btn-primary subnav-btn" onclick="switchFisheriesSubView('trends')"
+                        id="btn-fish-sub-trends"><i class="fa-solid fa-chart-simple"></i> Fish Stock Depletion</button>
+                    <button class="btn-primary subnav-btn" onclick="switchFisheriesSubView('schemes')"
+                        id="btn-fish-sub-schemes"><i class="fa-solid fa-hand-holding-hand"></i> Economic
+                        Welfare</button>
+                    <button class="btn-primary subnav-btn" onclick="switchFisheriesSubView('sightings')"
+                        id="btn-fish-sub-sightings"><i class="fa-solid fa-camera"></i> Marine Conservation</button>
+                    <button class="btn-primary subnav-btn" onclick="switchFisheriesSubView('corals')"
+                        id="btn-fish-sub-corals"><i class="fa-solid fa-gem"></i> Habitat Destruction</button>
+                </div>
+
+
+
+
+
+
+
+
+                <!-- Sub-panel: Coastal Fish Heatmap -->
+                <div id="fisheries-sub-heatmap" class="fisheries-sub-panel active">
+                    <div class="map-layout" style="height: 500px;">
+                        <div class="map-pane" id="fisheries-map-container" style="flex: 1; height: 100%; z-index: 1;">
+                        </div>
+                        <div class="map-sidebar">
+                            <div class="card-glass" style="flex: 1;">
+                                <h3 class="card-title"><i class="fa-solid fa-circle-info"></i> Heatmap Indicator</h3>
+                                <p id="lbl-auto-115"
+                                    style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 0.5rem; line-height: 1.5;">
+                                    The circles represent dense aggregations of specific fish types along the Indian
+                                    coast.
+                                    A larger, brighter circle indicates a high concentration of fish schools.
+                                </p>
+                                <hr style="border-color: var(--border-glass); margin: 1rem 0;">
+                                <div style="display: flex; flex-direction: column; gap: 0.75rem; font-size: 0.85rem;"
+                                    id="fish-heatmap-legend">
+                                    <p><strong id="lbl-auto-116" style="color: var(--text-primary);">Legend (Density
+                                            Classes):</strong></p>
+                                    <p><span id="lbl-auto-117" class="status-badge critical"
+                                            style="padding: 0.2rem 0.5rem;">CRITICAL DENSITY (&gt;85%)</span> - High
+                                        yield, recommended for netting.</p>
+                                    <p><span id="lbl-auto-118" class="status-badge high"
+                                            style="padding: 0.2rem 0.5rem;">HIGH DENSITY (70% - 85%)</span> -
+                                        Moderate-high density schools.</p>
+                                    <p><span id="lbl-auto-119" class="status-badge medium"
+                                            style="padding: 0.2rem 0.5rem;">MODERATE DENSITY (&lt;70%)</span> - Normal
+                                        fish presence.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+
+                    <div class="chart-summary-box" style="margin-top: 1.5rem;">
+                        <strong><i class="fa-solid fa-circle-question"></i> Fish Heatmap Summary:</strong> This map
+                        displays where schools of commercial fish (such as Sardines or Mackerel) are currently grouped
+                        in coastal waters. Red circles indicate very dense schools, orange is high density, and blue is
+                        moderate. Larger circles show larger populations.
+                    </div>
+                </div>
+
+
+
+
+
+
+                <!-- Sub-panel: Breeding Calendar -->
+                <div id="fisheries-sub-calendar" class="fisheries-sub-panel">
+                    <div class="card-glass">
+                        <div
+                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+                            <h3 class="card-title" style="margin: 0;"><i class="fa-solid fa-shield-halved"></i> Fish
+                                Breeding Restrictions & Protection Calendar</h3>
+
+
+
+                            <!-- Language toggle for breeding reason -->
+                            <div class="filter-group" style="min-width: 220px; flex: 0;">
+                                <label id="lbl-auto-120" for="calendar-lang-select" style="font-size:0.75rem;">Select
+                                    Advisory Language</label>
+                                <select id="calendar-lang-select" onchange="toggleCalendarLanguage()">
+                                    <option value="en">English (Default)</option>
+                                    <option value="bn">Bengali (Óª¼Óª¥ÓªéÓª▓Óª¥)</option>
+                                    <option value="ml">Malayalam (Ó┤«Ó┤▓Ó┤»Ó┤¥Ó┤│Ó┤é)</option>
+                                    <option value="ta">Tamil (Ó«ñÓ««Ó«┐Ó«┤Ó»ì)</option>
+                                    <option value="hi">Hindi (Óñ╣Óñ┐Óñ¿ÓÑìÓñªÓÑÇ)</option>
+                                </select>
+                            </div>
+                        </div>
+
+
+
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th id="lbl-auto-121">Protected Species</th>
+                                        <th id="lbl-auto-122">Breeding Ban Duration</th>
+                                        <th id="lbl-auto-123">Conservation Reason / Regional Advisory</th>
+                                        <th id="lbl-auto-124">Recommended Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="breeding-calendar-body">
+                                    <!-- Rendered dynamically -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                <!-- Sub-panel: Historical Trends Chart -->
+                <div id="fisheries-sub-trends" class="fisheries-sub-panel">
+                    <div class="card-glass">
+                        <h3 class="card-title" style="margin-bottom: 0.5rem;"><i class="fa-solid fa-chart-line"></i>
+                            Marine Fish Biomass Indexes (2016 - 2026)</h3>
+                        <p id="lbl-auto-125"
+                            style="color: var(--text-secondary); margin-bottom: 2rem; font-size: 0.9rem;">Historical
+                            stock counts gathered from marine census surveys to track depletion and replenishment
+                            curves.</p>
+
+
+
+                        <div style="width:100%; height: 350px; position:relative; background: rgba(0,0,0,0.15); border-radius: 12px; border:1px solid var(--border-glass); padding: 1.5rem;"
+                            id="historical-chart-canvas-wrapper">
+                            <!-- Draw high quality SVG chart dynamically in app.js -->
+                            <div id="historical-svg-container" style="width:100%; height:100%;"></div>
+                        </div>
+
+
+
+                        <div
+                            style="display: flex; gap: 2rem; justify-content: center; margin-top: 1rem; flex-wrap: wrap; font-size: 0.85rem; margin-bottom: 1.5rem;">
+                            <span style="display:flex; align-items:center; gap:0.4rem; color:var(--text-primary);"><span
+                                    id="lbl-auto-126"
+                                    style="width:12px; height:12px; background:#10b981; display:inline-block; border-radius:3px;"></span>
+                                Sardines</span>
+                            <span style="display:flex; align-items:center; gap:0.4rem; color:var(--text-primary);"><span
+                                    id="lbl-auto-127"
+                                    style="width:12px; height:12px; background:#fbbf24; display:inline-block; border-radius:3px;"></span>
+                                Hilsa</span>
+                            <span style="display:flex; align-items:center; gap:0.4rem; color:var(--text-primary);"><span
+                                    id="lbl-auto-128"
+                                    style="width:12px; height:12px; background:#f87171; display:inline-block; border-radius:3px;"></span>
+                                Mackerel</span>
+                            <span style="display:flex; align-items:center; gap:0.4rem; color:var(--text-primary);"><span
+                                    id="lbl-auto-129"
+                                    style="width:12px; height:12px; background:#3b82f6; display:inline-block; border-radius:3px;"></span>
+                                Tuna</span>
+                        </div>
+
+
+
+                        <div class="chart-summary-box">
+                            <strong><i class="fa-solid fa-circle-question"></i> Fish Stock Trends Graph
+                                Summary:</strong> This line chart tracks the average population count index of four
+                            major fish species over the last decade (2016-2026). Rising lines indicate population
+                            recovery due to conservation efforts, while falling lines highlight severe overfishing and
+                            stock depletion.
+                        </div>
+                    </div>
+                </div>
+
+
+
+                <!-- Sub-panel: Welfare Schemes -->
+                <div id="fisheries-sub-schemes" class="fisheries-sub-panel">
+                    <div class="grid-cols-3" id="fisheries-schemes-grid">
+                        <!-- Loaded dynamically -->
+                    </div>
+                </div>
+
+
+
+                <!-- Sub-panel: Marine Mammal Sightings -->
+                <div id="fisheries-sub-sightings" class="fisheries-sub-panel">
+                    <div class="grid-cols-2">
+                        <!-- Sighting Uploader form -->
+                        <div class="card-glass"
+                            style="display: flex; flex-direction: column; justify-content: space-between;">
+                            <div>
+                                <h3 class="card-title" style="margin-bottom: 0.5rem;"><i
+                                        class="fa-solid fa-cloud-arrow-up"></i> Log Whale / Dolphin Sighting</h3>
+                                <p id="lbl-auto-130"
+                                    style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 1.5rem;">
+                                    Help marine biologists map the biodiversity of cetacean groups in Indian waters by
+                                    uploading sighting images and coordinates.</p>
+
+
+
+                                <div style="display: flex; flex-direction: column; gap: 0.85rem;">
+                                    <div class="filter-group" style="min-width: 100%;">
+                                        <label id="lbl-auto-131" for="sight-species">Mammal Species / Type</label>
+                                        <select id="sight-species">
+                                            <option value="Blue Whale">Blue Whale (Balaenoptera musculus)</option>
+                                            <option value="Humpback Whale">Humpback Whale (Megaptera novaeangliae)
+                                            </option>
+                                            <option value="Fin Whale">Fin Whale (Balaenoptera physalus)</option>
+                                            <option value="Bryde's Whale">Bryde's Whale (Balaenoptera edeni)</option>
+                                            <option value="Indo-Pacific Bottlenose Dolphin">Indo-Pacific Bottlenose
+                                                Dolphin</option>
+                                            <option value="Spinner Dolphin">Spinner Dolphin (Stenella longirostris)
+                                            </option>
+                                            <option value="Irrawaddy Dolphin">Irrawaddy Dolphin (Orcaella brevirostris)
+                                            </option>
+                                        </select>
+                                    </div>
+                                    <div class="grid-cols-2" style="margin-bottom: 0; gap: 1rem;">
+                                        <div class="filter-group">
+                                            <label id="lbl-auto-132" for="sight-latitude">Latitude (DD)</label>
+                                            <input type="number" id="sight-latitude" step="0.0001"
+                                                placeholder="E.g. 15.3412">
+                                        </div>
+                                        <div class="filter-group">
+                                            <label id="lbl-auto-133" for="sight-longitude">Longitude (DD)</label>
+                                            <input type="number" id="sight-longitude" step="0.0001"
+                                                placeholder="E.g. 73.0856">
+                                        </div>
+                                    </div>
+                                    <div class="filter-group" style="min-width: 100%;">
+                                        <label id="lbl-auto-134" for="sight-notes">Sighting Notes / Behavior</label>
+                                        <textarea id="sight-notes" rows="3"
+                                            placeholder="Describe cohort size, surface activities, breathing spouts seen..."
+                                            style="background: rgba(11, 15, 25, 0.6); border: 1px solid var(--border-glass); color: var(--text-primary); padding: 0.6rem 0.9rem; border-radius: 8px; font-family: var(--font-body); outline: none; resize: none;"></textarea>
+                                    </div>
+
+
+
+                                    <!-- Drag and Drop Image Box -->
+                                    <div class="filter-group" style="min-width: 100%;">
+                                        <label id="lbl-auto-135">Upload Sighting Photograph</label>
+                                        <div class="upload-dropzone" id="sighting-dropzone" onclick="triggerFileInput()"
+                                            style="border: 2px dashed var(--border-glass); background: rgba(0,0,0,0.1); border-radius: 10px; padding: 2rem; text-align: center; cursor: pointer; transition: var(--transition-smooth); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.5rem;">
+                                            <i class="fa-solid fa-images"
+                                                style="font-size: 2rem; color: var(--text-secondary);"
+                                                id="dropzone-icon"></i>
+                                            <p style="font-size:0.85rem; color:var(--text-secondary);"
+                                                id="dropzone-text">Click or Drag & Drop photo here</p>
+                                            <input type="file" id="sight-file" accept="image/*"
+                                                onchange="handleFileSelect()" style="display: none;">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+
+
+                            <button class="btn-primary" style="margin-top: 1.5rem;" onclick="submitMarineSighting()"><i
+                                    class="fa-solid fa-circle-check"></i> File Marine Report</button>
+                        </div>
+
+
+
+                        <!-- Gallery list -->
+                        <div class="card-glass" style="display: flex; flex-direction: column; height: 100%;">
+                            <h3 class="card-title" style="margin-bottom: 1rem;"><i class="fa-solid fa-images"></i> Flora
+                                & Fauna Sightings Log</h3>
+                            <div style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 1rem; max-height: 480px; padding-right: 0.25rem;"
+                                id="sightings-gallery-list">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+
+                <!-- Sub-panel: Coral Protection & Savings Calculator -->
+                <div id="fisheries-sub-corals" class="fisheries-sub-panel">
+                    <div class="grid-cols-2">
+                        <!-- Coral information panel -->
+                        <div class="card-glass">
+                            <h3 class="card-title" id="lbl-coral-title"><i class="fa-solid fa-shield-heart"></i> Coral
+                                Reef Protection Guide</h3>
+                            <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1rem;"
+                                id="lbl-coral-intro">
+                                Coral reefs are the rain forests of the sea. They occupy less than 0.1% of the ocean but
+                                shelter over 25% of all marine life, serving as primary nurseries for sardines,
+                                mackerel, and snapper.
+                            </p>
+                            <h4 style="color: var(--color-accent); margin-top: 1rem; margin-bottom: 0.5rem;"
+                                id="lbl-coral-why-title">Why are Corals Important?</h4>
+                            <ul style="color: var(--text-secondary); margin-left: 1.5rem; line-height: 1.6; font-size: 0.9rem; margin-bottom: 1rem;"
+                                id="lbl-coral-why-list">
+                                <li id="lbl-auto-136">Healthy reefs increase local fish biomass, ensuring sustainable
+                                    catches.</li>
+                                <li id="lbl-auto-137">Coral reefs absorb 97% of wave energy, protecting coastal villages
+                                    from erosion.</li>
+                                <li id="lbl-auto-138">They generate substantial economic value through marine tourism.
+                                </li>
+                            </ul>
+                            <h4 style="color: var(--color-danger); margin-top: 1rem; margin-bottom: 0.5rem;"
+                                id="lbl-coral-how-title">How to Protect Them?</h4>
+                            <ul style="color: var(--text-secondary); margin-left: 1.5rem; line-height: 1.6; font-size: 0.9rem;"
+                                id="lbl-coral-how-list">
+                                <li id="lbl-auto-139">No anchoring on reefs: Use mooring buoys to prevent shattering
+                                    corals.</li>
+                                <li id="lbl-auto-140">Prevent chemical runoff: Avoid discharging engine oils or plastic
+                                    waste.</li>
+                                <li id="lbl-auto-141">Report destructive fishing: Blast fishing causes irreversible
+                                    destruction.</li>
+                            </ul>
+                        </div>
+
+
+
+                        <!-- Coral Savings Calculator -->
+                        <div class="card-glass"
+                            style="display: flex; flex-direction: column; justify-content: space-between;">
+                            <div>
+                                <h3 class="card-title" id="lbl-calc-title"><i class="fa-solid fa-calculator"></i>
+                                    Coastal Savings & Yield Calculator</h3>
+                                <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 1.5rem;"
+                                    id="lbl-calc-desc">
+                                    Calculate how much money a coastal community saves in shore defenses and gains in
+                                    fishing profits by actively preserving local coral reefs.
+                                </p>
+
+
+
+                                <div style="display: flex; flex-direction: column; gap: 1rem;">
+                                    <div class="filter-group" style="min-width: 100%;">
+                                        <label for="calc-reef-length" id="lbl-calc-reef-len">Protected Coral Reef Length
+                                            (in km)</label>
+                                        <input type="number" id="calc-reef-length" min="1" max="100" value="5"
+                                            oninput="calculateCoralSavings()">
+                                    </div>
+                                    <div class="filter-group" style="min-width: 100%;">
+                                        <label for="calc-boats" id="lbl-calc-boats">Number of Community Fishing
+                                            Boats</label>
+                                        <input type="number" id="calc-boats" min="1" max="500" value="40"
+                                            oninput="calculateCoralSavings()">
+                                    </div>
+                                </div>
+                            </div>
+
+
+
+                            <div class="result-card active"
+                                style="margin-top: 1.5rem; background: rgba(5, 150, 105, 0.05); border: 1px solid rgba(5, 150, 105, 0.2);"
+                                id="coral-calc-result-box">
+                                <h4 style="font-family: var(--font-heading); font-size: 1.1rem; margin-bottom: 0.5rem; color: var(--color-accent);"
+                                    id="lbl-calc-results-title">Estimated Annual Community Savings</h4>
+                                <div style="display: flex; flex-direction: column; gap: 0.5rem; font-size: 0.9rem;">
+                                    <p><strong id="lbl-calc-defense">Coastal Defense Savings:</strong> <span
+                                            style="color:var(--text-primary); font-weight:600;"
+                                            id="coral-savings-defense">Ôé╣ 1,25,00,000</span></p>
+                                    <p><strong id="lbl-calc-yield">Increased Fish Catch Value:</strong> <span
+                                            style="color:var(--text-primary); font-weight:600;"
+                                            id="coral-savings-yield">Ôé╣ 14,00,000</span></p>
+                                    <hr style="border-color: var(--border-glass); margin: 0.25rem 0;">
+                                    <p style="font-size: 1.05rem; font-weight: 700;"><span id="lbl-calc-total">Total
+                                            Economic Benefit:</span> <span style="color:var(--color-accent-light);"
+                                            id="coral-savings-total">Ôé╣ 1,39,00,000</span></p>
+                                </div>
+                                <p style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.75rem;"
+                                    id="lbl-calc-note">*Calculations are based on average seawall construction costs
+                                    saved per km (approx Ôé╣25L/km/yr) and catch replenishment values of Ôé╣35,000 per
+                                    boat/yr.</p>
                             </div>
                         </div>
                     </div>
@@ -115,111 +1392,95 @@
             </div>
         </section>
 
-        <!-- MANDI CROP PRICES TAB -->
-        <section id="panel-mandi" class="tab-panel" aria-labelledby="nav-btn-mandi">
-            <h2 class="hero-title" style="font-size: 2rem; margin-bottom: 0.5rem;"><i class="fa-solid fa-wheat-awn"></i> Grain Market Rates (Agricultural Mandis)</h2>
-            <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">Current mandi prices per quintal (100 kilograms) across Indian states, aggregated weekly directly from government databases.</p>
-            
-            <div class="filter-bar">
-                <div class="filter-group">
-                    <label for="filter-state">State</label>
-                    <select id="filter-state" onchange="applyFilters()">
-                        <option value="all">All States</option>
-                    </select>
-                </div>
-                <div class="filter-group">
-                    <label for="filter-commodity">Grain / Commodity</label>
-                    <select id="filter-commodity" onchange="applyFilters()">
-                        <option value="all">All Grains</option>
-                    </select>
-                </div>
-                <div class="filter-group">
-                    <label for="search-market">Search Mandi</label>
-                    <input type="text" id="search-market" placeholder="Type market or district..." oninput="applyFilters()">
-                </div>
-            </div>
 
-            <div class="table-container">
-                <table id="mandi-prices-table">
-                    <thead>
-                        <tr>
-                            <th>State</th>
-                            <th>District / Market</th>
-                            <th>Commodity</th>
-                            <th>Variety</th>
-                            <th>Min Price (₹)</th>
-                            <th>Max Price (₹)</th>
-                            <th>Average Modal Rate (₹)</th>
-                            <th>Last Synced</th>
-                        </tr>
-                    </thead>
-                    <tbody id="mandi-prices-body">
-                        <tr>
-                            <td colspan="8" style="text-align: center; color: var(--text-secondary); padding: 3rem;">Loading market rate database...</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </section>
 
         <!-- BIRD SOUND DETECTOR MAP TAB -->
         <section id="panel-birds" class="tab-panel" aria-labelledby="nav-btn-birds">
-            <h2 class="hero-title" style="font-size: 2rem; margin-bottom: 0.5rem;"><i class="fa-solid fa-feather-pointed"></i> Bird Sound Acoustic Classifier & Sighting Tracker</h2>
-            <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">Turn on your microphone to record a bird call. Our AI matches the frequency and spectral patterns to identify the bird, assess its conservation classification, and map it to log populations in the wild.</p>
-            
+            <h2 class="hero-title" style="font-size: 2rem; margin-bottom: 0.5rem;"><i
+                    class="fa-solid fa-feather-pointed"></i> Bird Sound Acoustic Classifier & Sighting Tracker</h2>
+            <p id="lbl-auto-142" style="color: var(--text-secondary); margin-bottom: 1.5rem;">Turn on your microphone to
+                record a bird call. Our AI matches the frequency and spectral patterns to identify the bird, assess its
+                conservation classification, and map it to log populations in the wild.</p>
             <div class="audio-grid">
                 <!-- Acoustic Microphone Box -->
                 <div class="card-glass recorder-box">
                     <div class="mic-btn-container">
-                        <button class="mic-btn" id="btn-record-audio" onclick="toggleRecording()" aria-label="Toggle recording bird sound">
+                        <button class="mic-btn" id="btn-record-audio" onclick="toggleRecording()"
+                            aria-label="Toggle recording bird sound">
                             <i class="fa-solid fa-microphone" id="mic-icon"></i>
                         </button>
                         <div class="mic-pulse"></div>
                     </div>
-                    
-                    <h3 id="record-status-label" style="font-family: var(--font-heading); margin-bottom: 0.5rem;">Click to Record</h3>
-                    <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1rem;" id="record-timer-text">Press button to capture 5 seconds of sound</p>
-                    
+                    <h3 id="record-status-label" style="font-family: var(--font-heading); margin-bottom: 0.5rem;">Click
+                        to Record</h3>
+                    <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1rem;"
+                        id="record-timer-text">Press button to capture 5 seconds of sound</p>
                     <canvas class="visualizer-canvas" id="canvas-visualizer"></canvas>
-                    
+
+
                     <!-- AI Response Area -->
                     <div class="result-card" id="classification-result-card">
-                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem;">
-                            <h4 id="bird-result-name" style="font-family: var(--font-heading); font-size: 1.3rem; color: #ffffff;">--</h4>
+                        <div
+                            style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem;">
+
+
+                            <h4 id="bird-result-name"
+                                style="font-family: var(--font-heading); font-size: 1.3rem; color: var(--text-primary);">
+                                --</h4>
                             <span id="bird-result-status" class="status-badge critical">--</span>
                         </div>
-                        <p style="font-style: italic; color: var(--color-accent-light); font-size: 0.85rem; margin-bottom: 0.5rem;" id="bird-result-scientific">--</p>
-                        <p style="color: var(--text-secondary); font-size: 0.9rem; line-height: 1.5; margin-bottom: 1rem;" id="bird-result-desc">--</p>
+                        <p style="font-style: italic; color: var(--color-accent-light); font-size: 0.85rem; margin-bottom: 0.5rem;"
+                            id="bird-result-scientific">--</p>
+                        <p style="color: var(--text-secondary); font-size: 0.9rem; line-height: 1.5; margin-bottom: 1rem;"
+                            id="bird-result-desc">--</p>
                         <div style="display: flex; gap: 1rem; align-items: center; justify-content: space-between;">
-                            <span style="font-size: 0.8rem; color: var(--text-secondary);" id="bird-result-confidence">Confidence: --</span>
-                            <button class="btn-primary" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;" onclick="logSightingOnMap()" id="btn-log-sighting"><i class="fa-solid fa-map-pin"></i> Save and Pin Hearing</button>
+                            <span style="font-size: 0.8rem; color: var(--text-secondary);"
+                                id="bird-result-confidence">Confidence: --</span>
+                            <button class="btn-primary" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;"
+                                onclick="logSightingOnMap()" id="btn-log-sighting"><i class="fa-solid fa-map-pin"></i>
+                                Save and Pin Hearing</button>
                         </div>
                     </div>
                 </div>
 
+
                 <!-- Bird Map Area -->
                 <div class="card-glass" style="display: flex; flex-direction: column; gap: 1rem;">
                     <h3 class="card-title"><i class="fa-solid fa-map-location-dot"></i> Sightings Map</h3>
-                    <div class="map-pane" id="birds-sighting-map-container" style="flex: 1; min-height: 300px;"></div>
+
+
+                    <div class="map-pane" id="birds-sighting-map-container"
+                        style="flex: 1; min-height: 300px; z-index: 1;"></div>
+                    <div class="chart-summary-box">
+                        <strong><i class="fa-solid fa-circle-question"></i> Bird Acoustics Map Summary:</strong> This
+                        map shows where users have logged acoustic recordings of birds. Red dots indicate sightings of
+                        critically endangered species, and green dots represent common birds. This helps wildlife
+                        scientists track biodiversity and bird habitats.
+                    </div>
                 </div>
             </div>
 
+
+
             <!-- Sighting Population Counter Section -->
             <div class="card-glass" style="margin-top: 1.5rem;">
-                <h3 class="card-title" style="margin-bottom: 1rem;"><i class="fa-solid fa-square-poll-vertical"></i> Wild Population Census Summary</h3>
+                <h3 class="card-title" style="margin-bottom: 1rem;"><i class="fa-solid fa-square-poll-vertical"></i>
+                    Wild Population Census Summary</h3>
                 <div class="table-container">
                     <table>
                         <thead>
                             <tr>
-                                <th>Bird Name</th>
-                                <th>Scientific Name</th>
-                                <th>IUCN Red List Status</th>
-                                <th>Total Mapped Detections (Wild Count)</th>
+                                <th id="lbl-auto-143">Bird Name</th>
+                                <th id="lbl-auto-144">Scientific Name</th>
+                                <th id="lbl-auto-145">IUCN Red List Status</th>
+                                <th id="lbl-auto-146">Total Mapped Detections (Wild Count)</th>
                             </tr>
                         </thead>
                         <tbody id="bird-stats-table-body">
                             <tr>
-                                <td colspan="4" style="text-align: center; color: var(--text-secondary); padding: 1.5rem;">No sightings mapped yet. Use the acoustic mic to log bird sounds.</td>
+                                <td id="lbl-auto-147" colspan="4"
+                                    style="text-align: center; color: var(--text-secondary); padding: 1.5rem;">No
+                                    sightings mapped yet. Use the acoustic mic to log bird sounds.</td>
                             </tr>
                         </tbody>
                     </table>
@@ -227,73 +1488,614 @@
             </div>
         </section>
 
-        <!-- DATA SOURCES LINKS TAB -->
-        <section id="panel-sources" class="tab-panel" aria-labelledby="nav-btn-sources">
-            <h2 class="hero-title" style="font-size: 2rem; margin-bottom: 0.5rem;"><i class="fa-solid fa-circle-info"></i> Integrated Open Data Sources</h2>
-            <p style="color: var(--text-secondary); margin-bottom: 2rem;">GramSetu leverages verified, official Indian and global database repositories to automate its metrics. Below are details and references to the integrated data platforms.</p>
-            
-            <div class="source-grid">
-                <!-- Source Card 1 -->
-                <div class="card-glass source-card">
-                    <h3 class="card-title" style="color: var(--color-accent-light);"><i class="fa-solid fa-wheat-awn"></i> OGD Platform India (Data.gov.in)</h3>
-                    <p style="color: var(--text-secondary); margin-top: 0.75rem; line-height: 1.6;">
-                        Used to fetch real-time and daily-updated agricultural market arrival rates and prices for essential grains in various states.
-                    </p>
-                    <p style="color: var(--text-secondary); margin-top: 0.5rem;"><strong>Refresh Rate:</strong> Weekly (automated Scheduler)</p>
-                    <a href="https://data.gov.in" target="_blank" rel="noopener noreferrer" class="source-link">Visit Data.gov.in API <i class="fa-solid fa-up-right-from-square"></i></a>
+
+
+        <!-- NEWS PORTAL TAB -->
+        <section id="panel-news" class="tab-panel" aria-labelledby="nav-btn-news">
+            <div class="news-header-section"
+                style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+                <div>
+                    <h2 class="hero-title" style="font-size: 2rem; margin-bottom: 0.5rem;"><i
+                            class="fa-solid fa-newspaper"></i> Agriculture & Fisheries News Portal</h2>
+                    <p id="lbl-auto-148" style="color: var(--text-secondary);">Stay updated with the latest trends in
+                        organic farming, modern technology, sustainable marine methods, oil spill impacts, and climate
+                        changes globally.</p>
+                </div>
+                <button class="btn-primary" onclick="triggerManualNewsSync()" id="btn-sync-news"><i
+                        class="fa-solid fa-rotate"></i> Sync Latest News</button>
+            </div>
+
+
+
+            <!-- News Filter Controls -->
+            <div class="news-filters-bar"
+                style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-glass); border-radius: 12px; padding: 1rem; margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+                    <span id="lbl-auto-149" style="font-weight: 600; color: var(--text-primary);">Category:</span>
+                    <button class="subnav-btn active" id="btn-news-cat-all" onclick="filterNewsCategory('all')">All
+                        News</button>
+                    <button class="subnav-btn" id="btn-news-cat-agri" onclick="filterNewsCategory('agriculture')"><i
+                            class="fa-solid fa-wheat-awn"></i> Agriculture</button>
+                    <button class="subnav-btn" id="btn-news-cat-fish" onclick="filterNewsCategory('fishery')"><i
+                            class="fa-solid fa-ship"></i> Fisheries</button>
                 </div>
 
-                <!-- Source Card 2 -->
-                <div class="card-glass source-card">
-                    <h3 class="card-title" style="color: var(--color-accent-light);"><i class="fa-solid fa-cow"></i> Dept of Animal Husbandry & Dairying (DAHD)</h3>
-                    <p style="color: var(--text-secondary); margin-top: 0.75rem; line-height: 1.6;">
-                        National livestock health database of epidemic outbreaks, cattle disease reports, and mandatory vaccination guidelines (under the National Animal Disease Control Programme).
-                    </p>
-                    <p style="color: var(--text-secondary); margin-top: 0.5rem;"><strong>Refresh Rate:</strong> Monthly (automated Scheduler)</p>
-                    <a href="https://dahd.nic.in" target="_blank" rel="noopener noreferrer" class="source-link">Visit DAHD India Portal <i class="fa-solid fa-up-right-from-square"></i></a>
+
+
+                <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+                    <span id="lbl-auto-150" style="font-weight: 600; color: var(--text-secondary);">Topic Filter:</span>
+                    <select id="news-topic-select" onchange="filterNewsTopic()"
+                        style="background: rgba(11, 15, 25, 0.8); border: 1px solid var(--border-glass); color: var(--text-primary); padding: 0.5rem 1rem; border-radius: 8px; font-family: var(--font-body); outline: none;">
+                        <option value="all">All Topics</option>
+                        <option value="Modern Farming">Modern Farming</option>
+                        <option value="Bio Farming">Bio Farming</option>
+                        <option value="New Fishing Ways">New Fishing Ways</option>
+                        <option value="Oil Spills">Oil Spills & Implications</option>
+                        <option value="Climate Change">Climate Change Impact</option>
+                        <option value="Trending">Other Trending Topics</option>
+                    </select>
+                </div>
+            </div>
+
+
+
+            <!-- News Cards Grid -->
+            <div class="news-cards-grid" id="news-articles-grid"
+                style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem;">
+                <!-- Populated dynamically -->
+            </div>
+        </section>
+
+
+
+        <!-- WEATHER UPDATES TAB -->
+        <section id="panel-weather" class="tab-panel" aria-labelledby="nav-btn-weather">
+            <h2 class="hero-title" style="font-size: 2rem; margin-bottom: 0.5rem;" id="lbl-weather-title"><i
+                    class="fa-solid fa-cloud-sun-rain"></i> Weather & Climate Change Updates</h2>
+            <p style="color: var(--text-secondary); margin-bottom: 1.5rem;" id="lbl-weather-subtitle">Real-time monsoon
+                monitoring, regional El Ni├▒o advisories, and long-term temperature anomaly tracking.</p>
+
+
+
+            <!-- El Nino Advisory Panel -->
+            <div class="card-glass" style="margin-bottom: 2rem; border-left: 4px solid var(--color-danger);">
+                <h3 class="card-title" id="lbl-elnino-title"><i class="fa-solid fa-circle-exclamation"
+                        style="color: var(--color-danger);"></i> El Ni├▒o Advisory & Monsoon Impact</h3>
+                <p style="color: var(--text-secondary); margin-top: 0.5rem; line-height: 1.6; font-size: 0.95rem;"
+                    id="lbl-elnino-desc">
+                    El Ni├▒o conditions are currently active. In India, El Ni├▒o is historically linked to weaker
+                    southwest monsoons, delayed wind arrival, and below-average rainfall (averaging a 10-15% deficit).
+                    This increases drought risks in Central and North-West India.
+                    Rural professionals are advised to prioritize water harvesting, utilize mulching to conserve soil
+                    moisture, and select drought-resistant crop varieties.
+                </p>
+            </div>
+
+
+
+            <!-- Regional Forecasts Grid -->
+            <h3 class="card-title" style="margin-bottom: 1rem;" id="lbl-regional-forecasts-title"><i
+                    class="fa-solid fa-map-location"></i> Regional Forecasts & Monsoon Deficits</h3>
+            <div class="grid-cols-2" id="weather-forecast-grid" style="gap: 1.5rem; margin-bottom: 2rem;">
+                <div class="card-glass" style="text-align: center; padding: 2rem; grid-column: span 2;">
+                    <p id="lbl-auto-151" style="color: var(--text-secondary);">Loading regional weather forecasts...</p>
+                </div>
+            </div>
+
+
+
+            <!-- Climate Change Trend -->
+            <div class="card-glass">
+                <h3 class="card-title" style="margin-bottom: 0.5rem;" id="lbl-climate-title"><i
+                        class="fa-solid fa-chart-area"></i> Decadal Temperature Anomaly & Monsoon Deviation (2000 -
+                    2026)</h3>
+                <p style="color: var(--text-secondary); margin-bottom: 2rem; font-size: 0.9rem;"
+                    id="lbl-climate-subtitle">Long-term temperature anomalies (relative to 20th century average) and
+                    corresponding rainfall deficits illustrating climate change footprints.</p>
+
+
+
+                <div style="width:100%; height: 350px; position:relative; background: rgba(0,0,0,0.15); border-radius: 12px; border:1px solid var(--border-glass); padding: 1.5rem;"
+                    id="climate-chart-canvas-wrapper">
+                    <!-- Inline SVG chart rendered dynamically via app.js -->
+                    <div id="climate-svg-container" style="width:100%; height:100%;"></div>
                 </div>
 
-                <!-- Source Card 3 -->
-                <div class="card-glass source-card">
-                    <h3 class="card-title" style="color: var(--color-accent-light);"><i class="fa-solid fa-feather"></i> IUCN Red List of Threatened Species</h3>
-                    <p style="color: var(--text-secondary); margin-top: 0.75rem; line-height: 1.6;">
-                        Used to determine the global threat level and extinction status of avian wildlife species identified via microphone recordings.
-                    </p>
-                    <p style="color: var(--text-secondary); margin-top: 0.5rem;"><strong>Refresh Rate:</strong> Permanent static catalog reference</p>
-                    <a href="https://www.iucnredlist.org" target="_blank" rel="noopener noreferrer" class="source-link">Visit IUCN Red List <i class="fa-solid fa-up-right-from-square"></i></a>
+
+
+                <div
+                    style="display: flex; gap: 2rem; justify-content: center; margin-top: 1rem; flex-wrap: wrap; font-size: 0.85rem; margin-bottom: 1.5rem;">
+                    <span style="display:flex; align-items:center; gap:0.4rem; color:var(--text-primary);"><span
+                            id="lbl-auto-152"
+                            style="width:12px; height:12px; background:#ef4444; display:inline-block; border-radius:3px;"></span>
+                        Temp Anomaly (┬░C)</span>
+                    <span style="display:flex; align-items:center; gap:0.4rem; color:var(--text-primary);"><span
+                            id="lbl-auto-153"
+                            style="width:12px; height:12px; background:#3b82f6; display:inline-block; border-radius:3px;"></span>
+                        Rainfall Deviation (%)</span>
                 </div>
 
-                <!-- Source Card 4 -->
-                <div class="card-glass source-card">
-                    <h3 class="card-title" style="color: var(--color-accent-light);"><i class="fa-solid fa-map-location-dot"></i> OpenStreetMap and Leaflet</h3>
-                    <p style="color: var(--text-secondary); margin-top: 0.75rem; line-height: 1.6;">
-                        Provides the cartography engine that maps livestock infection points, vaccination clinics, and citizen-contributed wild bird sound detection pins.
-                    </p>
-                    <p style="color: var(--text-secondary); margin-top: 0.5rem;"><strong>Refresh Rate:</strong> Dynamic real-time client-side rendering</p>
-                    <a href="https://openstreetmap.org" target="_blank" rel="noopener noreferrer" class="source-link">Visit OpenStreetMap <i class="fa-solid fa-up-right-from-square"></i></a>
+
+
+                <div class="chart-summary-box">
+                    <strong><i class="fa-solid fa-circle-question"></i> Temperature & Rainfall Trends Graph
+                        Summary:</strong> This chart monitors climate change indicators in India from 2000 to 2026. The
+                    solid red line shows average temperature increases (global warming footprint), while the dashed blue
+                    line shows how much the annual monsoon rainfall deviated from historical averages, illustrating
+                    drought years.
+                </div>
+            </div>
+
+
+
+            <!-- Groundwater Visualizer Section -->
+            <div class="card-glass" style="margin-top: 2rem;">
+                <h3 class="card-title" style="margin-bottom: 0.5rem;" id="lbl-groundwater-title"><i
+                        class="fa-solid fa-droplet"></i> Groundwater Depletion & Sewage Contamination Visualizer (2016 -
+                    2026)</h3>
+                <p style="color: var(--text-secondary); margin-bottom: 1.5rem; font-size: 0.9rem;"
+                    id="lbl-groundwater-subtitle">Monitor water table drawdown (mbgl) and track the overlap of urban
+                    sewage mixing in agricultural aquifers.</p>
+
+
+
+                <!-- Controls Row -->
+                <div class="filter-bar" style="margin-bottom: 1.5rem;">
+                    <div class="filter-group" style="min-width: 250px;">
+                        <label for="gw-year-slider"><span id="lbl-gw-year-label">Select Forecast/Historical Year:</span>
+                            <span id="gw-year-display"
+                                style="color: var(--color-accent-light); font-weight: 700;">2026</span></label>
+                        <input type="range" id="gw-year-slider" min="2016" max="2026" value="2026" step="1"
+                            oninput="updateGroundwaterYear(this.value)">
+                    </div>
+                    <div class="filter-group"
+                        style="display: flex; flex-direction: row; align-items: center; gap: 0.75rem; min-width: 250px; padding-top: 1.25rem;">
+                        <input type="checkbox" id="sewage-toggle" checked onchange="toggleSewageOverlay(this.checked)"
+                            style="width: 20px; height: 20px; cursor: pointer;">
+                        <label for="sewage-toggle" id="lbl-sewage-toggle-label"
+                            style="cursor: pointer; text-transform: none; font-size: 0.9rem; color: var(--text-primary);">Show
+                            Sewage Contamination Overlay</label>
+                    </div>
+                </div>
+
+
+
+                <!-- Grid Map + Chart -->
+                <div class="grid-cols-2" style="gap: 1.5rem; margin-bottom: 1.5rem;">
+                    <!-- Leaflet map container -->
+                    <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                        <h4 style="font-family: var(--font-heading); font-weight: 600; color: var(--text-primary); font-size: 1rem;"
+                            id="lbl-gw-map-title">Interactive Ground Water Aquifers Map</h4>
+                        <div id="groundwater-map"
+                            style="height: 400px; border-radius: 12px; border: 1px solid var(--border-glass); background: #e2e8f0; z-index: 1;">
+                        </div>
+                        <div class="chart-summary-box">
+                            <strong><i class="fa-solid fa-circle-question"></i> Groundwater Aquifers Map
+                                Summary:</strong> This map displays groundwater levels across districts. Red circles
+                            mark severe depletion (water table deeper than 30 meters), orange marks moderate levels
+                            (15-30 meters), and green marks healthy levels. The purple dashed circles show areas where
+                            urban sewage is contaminating agricultural groundwater.
+                        </div>
+                    </div>
+                    <!-- Chart container -->
+                    <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                        <h4 style="font-family: var(--font-heading); font-weight: 600; color: var(--text-primary); font-size: 1rem;"
+                            id="lbl-groundwater-chart-title">Water Table Level Trend (Depth in mbgl)</h4>
+                        <div
+                            style="flex: 1; min-height: 400px; background: rgba(0,0,0,0.15); border-radius: 12px; border: 1px solid var(--border-glass); padding: 1.5rem; display: flex; flex-direction: column; justify-content: space-between;">
+                            <div>
+                                <div style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.5rem; text-align: center;"
+                                    id="lbl-gw-chart-district">District: National Average</div>
+                                <div id="groundwater-svg-container" style="flex: 1; width: 100%; height: 260px;"></div>
+                            </div>
+                            <div class="chart-summary-box">
+                                <strong><i class="fa-solid fa-circle-question"></i> Groundwater Trend Chart
+                                    Summary:</strong> This chart shows how the depth of the water table changed between
+                                2016 and 2026. A line going upward indicates that water is getting deeper (worse
+                                depletion). Click any district circle on the map to load its specific local history.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+
+                <!-- Map Legends -->
+                <div
+                    style="display: flex; gap: 2rem; justify-content: center; flex-wrap: wrap; font-size: 0.85rem; padding-top: 1rem; border-top: 1px solid var(--border-glass);">
+                    <span
+                        style="display:flex; align-items:center; gap:0.4rem; color:var(--text-primary); font-weight: 600;"
+                        id="lbl-gw-legend-title">Aquifer Depth:</span>
+                    <span style="display:flex; align-items:center; gap:0.4rem; color:var(--text-primary);"><span
+                            id="lbl-auto-154"
+                            style="width:12px; height:12px; background:#10b981; display:inline-block; border-radius:3px;"></span>
+                        Safe (&lt; 15 mbgl)</span>
+                    <span style="display:flex; align-items:center; gap:0.4rem; color:var(--text-primary);"><span
+                            id="lbl-auto-155"
+                            style="width:12px; height:12px; background:#fbbf24; display:inline-block; border-radius:3px;"></span>
+                        Semi-Critical (15 - 30 mbgl)</span>
+                    <span style="display:flex; align-items:center; gap:0.4rem; color:var(--text-primary);"><span
+                            id="lbl-auto-156"
+                            style="width:12px; height:12px; background:#ef4444; display:inline-block; border-radius:3px;"></span>
+                        Critical (&gt; 30 mbgl)</span>
+                    <span
+                        style="display:flex; align-items:center; gap:0.4rem; color:var(--text-primary); margin-left: 1rem;"><span
+                            id="lbl-auto-157"
+                            style="width:14px; height:14px; border:2px dashed #a855f7; background: rgba(168, 85, 247, 0.15); display:inline-block; border-radius:50%;"></span>
+                        Sewage Contamination Mix</span>
                 </div>
             </div>
         </section>
 
-    </main>
 
+
+        <!-- DATA SOURCES LINKS TAB -->
+        <section id="panel-sources" class="tab-panel" aria-labelledby="nav-btn-sources">
+            <h2 class="hero-title" style="font-size: 2rem; margin-bottom: 0.5rem;"><i
+                    class="fa-solid fa-circle-info"></i> Integrated Open Data Sources</h2>
+            <p id="lbl-auto-158" style="color: var(--text-secondary); margin-bottom: 2rem;">GramSetu leverages verified,
+                official Indian and global database repositories to automate its metrics. Below are details and
+                references to the integrated data platforms.</p>
+
+
+
+
+            <div class="source-grid"
+                style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem;">
+                <!-- Source Card 1 -->
+                <div class="card-glass source-card">
+
+
+
+
+                    <h3 class="card-title" style="color: var(--color-accent-light);"><i
+                            class="fa-solid fa-wheat-awn"></i> OGD Platform India Grains Prices</h3>
+                    <p id="lbl-auto-159"
+                        style="color: var(--text-secondary); margin-top: 0.75rem; line-height: 1.6; font-size: 0.9rem;">
+                        Automated sync of agricultural mandi prices for essential foodgrains across states. Daily price
+                        indexing.
+                    </p>
+
+
+
+                    <p style="color: var(--text-secondary); margin-top: 0.5rem; font-size: 0.85rem;"><strong
+                            id="lbl-auto-160">Refresh Rate:</strong> Daily (Automated Sync)</p>
+                    <a id="lbl-auto-161"
+                        href="https://www.data.gov.in/catalog/current-daily-price-various-commodities-various-markets-mandi"
+                        target="_blank" rel="noopener noreferrer" class="source-link">Visit OGD Daily Price Catalog <i
+                            class="fa-solid fa-up-right-from-square"></i></a>
+                </div>
+
+
+
+                <!-- Source Card 2 -->
+                <div class="card-glass source-card">
+
+
+
+
+                    <h3 class="card-title" style="color: var(--color-accent-light);"><i class="fa-solid fa-cow"></i>
+                        DAHD Livestock Health Portal</h3>
+                    <p id="lbl-auto-162"
+                        style="color: var(--text-secondary); margin-top: 0.75rem; line-height: 1.6; font-size: 0.9rem;">
+                        National livestock health database of epidemic outbreaks, cattle disease reports, and mandatory
+                        vaccination guidelines (under the LH&DCP).
+                    </p>
+
+
+
+                    <p style="color: var(--text-secondary); margin-top: 0.5rem; font-size: 0.85rem;"><strong
+                            id="lbl-auto-163">Refresh Rate:</strong> Monthly (Automated Sync)</p>
+                    <a id="lbl-auto-164" href="https://dahd.gov.in/schemes-programmes/lhdcp" target="_blank"
+                        rel="noopener noreferrer" class="source-link">Visit LH&DCP Portal <i
+                            class="fa-solid fa-up-right-from-square"></i></a>
+                </div>
+
+
+
+                <!-- Source Card 3 -->
+                <div class="card-glass source-card">
+                    <h3 class="card-title" style="color: var(--color-accent-light);"><i
+                            class="fa-solid fa-piggy-bank"></i> DAHD Pig Husbandry Guidelines</h3>
+                    <p id="lbl-auto-165"
+                        style="color: var(--text-secondary); margin-top: 0.75rem; line-height: 1.6; font-size: 0.9rem;">
+                        Official guidelines for Good Husbandry Practices in Pig Farming, providing animal biosecurity,
+                        sanitation, and feeding standards.
+                    </p>
+                    <p style="color: var(--text-secondary); margin-top: 0.5rem; font-size: 0.85rem;"><strong
+                            id="lbl-auto-166">Refresh Rate:</strong> Static Catalog Reference</p>
+                    <a id="lbl-auto-167"
+                        href="https://dahd.gov.in/sites/default/files/2026-05/GoodHusbandryPracticesinPigFarming.pdf"
+                        target="_blank" rel="noopener noreferrer" class="source-link">View Pig Husbandry PDF <i
+                            class="fa-solid fa-up-right-from-square"></i></a>
+                </div>
+
+
+
+                <!-- Source Card 4 -->
+                <div class="card-glass source-card">
+                    <h3 class="card-title" style="color: var(--color-accent-light);"><i class="fa-solid fa-ship"></i>
+                        ICAR - CMFRI Fisheries Census</h3>
+                    <p id="lbl-auto-168"
+                        style="color: var(--text-secondary); margin-top: 0.75rem; line-height: 1.6; font-size: 0.9rem;">
+                        National catch census and coastal biomass metrics. Used as a baseline to plot the decadal marine
+                        stock trend (2016-2026).
+                    </p>
+                    <p style="color: var(--text-secondary); margin-top: 0.5rem; font-size: 0.85rem;"><strong
+                            id="lbl-auto-169">Refresh Rate:</strong> Static Reference Database</p>
+                    <a id="lbl-auto-170" href="https://www.cmfri.org.in" target="_blank" rel="noopener noreferrer"
+                        class="source-link">Visit ICAR-CMFRI India <i class="fa-solid fa-up-right-from-square"></i></a>
+                </div>
+
+
+
+                <!-- Source Card 5 -->
+                <div class="card-glass source-card">
+                    <h3 class="card-title" style="color: var(--color-accent-light);"><i class="fa-solid fa-anchor"></i>
+                        Coastal State Fisheries Departments</h3>
+                    <p id="lbl-auto-171"
+                        style="color: var(--text-secondary); margin-top: 0.75rem; line-height: 1.6; font-size: 0.9rem;">
+                        Welfare schemes for fishermen (PMMSY, boat subsidies, savings schemes) adapted from fisheries
+                        departments of Kerala, Tamil Nadu, Andhra Pradesh, Maharashtra, and West Bengal.
+                    </p>
+                    <p style="color: var(--text-secondary); margin-top: 0.5rem; font-size: 0.85rem;"><strong
+                            id="lbl-auto-172">Refresh Rate:</strong> Regular Update</p>
+                    <a id="lbl-auto-173" href="https://pmmsy.dof.gov.in/" target="_blank" rel="noopener noreferrer"
+                        class="source-link">Visit PMMSY Scheme Portal <i
+                            class="fa-solid fa-up-right-from-square"></i></a>
+                </div>
+
+
+
+                <!-- Source Card 6 -->
+                <div class="card-glass source-card">
+                    <h3 class="card-title" style="color: var(--color-accent-light);"><i
+                            class="fa-solid fa-fish-fins"></i> Marine Breeding & Monsoons Ban</h3>
+                    <p id="lbl-auto-174"
+                        style="color: var(--text-secondary); margin-top: 0.75rem; line-height: 1.6; font-size: 0.9rem;">
+                        Coastal reproduction cycle calendars and local language conservation bans adapted from the
+                        Department of Fisheries monsoon fishing ban guidelines.
+                    </p>
+                    <p style="color: var(--text-secondary); margin-top: 0.5rem; font-size: 0.85rem;"><strong
+                            id="lbl-auto-175">Refresh Rate:</strong> Annual Directive Update</p>
+                    <a id="lbl-auto-176" href="https://dof.gov.in" target="_blank" rel="noopener noreferrer"
+                        class="source-link">Visit Dept of Fisheries India <i
+                            class="fa-solid fa-up-right-from-square"></i></a>
+                </div>
+
+
+
+                <!-- Source Card 7 -->
+                <div class="card-glass source-card">
+                    <h3 class="card-title" style="color: var(--color-accent-light);"><i
+                            class="fa-solid fa-heart-pulse"></i> Cetacean flora & fauna log</h3>
+                    <p id="lbl-auto-177"
+                        style="color: var(--text-secondary); margin-top: 0.75rem; line-height: 1.6; font-size: 0.9rem;">
+                        Citizen-science uploads mapping whale and dolphin sightings to help track marine mammal
+                        distributions, referenced with local cetacean network databases.
+                    </p>
+                    <p style="color: var(--text-secondary); margin-top: 0.5rem; font-size: 0.85rem;"><strong
+                            id="lbl-auto-178">Refresh Rate:</strong> Live (User Contributions)</p>
+                    <a id="lbl-auto-179" href="http://www.marinemammals.in" target="_blank" rel="noopener noreferrer"
+                        class="source-link">Visit MMCN India <i class="fa-solid fa-up-right-from-square"></i></a>
+                </div>
+
+
+
+                <!-- Source Card 8 -->
+                <div class="card-glass source-card">
+                    <h3 class="card-title" style="color: var(--color-accent-light);"><i class="fa-solid fa-feather"></i>
+                        IUCN Red List of Threatened Species</h3>
+
+
+                    <p id="lbl-auto-180"
+                        style="color: var(--text-secondary); margin-top: 0.75rem; line-height: 1.6; font-size: 0.9rem;">
+                        Used to determine the global threat level and extinction status of avian wildlife species
+                        identified via microphone recordings.
+                    </p>
+
+
+                    <p style="color: var(--text-secondary); margin-top: 0.5rem; font-size: 0.85rem;"><strong
+                            id="lbl-auto-181">Refresh Rate:</strong> Permanent static catalog reference</p>
+                    <a id="lbl-auto-182" href="https://www.iucnredlist.org" target="_blank" rel="noopener noreferrer"
+                        class="source-link">Visit IUCN Red List <i class="fa-solid fa-up-right-from-square"></i></a>
+                </div>
+
+
+
+
+                <!-- Source Card 9 -->
+                <div class="card-glass source-card">
+
+
+
+
+                    <h3 class="card-title" style="color: var(--color-accent-light);"><i class="fa-solid fa-rss"></i>
+                        Global RSS Feeds & Outlets</h3>
+                    <p id="lbl-auto-183"
+                        style="color: var(--text-secondary); margin-top: 0.75rem; line-height: 1.6; font-size: 0.9rem;">
+                        Aggregates news on modern farming, bio farming, new fishing ways, oil spills, and climate change
+                        from outlets like The Hindu, DownToEarth, FAO, and NOAA.
+                    </p>
+
+
+
+                    <p style="color: var(--text-secondary); margin-top: 0.5rem; font-size: 0.85rem;"><strong
+                            id="lbl-auto-184">Refresh Rate:</strong> Daily Scraper Update</p>
+                    <a id="lbl-auto-185" href="https://www.fao.org/newsroom/rss/en/" target="_blank"
+                        rel="noopener noreferrer" class="source-link">Visit FAO RSS Feed <i
+                            class="fa-solid fa-up-right-from-square"></i></a>
+                </div>
+
+
+
+                <!-- Source Card 10 -->
+                <div class="card-glass source-card">
+                    <h3 class="card-title" style="color: var(--color-accent-light);"><i
+                            class="fa-solid fa-temperature-high"></i> IMD - India Meteorological Department</h3>
+                    <p id="lbl-auto-186"
+                        style="color: var(--text-secondary); margin-top: 0.75rem; line-height: 1.6; font-size: 0.9rem;">
+                        Real-time monsoonal monitoring, weather warning bulletins, and regional precipitation tracker
+                        across meteorological sub-divisions of India.
+                    </p>
+                    <p style="color: var(--text-secondary); margin-top: 0.5rem; font-size: 0.85rem;"><strong
+                            id="lbl-auto-187">Refresh Rate:</strong> Daily (Proxy Link)</p>
+                    <a id="lbl-auto-188" href="https://mausam.imd.gov.in" target="_blank" rel="noopener noreferrer"
+                        class="source-link">Visit IMD Mausam <i class="fa-solid fa-up-right-from-square"></i></a>
+                </div>
+
+
+
+                <!-- Source Card 11 -->
+                <div class="card-glass source-card">
+                    <h3 class="card-title" style="color: var(--color-accent-light);"><i
+                            class="fa-solid fa-globe-oceania"></i> NOAA Climate Prediction Center</h3>
+                    <p id="lbl-auto-189"
+                        style="color: var(--text-secondary); margin-top: 0.75rem; line-height: 1.6; font-size: 0.9rem;">
+                        Global El Ni├▒o Southern Oscillation (ENSO) diagnostic advisories, sea surface temperature
+                        anomaly datasets, and long-term macroclimate models.
+                    </p>
+                    <p style="color: var(--text-secondary); margin-top: 0.5rem; font-size: 0.85rem;"><strong
+                            id="lbl-auto-190">Refresh Rate:</strong> Weekly (Scraper Sync)</p>
+                    <a id="lbl-auto-191" href="https://www.cpc.ncep.noaa.gov" target="_blank" rel="noopener noreferrer"
+                        class="source-link">Visit NOAA CPC <i class="fa-solid fa-up-right-from-square"></i></a>
+                </div>
+
+
+
+                <!-- Source Card 12 -->
+                <div class="card-glass source-card">
+                    <h3 class="card-title" style="color: var(--color-accent-light);"><i class="fa-solid fa-droplet"></i>
+                        CGWB Central Ground Water Board</h3>
+                    <p id="lbl-auto-192"
+                        style="color: var(--text-secondary); margin-top: 0.75rem; line-height: 1.6; font-size: 0.9rem;">
+                        National groundwater depth statistics, decadal depletion metrics (mbgl), and regional aquifer
+                        monitoring logs across Indian districts.
+                    </p>
+                    <p style="color: var(--text-secondary); margin-top: 0.5rem; font-size: 0.85rem;"><strong
+                            id="lbl-auto-193">Refresh Rate:</strong> Annual / Live Sync proxy</p>
+                    <a id="lbl-auto-194" href="http://cgwb.gov.in" target="_blank" rel="noopener noreferrer"
+                        class="source-link">Visit CGWB India <i class="fa-solid fa-up-right-from-square"></i></a>
+                </div>
+
+
+
+                <!-- Source Card 13 -->
+                <div class="card-glass source-card">
+                    <h3 class="card-title" style="color: var(--color-accent-light);"><i class="fa-solid fa-feather"></i>
+                        Xeno-Canto Avian Acoustics Database</h3>
+                    <p id="lbl-auto-195"
+                        style="color: var(--text-secondary); margin-top: 0.75rem; line-height: 1.6; font-size: 0.9rem;">
+                        Used as the primary open acoustic reference database for matching bird song spectral signatures,
+                        wave centroids, and frequency templates.
+                    </p>
+                    <p style="color: var(--text-secondary); margin-top: 0.5rem; font-size: 0.85rem;"><strong
+                            id="lbl-auto-196">Refresh Rate:</strong> Static Reference Database</p>
+                    <a id="lbl-auto-197" href="https://xeno-canto.org" target="_blank" rel="noopener noreferrer"
+                        class="source-link">Visit Xeno-Canto Database <i
+                            class="fa-solid fa-up-right-from-square"></i></a>
+                </div>
+
+
+
+                <!-- Source Card 14 -->
+                <div class="card-glass source-card">
+                    <h3 class="card-title" style="color: var(--color-accent-light);"><i class="fa-solid fa-gem"></i>
+                        NCSCM & MoEFCC Coral Valuation</h3>
+                    <p id="lbl-auto-198"
+                        style="color: var(--text-secondary); margin-top: 0.75rem; line-height: 1.6; font-size: 0.9rem;">
+                        Provides baseline economic and ecological valuation models for coastal coral reef protection
+                        benefits, shoreline protection, and fish catch replenishment.
+                    </p>
+                    <p style="color: var(--text-secondary); margin-top: 0.5rem; font-size: 0.85rem;"><strong
+                            id="lbl-auto-199">Refresh Rate:</strong> Static Catalog Reference</p>
+                    <a id="lbl-auto-200" href="https://ncscm.res.in" target="_blank" rel="noopener noreferrer"
+                        class="source-link">Visit NCSCM India <i class="fa-solid fa-up-right-from-square"></i></a>
+                </div>
+            </div>
+        </section>
+
+
+    </main>
     <!-- Footer -->
     <footer>
         <div class="footer-content">
             <div>
-                <p>&copy; 2026 GramSetu Data Portal (India). Built for agricultural empowerment and biodiversity tracking.</p>
+                <p id="lbl-auto-201">&copy; 2026 GramSetu Data Portal (India). Built for agricultural empowerment and
+                    biodiversity tracking.</p>
             </div>
             <div class="system-status">
                 <span class="status-dot"></span>
-                <span>All Systems Operational (FastAPI: Connect | SpringBoot: Live)</span>
+                <span id="lbl-auto-202">All Systems Operational (FastAPI: Connect | SpringBoot: Live)</span>
             </div>
         </div>
     </footer>
 
+
+
+    <!-- Floating Accessibility & Translation Widget -->
+    <div class="accessibility-widget"
+        style="position: fixed; bottom: 24px; left: 24px; z-index: 1000; display: flex; flex-direction: column; gap: 8px; font-family: var(--font-body);">
+        <!-- Main accessibility button -->
+        <button class="access-btn" onclick="toggleAccessMenu()"
+            style="width: 56px; height: 56px; border-radius: 50%; background: var(--color-accent); color: white; border: none; box-shadow: 0 4px 15px rgba(0,0,0,0.2); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; transition: transform 0.3s ease;"
+            id="btn-access-main" aria-label="Accessibility Menu">
+            <i class="fa-solid fa-universal-access"></i>
+        </button>
+        <!-- Expanded Accessibility Menu -->
+        <div class="access-menu card-glass" id="access-menu-box"
+            style="display: none; padding: 1.25rem; width: 300px; flex-direction: column; gap: 1rem; border: 1px solid var(--border-glass); border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); background: var(--bg-glass); backdrop-filter: blur(16px);">
+            <h4
+                style="margin: 0; font-family: var(--font-heading); font-size: 1.05rem; display: flex; align-items: center; gap: 0.5rem; color: var(--color-accent);">
+                <i class="fa-solid fa-sliders"></i> Access Assistant
+            </h4>
+
+
+
+            <!-- Language Switcher -->
+            <div style="display: flex; flex-direction: column; gap: 0.4rem;">
+                <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-secondary);"
+                    id="lbl-access-lang">Translate Website Language</label>
+                <select id="access-language-select" onchange="translateUI(this.value)"
+                    style="background: var(--bg-secondary); border: 1px solid var(--border-glass); color: var(--text-primary); padding: 0.5rem; border-radius: 8px; font-size: 0.85rem; width: 100%; outline: none; font-weight: 500;">
+                    <option value="en">English (Default)</option>
+                    <option value="hi">Hindi (हिन्दी)</option>
+                    <option value="mr">Marathi (मराठी)</option>
+                    <option value="ta">Tamil (தமிழ்)</option>
+                    <option value="bn">Bengali (বাংলা)</option>
+                    <option value="ml">Malayalam (മലയാളം)</option>
+                    <option value="te">Telugu (తెలుగు)</option>
+                </select>
+            </div>
+
+
+
+            <!-- Speech Reader Controls -->
+            <div style="display: flex; flex-direction: column; gap: 0.4rem;">
+                <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-secondary);"
+                    id="lbl-access-tts">Screen Speech Reader (TTS)</label>
+                <div style="display: flex; gap: 0.5rem; width: 100%;">
+                    <button class="btn-primary" id="btn-tts-play" onclick="speakActivePage()"
+                        style="flex: 1; padding: 0.5rem; font-size: 0.8rem; display: flex; align-items: center; justify-content: center; gap: 0.4rem;"><i
+                            class="fa-solid fa-play"></i> Read Page</button>
+                    <button class="btn-primary" id="btn-tts-stop" onclick="stopSpeaking()"
+                        style="background: var(--color-danger); flex: 1; padding: 0.5rem; font-size: 0.8rem; display: flex; align-items: center; justify-content: center; gap: 0.4rem;"><i
+                            class="fa-solid fa-stop"></i> Stop</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
     <!-- Leaflet JS Map Engine -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-    
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+
+
     <!-- Custom Web Core Script -->
     <script src="js/app.js"></script>
 </body>
+
 </html>
