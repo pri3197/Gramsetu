@@ -34,10 +34,10 @@ document.addEventListener('DOMContentLoaded', () => {
     loadBirdSightings();
     loadMarketProducts();
     loadGroundwaterData();
-    
+
     // Initialize Visualizer Canvas default state
     clearCanvas();
-    
+
     // Initialize Home Morphing Animation
     initMorphVisualizer();
 });
@@ -45,19 +45,19 @@ document.addEventListener('DOMContentLoaded', () => {
 // 1. Tab Navigation Routing
 function switchTab(tabId) {
     if (activeTab === tabId) return;
-    
+
     // Hide active panel and show target panel
     document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    
+
     const panel = document.getElementById(`panel-${tabId}`);
     if (panel) panel.classList.add('active');
-    
+
     const btn = document.getElementById(`nav-btn-${tabId}`);
     if (btn) btn.classList.add('active');
-    
+
     activeTab = tabId;
-    
+
     // Lazy initialize and resize maps when they become visible
     if (tabId === 'farming') {
         switchFarmingSubView(activeFarmingSubView || 'mandi');
@@ -85,17 +85,17 @@ let mandiPricesMap = null;
 
 function switchFarmingSubView(viewId) {
     activeFarmingSubView = viewId;
-    
+
     // Toggles visibility of farming sub-panels
     document.querySelectorAll('.farming-sub-panel').forEach(p => p.classList.remove('active'));
     document.querySelectorAll('.farming-subnav .subnav-btn').forEach(b => b.classList.remove('active'));
-    
+
     const targetPanel = document.getElementById(`farming-sub-${viewId}`);
     if (targetPanel) targetPanel.classList.add('active');
-    
+
     const targetBtn = document.getElementById(`btn-farm-sub-${viewId}`);
     if (targetBtn) targetBtn.classList.add('active');
-    
+
     // Lazy initialize maps
     if (viewId === 'cattle') {
         initCattleMap();
@@ -117,19 +117,19 @@ async function loadDashboardStats() {
         const resDiseases = await fetch('/api/diseases');
         const resSightings = await fetch('/api/birds/sightings');
         const resPrices = await fetch('/api/prices');
-        
+
         const diseases = await resDiseases.json();
         const sightings = await resSightings.json();
         const prices = await resPrices.json();
-        
+
         // Outbreaks Count
         let totalOutbreaks = 0;
         diseases.forEach(d => totalOutbreaks += d.activeCases);
         document.getElementById('stats-outbreaks-count').innerText = totalOutbreaks;
-        
+
         // Bird Sightings Count
         document.getElementById('stats-bird-sightings').innerText = sightings.length;
-        
+
         // Average Wheat Price Modal
         const wheatPrices = prices.filter(p => p.commodity.toLowerCase().includes('wheat'));
         if (wheatPrices.length > 0) {
@@ -154,10 +154,10 @@ function initCattleMap() {
         setTimeout(() => cattleMap.invalidateSize(), 100);
         return;
     }
-    
+
     // Set up Leaflet Map
     cattleMap = L.map('cattle-heatmap-container').setView(INDIA_CENTER, 5);
-    
+
     // Tile Layer: OpenStreetMap standard layout
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; OpenStreetMap contributors'
@@ -178,13 +178,13 @@ async function loadCattleDiseases() {
 
 function renderCattleMarkers() {
     if (!cattleMap || !diseaseData.length) return;
-    
+
     // Clear old markers (just re-creating is simple for demo)
     // Create circle overlay markers based on disease parameters
     diseaseData.forEach(d => {
         let color = '#3b82f6'; // Medium - Blue
         let radius = 18000;
-        
+
         if (d.severity === 'Critical') {
             color = '#ef4444'; // Red
             radius = 35000;
@@ -192,14 +192,14 @@ function renderCattleMarkers() {
             color = '#fbbf24'; // Orange/Gold
             radius = 26000;
         }
-        
+
         const circle = L.circle([d.latitude, d.longitude], {
             color: color,
             fillColor: color,
             fillOpacity: 0.45,
             radius: radius
         }).addTo(cattleMap);
-        
+
         // Binding a popup message details
         const popupContent = `
             <div style="font-family: var(--font-body); padding: 5px;">
@@ -210,7 +210,7 @@ function renderCattleMarkers() {
             </div>
         `;
         circle.bindPopup(popupContent);
-        
+
         // Hook up mouse clicks to Advisory Box update
         circle.on('click', () => {
             showAdvisory(d);
@@ -222,17 +222,17 @@ function showAdvisory(outbreak) {
     document.getElementById('cattle-advisory-prompt').style.display = 'none';
     const content = document.getElementById('cattle-advisory-content');
     content.style.display = 'block';
-    
+
     document.getElementById('adv-district-title').innerText = `District: ${outbreak.district} (${outbreak.state})`;
-    
+
     const dName = document.getElementById('adv-disease-name');
     dName.className = `status-badge ${outbreak.severity.toLowerCase()}`;
     dName.innerText = outbreak.disease;
-    
+
     document.getElementById('adv-cases-count').innerText = outbreak.activeCases;
     document.getElementById('adv-severity-label').innerText = outbreak.severity;
     document.getElementById('adv-transmission-desc').innerText = outbreak.transmission;
-    
+
     // Display list of vaccines needed
     document.getElementById('adv-vaccines-list').innerText = outbreak.recommendedVaccines;
 }
@@ -300,7 +300,7 @@ async function loadMandiPrices() {
     try {
         const response = await fetch('/api/prices');
         priceData = await response.json();
-        
+
         populateFilterDropdowns();
         renderPricesTable(priceData);
         if (activeTab === 'farming' && activeFarmingSubView === 'mandi') {
@@ -327,29 +327,29 @@ let mandiMarkersList = [];
 
 function renderMandiPriceMarkers() {
     if (!mandiPricesMap) return;
-    
+
     // Clear old markers
     mandiMarkersList.forEach(m => mandiPricesMap.removeLayer(m));
     mandiMarkersList = [];
-    
+
     const stateVal = document.getElementById('filter-state').value;
     const commVal = document.getElementById('filter-commodity').value;
     const searchVal = document.getElementById('search-market').value.toLowerCase();
-    
+
     const filtered = priceData.filter(p => {
         const matchState = stateVal === 'all' || p.state === stateVal;
         const matchComm = commVal === 'all' || p.commodity === commVal;
-        const matchSearch = p.market.toLowerCase().includes(searchVal) || 
-                            p.district.toLowerCase().includes(searchVal);
+        const matchSearch = p.market.toLowerCase().includes(searchVal) ||
+            p.district.toLowerCase().includes(searchVal);
         return matchState && matchComm && matchSearch;
     });
-    
+
     if (filtered.length === 0) return;
-    
+
     // Calculate average modal price of filtered commodities to color-code
     const sum = filtered.reduce((acc, curr) => acc + curr.modalPrice, 0);
     const avgPrice = sum / filtered.length;
-    
+
     filtered.forEach(p => {
         let coords = DISTRICT_COORDINATES[p.district] || DISTRICT_COORDINATES[p.market.replace(" Mandi", "")];
         if (!coords) {
@@ -358,14 +358,14 @@ function renderMandiPriceMarkers() {
             const lngOffset = (Math.random() - 0.5) * 4.5;
             coords = [INDIA_CENTER[0] + latOffset, INDIA_CENTER[1] + lngOffset];
         }
-        
+
         let color = '#fbbf24'; // Orange/Gold (average)
         if (p.modalPrice > avgPrice * 1.05) {
             color = '#ef4444'; // Red (High Price)
         } else if (p.modalPrice < avgPrice * 0.95) {
             color = '#10b981'; // Green (Low Price)
         }
-        
+
         const marker = L.circleMarker(coords, {
             radius: 8,
             fillColor: color,
@@ -374,7 +374,7 @@ function renderMandiPriceMarkers() {
             opacity: 1,
             fillOpacity: 0.8
         }).addTo(mandiPricesMap);
-        
+
         const popupContent = `
             <div style="font-family: var(--font-body); padding: 5px; color: var(--text-primary); line-height: 1.4;">
                 <h4 style="margin-bottom: 5px; color: var(--text-primary);"><i class="fa-solid fa-wheat-awn"></i> ${p.commodity}</h4>
@@ -394,18 +394,18 @@ function renderMandiPriceMarkers() {
 function populateFilterDropdowns() {
     const states = [...new Set(priceData.map(p => p.state))].sort();
     const commodities = [...new Set(priceData.map(p => p.commodity))].sort();
-    
+
     const stateSelect = document.getElementById('filter-state');
     const commSelect = document.getElementById('filter-commodity');
-    
+
     // Clear and keep first 'All' option
     stateSelect.innerHTML = '<option value="all">All States</option>';
     commSelect.innerHTML = '<option value="all">All Grains</option>';
-    
+
     states.forEach(s => {
         stateSelect.innerHTML += `<option value="${s}">${s}</option>`;
     });
-    
+
     commodities.forEach(c => {
         commSelect.innerHTML += `<option value="${c}">${c}</option>`;
     });
@@ -415,15 +415,15 @@ function applyFilters() {
     const stateVal = document.getElementById('filter-state').value;
     const commVal = document.getElementById('filter-commodity').value;
     const searchVal = document.getElementById('search-market').value.toLowerCase();
-    
+
     const filtered = priceData.filter(p => {
         const matchState = stateVal === 'all' || p.state === stateVal;
         const matchComm = commVal === 'all' || p.commodity === commVal;
-        const matchSearch = p.market.toLowerCase().includes(searchVal) || 
-                            p.district.toLowerCase().includes(searchVal);
+        const matchSearch = p.market.toLowerCase().includes(searchVal) ||
+            p.district.toLowerCase().includes(searchVal);
         return matchState && matchComm && matchSearch;
     });
-    
+
     renderPricesTable(filtered);
     renderMandiPriceMarkers();
 }
@@ -431,12 +431,12 @@ function applyFilters() {
 function renderPricesTable(data) {
     const body = document.getElementById('mandi-prices-body');
     body.innerHTML = '';
-    
+
     if (data.length === 0) {
         body.innerHTML = '<tr><td colspan="8" style="text-align: center; color: var(--text-secondary); padding: 2rem;">No matching market rates found. Try adjusting filters.</td></tr>';
         return;
     }
-    
+
     data.forEach(p => {
         const row = `
             <tr>
@@ -459,7 +459,7 @@ function clearCanvas() {
     const canvas = document.getElementById('canvas-visualizer');
     const ctx = canvas.getContext('2d');
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
+
     // Draw flat line representing silence
     ctx.strokeStyle = '#10b981';
     ctx.lineWidth = 2;
@@ -473,13 +473,13 @@ async function toggleRecording() {
     const btn = document.getElementById('btn-record-audio');
     const label = document.getElementById('record-status-label');
     const timer = document.getElementById('record-timer-text');
-    
+
     if (isRecording) {
         // Stop recording early
         stopAudioCapture();
         return;
     }
-    
+
     // Request microphone access
     try {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -487,33 +487,33 @@ async function toggleRecording() {
         btn.classList.add('recording');
         label.innerText = "Listening...";
         timer.innerText = "Analyzing acoustic environment (5s)...";
-        
+
         // Start Web Audio Visualizer
         startVisualizer(stream);
-        
+
         // Start MediaRecorder
         audioChunks = [];
         mediaRecorder = new MediaRecorder(stream);
         mediaRecorder.ondataavailable = event => {
             audioChunks.push(event.data);
         };
-        
+
         mediaRecorder.onstop = async () => {
             // Package audio into a blob
             const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
             stream.getTracks().forEach(track => track.stop());
-            
+
             // Upload to classifier API
             await uploadAudioForClassification(audioBlob);
         };
-        
+
         mediaRecorder.start();
-        
+
         // Automatically stop recording after 5 seconds
         setTimeout(() => {
             if (isRecording) stopAudioCapture();
         }, 5000);
-        
+
     } catch (err) {
         console.error("Microphone access denied or audio device failure: ", err);
         alert("Microphone permission is required to analyze bird sounds. Please grant permission or check your audio hardware settings.");
@@ -525,16 +525,16 @@ async function toggleRecording() {
 
 function stopAudioCapture() {
     if (!isRecording) return;
-    
+
     isRecording = false;
     document.getElementById('btn-record-audio').classList.remove('recording');
     document.getElementById('record-status-label').innerText = "Processing Sound...";
     document.getElementById('record-timer-text').innerText = "Running FFT spectral algorithms...";
-    
+
     if (mediaRecorder && mediaRecorder.state !== 'inactive') {
         mediaRecorder.stop();
     }
-    
+
     if (animationFrameId) {
         cancelAnimationFrame(animationFrameId);
     }
@@ -546,66 +546,66 @@ function startVisualizer(stream) {
     analyserNode = audioContext.createAnalyser();
     analyserNode.fftSize = 256;
     source.connect(analyserNode);
-    
+
     const bufferLength = analyserNode.frequencyBinCount;
     const dataArray = new Uint8Array(bufferLength);
-    
+
     const canvas = document.getElementById('canvas-visualizer');
     const canvasCtx = canvas.getContext('2d');
-    
+
     function draw() {
         if (!isRecording) return;
-        
+
         animationFrameId = requestAnimationFrame(draw);
         analyserNode.getByteTimeDomainData(dataArray);
-        
+
         canvasCtx.fillStyle = 'rgba(11, 15, 25, 0.2)';
         canvasCtx.fillRect(0, 0, canvas.width, canvas.height);
-        
+
         canvasCtx.lineWidth = 2;
         canvasCtx.strokeStyle = '#10b981';
         canvasCtx.beginPath();
-        
+
         const sliceWidth = canvas.width * 1.0 / bufferLength;
         let x = 0;
-        
+
         for (let i = 0; i < bufferLength; i++) {
             const v = dataArray[i] / 128.0;
             const y = v * canvas.height / 2;
-            
+
             if (i === 0) {
                 canvasCtx.moveTo(x, y);
             } else {
                 canvasCtx.lineTo(x, y);
             }
-            
+
             x += sliceWidth;
         }
-        
+
         canvasCtx.lineTo(canvas.width, canvas.height / 2);
         canvasCtx.stroke();
     }
-    
+
     draw();
 }
 
 async function uploadAudioForClassification(audioBlob) {
     const formData = new FormData();
     formData.append('file', audioBlob, 'capture.wav');
-    
+
     try {
         const response = await fetch('/api/birds/classify', {
             method: 'POST',
             body: formData
         });
-        
+
         if (!response.ok) {
             throw new Error(`Server returned code ${response.status}`);
         }
-        
+
         const data = await response.json();
         displayClassificationResult(data);
-        
+
     } catch (e) {
         console.error("Acoustic analysis server endpoint call failed: ", e);
         document.getElementById('record-status-label').innerText = "Analysis Failed";
@@ -616,47 +616,47 @@ async function uploadAudioForClassification(audioBlob) {
 
 function displayClassificationResult(result) {
     currentClassification = result;
-    
+
     // Clear audio lines
     clearCanvas();
-    
+
     const label = document.getElementById('record-status-label');
     const timer = document.getElementById('record-timer-text');
-    
+
     if (result.detected) {
         label.innerText = "Classification Match!";
         timer.innerText = `Identified: ${result.name}`;
-        
+
         const card = document.getElementById('classification-result-card');
         card.classList.add('active');
-        
+
         document.getElementById('bird-result-name').innerText = result.name;
         document.getElementById('bird-result-scientific').innerText = result.scientific_name;
         document.getElementById('bird-result-desc').innerText = result.description;
         document.getElementById('bird-result-confidence').innerText = `Match Confidence: ${(result.confidence * 100).toFixed(0)}%`;
-        
+
         const badge = document.getElementById('bird-result-status');
         badge.innerText = result.status;
         badge.className = `status-badge ${result.endangered ? 'critical' : 'medium'}`;
-        
+
         // Show Log Sighting Button
         document.getElementById('btn-log-sighting').style.display = 'inline-block';
     } else {
         label.innerText = "Ambient Environment / Unknown";
         timer.innerText = "No specific species matched the noise profile.";
-        
+
         const card = document.getElementById('classification-result-card');
         card.classList.add('active');
-        
+
         document.getElementById('bird-result-name').innerText = "Ambient Environment";
         document.getElementById('bird-result-scientific').innerText = "N/A";
         document.getElementById('bird-result-desc').innerText = result.description || "The captured frequency signature contains ambient wind, human voice, or background noise. Try shifting closer to the source.";
         document.getElementById('bird-result-confidence').innerText = "Match Confidence: 0%";
-        
+
         const badge = document.getElementById('bird-result-status');
         badge.innerText = "N/A";
         badge.className = "status-badge medium";
-        
+
         // Hide Sighting Logging
         document.getElementById('btn-log-sighting').style.display = 'none';
     }
@@ -668,9 +668,9 @@ function initBirdsMap() {
         setTimeout(() => birdsMap.invalidateSize(), 100);
         return;
     }
-    
+
     birdsMap = L.map('birds-sighting-map-container').setView(INDIA_CENTER, 5);
-    
+
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; OpenStreetMap contributors'
     }).addTo(birdsMap);
@@ -682,7 +682,7 @@ async function loadBirdSightings() {
     try {
         const response = await fetch('/api/birds/sightings');
         birdSightings = await response.json();
-        
+
         if (activeTab === 'birds') renderBirdMarkers();
         loadBirdStatsTable();
         loadDashboardStats();
@@ -693,12 +693,12 @@ async function loadBirdSightings() {
 
 function renderBirdMarkers() {
     if (!birdsMap) return;
-    
+
     // In a real environment, we'd clear previous markers first.
     // For simplicity, we just rebuild.
     birdSightings.forEach(s => {
         const color = s.isEndangered ? '#ef4444' : '#10b981'; // Red for endangered, Teal/Green for common
-        
+
         const marker = L.circleMarker([s.latitude, s.longitude], {
             radius: 8,
             fillColor: color,
@@ -707,9 +707,9 @@ function renderBirdMarkers() {
             opacity: 1,
             fillOpacity: 0.8
         }).addTo(birdsMap);
-        
+
         const dateObj = new Date(s.timestamp);
-        const dateStr = dateObj.toLocaleDateString('en-IN') + ' ' + dateObj.toLocaleTimeString('en-IN', {hour: '2-digit', minute:'2-digit'});
+        const dateStr = dateObj.toLocaleDateString('en-IN') + ' ' + dateObj.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
 
         const popupContent = `
             <div style="font-family: var(--font-body); padding: 5px;">
@@ -728,15 +728,15 @@ async function loadBirdStatsTable() {
     try {
         const response = await fetch('/api/birds/stats');
         const stats = await response.json();
-        
+
         const body = document.getElementById('bird-stats-table-body');
         body.innerHTML = '';
-        
+
         if (stats.length === 0) {
             body.innerHTML = '<tr><td colspan="4" style="text-align: center; color: var(--text-secondary); padding: 1.5rem;">No sightings mapped yet. Use the acoustic mic to log bird sounds.</td></tr>';
             return;
         }
-        
+
         stats.forEach(item => {
             const statusClass = item.status === 'Critically Endangered' ? 'critical' : 'medium';
             const row = `
@@ -757,7 +757,7 @@ async function loadBirdStatsTable() {
 // Action: Pins the currently recognized bird to the map using geolocation
 function logSightingOnMap() {
     if (!currentClassification) return;
-    
+
     // Request HTML5 location coordinates
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
@@ -804,21 +804,21 @@ async function submitSightingPayload(lat, lng) {
         confidence: currentClassification.confidence,
         isEndangered: currentClassification.endangered
     };
-    
+
     try {
         const response = await fetch('/api/birds/sightings', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
         });
-        
+
         if (response.ok) {
             alert(`Bird Sound Pinned! Successfully mapped: ${payload.name} at coordinates [${payload.latitude}, ${payload.longitude}].`);
-            
+
             // Clear classification result box
             document.getElementById('classification-result-card').classList.remove('active');
             currentClassification = null;
-            
+
             // Reload sightings list and maps
             await loadBirdSightings();
         } else {
@@ -834,18 +834,18 @@ async function triggerManualSync() {
     const btn = document.getElementById('btn-sync-data');
     btn.disabled = true;
     btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Synchronizing...';
-    
+
     try {
         const response = await fetch('/api/sync/trigger', { method: 'POST' });
         const result = await response.json();
-        
+
         if (response.ok) {
             alert("Data Synchronization Successful!\nUpdated agricultural commodity prices and mapped cattle outbreaks.");
             // Reload all local tables/maps
             await loadDashboardStats();
             await loadMandiPrices();
             await loadCattleDiseases();
-            
+
             // Update map widgets if they are active
             if (activeTab === 'cattle' && cattleMap) {
                 cattleMap.eachLayer((layer) => {
@@ -875,15 +875,15 @@ let activePurityCategory = 'milk';
 
 function switchMarketSubView(viewId) {
     if (activeMarketSubView === viewId) return;
-    
+
     document.querySelectorAll('.market-sub-panel').forEach(p => p.classList.remove('active'));
     document.querySelectorAll('.subnav-btn').forEach(b => b.classList.remove('active'));
-    
+
     document.getElementById(`market-sub-${viewId}`).classList.add('active');
     document.getElementById(`btn-sub-${viewId}`).classList.add('active');
-    
+
     activeMarketSubView = viewId;
-    
+
     if (viewId === 'marketplace') {
         loadMarketProducts();
     }
@@ -903,24 +903,24 @@ function updateSellerUI() {
     const userStr = sessionStorage.getItem('gramsetu_seller');
     const authSec = document.getElementById('seller-auth-section');
     const adSec = document.getElementById('seller-advertise-section');
-    
+
     if (userStr) {
         const user = JSON.parse(userStr);
         document.getElementById('seller-login-form').style.display = 'none';
         document.getElementById('seller-register-form').style.display = 'none';
-        
+
         const dashboard = document.getElementById('seller-dashboard-section');
         dashboard.style.display = 'block';
         document.getElementById('seller-welcome-msg').innerText = `Welcome, ${user.name}`;
         document.getElementById('seller-contact-msg').innerText = `Contact / Mandi Location: ${user.contact}`;
-        
+
         document.getElementById('advertise-blocked-msg').style.display = 'none';
         document.getElementById('advertise-form').style.display = 'flex';
     } else {
         document.getElementById('seller-login-form').style.display = 'block';
         document.getElementById('seller-register-form').style.display = 'none';
         document.getElementById('seller-dashboard-section').style.display = 'none';
-        
+
         document.getElementById('advertise-blocked-msg').style.display = 'block';
         document.getElementById('advertise-form').style.display = 'none';
     }
@@ -931,19 +931,19 @@ async function handleSellerRegister() {
     const p = document.getElementById('reg-password').value.trim();
     const n = document.getElementById('reg-name').value.trim();
     const c = document.getElementById('reg-contact').value.trim();
-    
+
     if (!u || !p || !n || !c) {
         alert("Please fill in all registration fields.");
         return;
     }
-    
+
     try {
         const response = await fetch('/api/market/register', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ username: u, password: p, name: n, contact: c, role: 'SELLER' })
         });
-        
+
         if (response.ok) {
             alert("Account registered successfully! Please log in.");
             toggleAuthForm('login');
@@ -962,12 +962,12 @@ async function handleSellerRegister() {
 async function handleSellerLogin() {
     const u = document.getElementById('login-username').value.trim();
     const p = document.getElementById('login-password').value.trim();
-    
+
     if (!u || !p) {
         alert("Please enter both username and password.");
         return;
     }
-    
+
     try {
         const response = await fetch('/api/market/login', {
             method: 'POST',
@@ -1001,19 +1001,19 @@ async function submitBioProduct() {
         return;
     }
     const user = JSON.parse(userStr);
-    
+
     const title = document.getElementById('prod-title').value.trim();
     const cat = document.getElementById('prod-category').value;
     const unit = document.getElementById('prod-unit').value;
     const price = parseFloat(document.getElementById('prod-price').value);
     const qty = parseFloat(document.getElementById('prod-qty').value);
     const desc = document.getElementById('prod-desc').value.trim();
-    
+
     if (!title || isNaN(price) || isNaN(qty) || !desc) {
         alert("Please fill in all fields with valid data.");
         return;
     }
-    
+
     const payload = {
         title: title,
         category: cat,
@@ -1024,14 +1024,14 @@ async function submitBioProduct() {
         sellerName: user.name,
         sellerContact: user.contact
     };
-    
+
     try {
         const response = await fetch('/api/market/products', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
         });
-        
+
         if (response.ok) {
             alert("Bio advertisement posted successfully!");
             // Reset form
@@ -1039,7 +1039,7 @@ async function submitBioProduct() {
             document.getElementById('prod-price').value = '';
             document.getElementById('prod-qty').value = '';
             document.getElementById('prod-desc').value = '';
-            
+
             // Switch back to marketplace and refresh
             switchMarketSubView('marketplace');
         } else {
@@ -1065,15 +1065,15 @@ async function loadMarketProducts() {
 function renderMarketProducts(products) {
     const grid = document.getElementById('market-product-grid');
     grid.innerHTML = '';
-    
+
     if (products.length === 0) {
         grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: var(--text-secondary); padding: 4rem;"><i class="fa-solid fa-store-slash" style="font-size:3rem; margin-bottom:1rem; color:var(--text-secondary);"></i><p>No organic bio products listed yet. Be the first to list one!</p></div>';
         return;
     }
-    
+
     const currentUserStr = sessionStorage.getItem('gramsetu_seller');
     const currentUser = currentUserStr ? JSON.parse(currentUserStr) : null;
-    
+
     products.forEach(p => {
         let catIcon = 'fa-cow';
         let catColor = 'var(--color-accent-light)';
@@ -1087,10 +1087,10 @@ function renderMarketProducts(products) {
             catIcon = 'fa-jar';
             catColor = '#a7f3d0';
         }
-        
+
         // Show delete button if current logged in seller created this listing
         const canDelete = currentUser && currentUser.name === p.sellerName;
-        const deleteButton = canDelete ? 
+        const deleteButton = canDelete ?
             `<button class="btn-primary" style="background:var(--color-danger); padding:0.4rem 0.8rem; font-size:0.8rem; margin-top:0.5rem; color: white;" onclick="deleteBioProduct(${p.id})"><i class="fa-solid fa-trash"></i> Remove</button>` : '';
 
         const card = `
@@ -1123,7 +1123,7 @@ function renderMarketProducts(products) {
 
 async function deleteBioProduct(id) {
     if (!confirm("Are you sure you want to remove this advertisement?")) return;
-    
+
     try {
         const response = await fetch(`/api/market/products/${id}`, {
             method: 'DELETE'
@@ -1143,27 +1143,27 @@ async function deleteBioProduct(id) {
 function filterMarketProducts() {
     const catVal = document.getElementById('market-filter-category').value;
     const searchVal = document.getElementById('market-search').value.toLowerCase();
-    
+
     const filtered = marketProducts.filter(p => {
         const matchCat = catVal === 'all' || p.category === catVal;
-        const matchSearch = p.title.toLowerCase().includes(searchVal) || 
-                            p.description.toLowerCase().includes(searchVal) ||
-                            p.sellerName.toLowerCase().includes(searchVal);
+        const matchSearch = p.title.toLowerCase().includes(searchVal) ||
+            p.description.toLowerCase().includes(searchVal) ||
+            p.sellerName.toLowerCase().includes(searchVal);
         return matchCat && matchSearch;
     });
-    
+
     renderMarketProducts(filtered);
 }
 
 function switchLanguage(lang) {
     if (activeLang === lang) return;
-    
+
     document.querySelectorAll('.lang-text').forEach(t => t.classList.remove('active'));
     document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
-    
+
     document.getElementById(`lang-${lang}`).classList.add('active');
     document.getElementById(`lang-btn-${lang}`).classList.add('active');
-    
+
     activeLang = lang;
 }
 
@@ -1172,7 +1172,7 @@ function switchPurityCategory() {
     document.querySelectorAll('.purity-test-section').forEach(s => s.classList.remove('active'));
     document.getElementById(`purity-test-${cat}`).classList.add('active');
     activePurityCategory = cat;
-    
+
     // Reset output card
     document.getElementById('purity-result-card').classList.remove('active');
     document.getElementById('purity-score-label').innerText = 'Bio Confidence Score: --';
@@ -1182,7 +1182,7 @@ function switchPurityCategory() {
 function calculatePurityScore() {
     const cat = activePurityCategory;
     let checkboxes = [];
-    
+
     if (cat === 'milk') {
         checkboxes = [
             document.getElementById('milk-test-1').checked,
@@ -1201,18 +1201,18 @@ function calculatePurityScore() {
             document.getElementById('grain-test-2').checked
         ];
     }
-    
+
     const checkedCount = checkboxes.filter(Boolean).length;
     const total = checkboxes.length;
     const percent = Math.round((checkedCount / total) * 100);
-    
+
     const resultCard = document.getElementById('purity-result-card');
     const scoreLabel = document.getElementById('purity-score-label');
     const fbText = document.getElementById('purity-feedback-text');
-    
+
     resultCard.classList.add('active');
     scoreLabel.innerText = `Bio Confidence Score: ${percent}%`;
-    
+
     if (percent === 100) {
         resultCard.style.borderColor = 'rgba(16, 185, 129, 0.4)';
         resultCard.style.background = 'rgba(16, 185, 129, 0.08)';
@@ -1238,15 +1238,15 @@ let selectedFile = null;
 
 function switchFisheriesSubView(viewId) {
     if (activeFisheriesSubView === viewId) return;
-    
+
     document.querySelectorAll('.fisheries-sub-panel').forEach(p => p.classList.remove('active'));
     document.querySelectorAll('.fisheries-subnav .subnav-btn').forEach(b => b.classList.remove('active'));
-    
+
     document.getElementById(`fisheries-sub-${viewId}`).classList.add('active');
     document.getElementById(`btn-fish-sub-${viewId}`).classList.add('active');
-    
+
     activeFisheriesSubView = viewId;
-    
+
     if (viewId === 'heatmap') {
         initFisheriesMap();
     } else if (viewId === 'trends') {
@@ -1259,9 +1259,9 @@ function initFisheriesMap() {
         setTimeout(() => fisheriesMap.invalidateSize(), 100);
         return;
     }
-    
+
     fisheriesMap = L.map('fisheries-map-container').setView([15.0, 75.0], 5);
-    
+
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; OpenStreetMap contributors'
     }).addTo(fisheriesMap);
@@ -1278,11 +1278,11 @@ async function loadFisheriesData() {
             fetch('/api/fisheries/schemes').then(r => r.json()),
             fetch('/api/fisheries/sightings').then(r => r.json())
         ]);
-        
+
         fishSchools = resMap;
         breedingBans = resBans;
         historicalTrends = resTrends;
-        
+
         renderFishSchools();
         renderBreedingCalendar('en');
         renderFisheriesSchemes(resSchemes);
@@ -1294,12 +1294,12 @@ async function loadFisheriesData() {
 
 function renderFishSchools() {
     if (!fisheriesMap || !fishSchools.length) return;
-    
+
     fishSchools.forEach(s => {
         let color = '#3b82f6'; // Medium - Blue
         let radius = 25000;
         let badgeClass = 'medium';
-        
+
         if (s.density >= 0.85) {
             color = '#ef4444'; // Red
             radius = 45000;
@@ -1309,14 +1309,14 @@ function renderFishSchools() {
             radius = 35000;
             badgeClass = 'high';
         }
-        
+
         const circle = L.circle([s.latitude, s.longitude], {
             color: color,
             fillColor: color,
             fillOpacity: 0.5,
             radius: radius
         }).addTo(fisheriesMap);
-        
+
         const popup = `
             <div style="font-family: var(--font-body); padding: 5px; color:var(--text-primary);">
                 <h4 style="margin-bottom: 5px; color:var(--text-primary);"><i class="fa-solid fa-fish"></i> ${s.species} School</h4>
@@ -1332,7 +1332,7 @@ function renderFishSchools() {
 function renderBreedingCalendar(lang) {
     const body = document.getElementById('breeding-calendar-body');
     body.innerHTML = '';
-    
+
     breedingBans.forEach(b => {
         const reason = b.reasons[lang] || b.reasons['en'];
         const row = `
@@ -1355,28 +1355,28 @@ function toggleCalendarLanguage() {
 function renderHistoricalChart() {
     const container = document.getElementById('historical-svg-container');
     if (!container || !historicalTrends.length) return;
-    
+
     const width = container.clientWidth;
     const height = container.clientHeight;
-    
+
     const paddingLeft = 50;
     const paddingRight = 20;
     const paddingTop = 20;
     const paddingBottom = 40;
-    
+
     const graphWidth = width - paddingLeft - paddingRight;
     const graphHeight = height - paddingTop - paddingBottom;
-    
+
     const minYear = 2016;
     const maxYear = 2026;
     const minVal = 0;
     const maxVal = 100;
-    
+
     const getX = (year) => paddingLeft + ((year - minYear) / (maxYear - minYear)) * graphWidth;
     const getY = (val) => paddingTop + graphHeight - (val / maxVal) * graphHeight;
-    
+
     let svg = `<svg width="100%" height="100%" viewBox="0 0 ${width} ${height}" style="overflow:visible;">`;
-    
+
     // Gridlines & Y Axis markers
     for (let i = 0; i <= 4; i++) {
         const val = i * 25;
@@ -1384,14 +1384,14 @@ function renderHistoricalChart() {
         svg += `<line x1="${paddingLeft}" y1="${y}" x2="${width - paddingRight}" y2="${y}" stroke="rgba(15,23,42,0.08)" stroke-width="1"/>`;
         svg += `<text x="${paddingLeft - 10}" y="${y + 4}" fill="var(--text-secondary)" font-size="10" text-anchor="end">${val}%</text>`;
     }
-    
+
     // X Axis years
     historicalTrends.forEach(t => {
         const x = getX(t.year);
         svg += `<line x1="${x}" y1="${paddingTop}" x2="${x}" y2="${paddingTop + graphHeight}" stroke="rgba(15,23,42,0.04)" stroke-width="1"/>`;
         svg += `<text x="${x}" y="${paddingTop + graphHeight + 20}" fill="var(--text-secondary)" font-size="10" text-anchor="middle">${t.year}</text>`;
     });
-    
+
     // Drawing paths for each fish type
     const speciesList = [
         { name: 'Sardines', color: '#10b981' },
@@ -1399,7 +1399,7 @@ function renderHistoricalChart() {
         { name: 'Mackerel', color: '#f87171' },
         { name: 'Tuna', color: '#3b82f6' }
     ];
-    
+
     speciesList.forEach(sp => {
         let pathD = '';
         historicalTrends.forEach((t, idx) => {
@@ -1413,7 +1413,7 @@ function renderHistoricalChart() {
         });
         // Render line path
         svg += `<path d="${pathD}" fill="none" stroke="${sp.color}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>`;
-        
+
         // Render node circles
         historicalTrends.forEach(t => {
             const x = getX(t.year);
@@ -1421,7 +1421,7 @@ function renderHistoricalChart() {
             svg += `<circle cx="${x}" cy="${y}" r="4" fill="${sp.color}" stroke="#0b0f19" stroke-width="1.5"/>`;
         });
     });
-    
+
     svg += `</svg>`;
     container.innerHTML = svg;
 }
@@ -1429,7 +1429,7 @@ function renderHistoricalChart() {
 function renderFisheriesSchemes(schemes) {
     const grid = document.getElementById('fisheries-schemes-grid');
     grid.innerHTML = '';
-    
+
     schemes.forEach(s => {
         const isCentral = s.state === 'Central';
         const badgeClass = isCentral ? 'critical' : 'medium';
@@ -1467,25 +1467,25 @@ async function submitMarineSighting() {
     const lat = parseFloat(document.getElementById('sight-latitude').value);
     const lng = parseFloat(document.getElementById('sight-longitude').value);
     const notes = document.getElementById('sight-notes').value.trim();
-    
+
     if (isNaN(lat) || isNaN(lng) || !notes || !selectedFile) {
         alert("Please fill in all coordinates, notes, and select an image file.");
         return;
     }
-    
+
     const formData = new FormData();
     formData.append('file', selectedFile);
     formData.append('species', species);
     formData.append('latitude', lat);
     formData.append('longitude', lng);
     formData.append('notes', notes);
-    
+
     try {
         const response = await fetch('/api/fisheries/sightings', {
             method: 'POST',
             body: formData
         });
-        
+
         if (response.ok) {
             alert("Marine mammal sighting logged successfully!");
             // Reset uploader form
@@ -1497,7 +1497,7 @@ async function submitMarineSighting() {
             document.getElementById('dropzone-text').innerText = 'Click or Drag & Drop photo here';
             document.getElementById('dropzone-icon').className = 'fa-solid fa-images';
             document.getElementById('dropzone-icon').style.color = '';
-            
+
             // Refresh sightings list
             const sightings = await fetch('/api/fisheries/sightings').then(r => r.json());
             renderMarineSightings(sightings);
@@ -1517,16 +1517,16 @@ function renderMarineSightings(sightings) {
         list.innerHTML = '<p style="color:var(--text-secondary); text-align:center; padding: 2rem;">No sightings logged. Be the first to report!</p>';
         return;
     }
-    
+
     sightings.forEach(s => {
         const date = new Date(s.timestamp);
-        const dateStr = date.toLocaleDateString('en-IN') + ' ' + date.toLocaleTimeString('en-IN', {hour: '2-digit', minute:'2-digit'});
-        
+        const dateStr = date.toLocaleDateString('en-IN') + ' ' + date.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+
         let imgTag = '';
         if (s.imageUrl) {
             imgTag = `<img src="${s.imageUrl}" alt="${s.species}" style="width: 100%; height: 180px; object-fit: cover; border-radius: 8px; margin-bottom: 0.75rem; border: 1px solid var(--border-glass);">`;
         }
-        
+
         const item = `
             <div class="card-glass" style="padding: 1rem; background: rgba(255,255,255,0.02); margin-bottom: 0.5rem;">
                 ${imgTag}
@@ -1566,18 +1566,18 @@ async function loadNews() {
 function renderNews() {
     const grid = document.getElementById('news-articles-grid');
     grid.innerHTML = '';
-    
+
     const filtered = newsArticles.filter(a => {
         const matchCat = activeNewsCategory === 'all' || a.category.toLowerCase() === activeNewsCategory.toLowerCase();
         const matchTopic = activeNewsTopic === 'all' || a.topic === activeNewsTopic;
         return matchCat && matchTopic;
     });
-    
+
     if (filtered.length === 0) {
         grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: var(--text-secondary); padding: 4rem;"><i class="fa-solid fa-newspaper" style="font-size:3rem; margin-bottom:1rem; color:var(--text-secondary);"></i><p>No matching news articles found. Try adjusting filters.</p></div>';
         return;
     }
-    
+
     filtered.forEach(a => {
         let tagColor = 'var(--text-secondary)';
         let tagBg = 'rgba(255,255,255,0.05)';
@@ -1597,14 +1597,14 @@ function renderNews() {
             tagColor = '#f97316'; // Solar Orange
             tagBg = 'rgba(249, 115, 22, 0.1)';
         }
-        
+
         let outletBadge = '';
         if (a.outletType === 'Indian') {
             outletBadge = '<span class="status-badge" style="background: rgba(249, 115, 22, 0.1); color: #f97316; border: 1px solid rgba(249, 115, 22, 0.2); font-size: 0.75rem;"><i class="fa-solid fa-flag"></i> Indian</span>';
         } else {
             outletBadge = '<span class="status-badge" style="background: rgba(59, 130, 246, 0.1); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.2); font-size: 0.75rem;"><i class="fa-solid fa-globe"></i> Global</span>';
         }
-        
+
         const card = `
             <div class="card-glass" style="display: flex; flex-direction: column; justify-content: space-between; padding: 1.5rem; transition: var(--transition-smooth); min-height: 250px;">
                 <div>
@@ -1632,11 +1632,11 @@ function renderNews() {
 
 function filterNewsCategory(cat) {
     activeNewsCategory = cat;
-    
+
     document.getElementById('btn-news-cat-all').classList.remove('active');
     document.getElementById('btn-news-cat-agri').classList.remove('active');
     document.getElementById('btn-news-cat-fish').classList.remove('active');
-    
+
     if (cat === 'all') {
         document.getElementById('btn-news-cat-all').classList.add('active');
     } else if (cat === 'agriculture') {
@@ -1644,7 +1644,7 @@ function filterNewsCategory(cat) {
     } else if (cat === 'fishery') {
         document.getElementById('btn-news-cat-fish').classList.add('active');
     }
-    
+
     renderNews();
 }
 
@@ -1657,11 +1657,11 @@ async function triggerManualNewsSync() {
     const btn = document.getElementById('btn-sync-news');
     btn.disabled = true;
     btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Syncing...';
-    
+
     try {
         const response = await fetch('/api/news/sync', { method: 'POST' });
         const result = await response.json();
-        
+
         if (response.ok) {
             alert("News synchronization successful!");
             await loadNews();
@@ -1689,19 +1689,19 @@ function initMorphVisualizer() {
     const imgSea = document.getElementById('morph-img-sea');
     const caption = document.getElementById('morph-caption');
     morphCanvas = document.getElementById('morph-canvas');
-    
+
     if (!imgFarm || !imgSea || !caption || !morphCanvas) return;
-    
+
     // Canvas setup
     morphCtx = morphCanvas.getContext('2d');
     resizeMorphCanvas();
     window.addEventListener('resize', resizeMorphCanvas);
-    
+
     // Autoplay interval (toggles state every 6 seconds)
     if (morphInterval) clearInterval(morphInterval);
     morphInterval = setInterval(() => {
         triggerMorphParticles();
-        
+
         if (currentMorphState === 'farm') {
             // Morph to Sea
             imgFarm.style.opacity = '0';
@@ -1711,9 +1711,9 @@ function initMorphVisualizer() {
             caption.innerHTML = '<i class="fa-solid fa-water"></i> Harvesting the bounty of the sea...';
             caption.style.color = '#0284c7'; // Marine Sky Blue
             currentMorphState = 'sea';
-            
+
             // Dynamic theme transition: update background to sea!
-            document.body.style.backgroundImage = "linear-gradient(rgba(241, 245, 249, 0.92), rgba(241, 245, 249, 0.95)), url('/uploads/sea_fishing_scene.png')";
+            document.body.style.backgroundImage = "linear-gradient(rgba(241, 245, 249, 0.92), rgba(241, 245, 249, 0.95)), url('/uploads/sea_fishing_scene.jpg')";
         } else {
             // Morph to Farm
             imgSea.style.opacity = '0';
@@ -1723,12 +1723,12 @@ function initMorphVisualizer() {
             caption.innerHTML = '<i class="fa-solid fa-wheat-awn"></i> Sowing the seeds of the land...';
             caption.style.color = 'var(--color-accent)'; // Emerald Green
             currentMorphState = 'farm';
-            
+
             // Dynamic theme transition: update background to farm!
             document.body.style.backgroundImage = "linear-gradient(rgba(241, 245, 249, 0.92), rgba(241, 245, 249, 0.95)), url('/uploads/farm_life_scene.png')";
         }
     }, 6000);
-    
+
     animateMorphCanvas();
 }
 
@@ -1741,7 +1741,7 @@ function resizeMorphCanvas() {
 function triggerMorphParticles() {
     const count = 60;
     const colors = currentMorphState === 'farm' ? ['#0284c7', '#38bdf8', '#7dd3fc'] : ['#10b981', '#34d399', '#6ee7b7'];
-    
+
     for (let i = 0; i < count; i++) {
         morphParticles.push({
             x: Math.random() * morphCanvas.width,
@@ -1758,17 +1758,17 @@ function triggerMorphParticles() {
 
 function animateMorphCanvas() {
     if (!morphCanvas || !morphCtx) return;
-    
+
     requestAnimationFrame(animateMorphCanvas);
     morphCtx.clearRect(0, 0, morphCanvas.width, morphCanvas.height);
-    
+
     for (let i = morphParticles.length - 1; i >= 0; i--) {
         const p = morphParticles[i];
         p.x += p.vx;
         p.y += p.vy;
         p.alpha -= 0.01;
         p.life -= 1;
-        
+
         morphCtx.save();
         morphCtx.globalAlpha = p.alpha;
         morphCtx.fillStyle = p.color;
@@ -1776,29 +1776,29 @@ function animateMorphCanvas() {
         morphCtx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
         morphCtx.fill();
         morphCtx.restore();
-        
+
         if (p.life <= 0 || p.alpha <= 0) {
             morphParticles.splice(i, 1);
         }
     }
 }
 
-// 12. Coral Conservation Calculator Logic
-function calculateCoralSavings() {
-    const lenInput = document.getElementById('calc-reef-length');
-    const boatsInput = document.getElementById('calc-boats');
-    if (!lenInput || !boatsInput) return;
-    
-    const len = parseFloat(lenInput.value) || 0;
-    const boats = parseInt(boatsInput.value) || 0;
-    
-    const defenseSavings = len * 2500000;
-    const catchValue = boats * 35000;
+// 12. Mangrove Conservation Calculator Logic
+function calculateMangroveSavings() {
+    const areaInput = document.getElementById('calc-mangrove-area');
+    const familiesInput = document.getElementById('calc-families');
+    if (!areaInput || !familiesInput) return;
+
+    const area = parseFloat(areaInput.value) || 0;
+    const families = parseInt(familiesInput.value) || 0;
+
+    const defenseSavings = area * 180000;
+    const catchValue = families * 25000;
     const totalBenefit = defenseSavings + catchValue;
-    
-    document.getElementById('coral-savings-defense').innerText = `₹ ${defenseSavings.toLocaleString('en-IN')}`;
-    document.getElementById('coral-savings-yield').innerText = `₹ ${catchValue.toLocaleString('en-IN')}`;
-    document.getElementById('coral-savings-total').innerText = `₹ ${totalBenefit.toLocaleString('en-IN')}`;
+
+    document.getElementById('mangrove-savings-defense').innerText = `₹ ${defenseSavings.toLocaleString('en-IN')}`;
+    document.getElementById('mangrove-savings-yield').innerText = `₹ ${catchValue.toLocaleString('en-IN')}`;
+    document.getElementById('mangrove-savings-total').innerText = `₹ ${totalBenefit.toLocaleString('en-IN')}`;
 }
 
 // 13. Weather & Climate Updates Loader
@@ -1806,10 +1806,10 @@ async function loadWeather() {
     try {
         const resForecast = await fetch('/api/weather/forecast');
         const resTrends = await fetch('/api/weather/climate-trends');
-        
+
         const forecasts = await resForecast.json();
         const trends = await resTrends.json();
-        
+
         renderWeatherForecasts(forecasts);
         renderClimateTrendsChart(trends);
     } catch (e) {
@@ -1821,12 +1821,12 @@ function renderWeatherForecasts(forecasts) {
     const grid = document.getElementById('weather-forecast-grid');
     if (!grid) return;
     grid.innerHTML = '';
-    
+
     if (!forecasts || forecasts.length === 0) {
         grid.innerHTML = '<div class="card-glass" style="text-align: center; padding: 2rem; grid-column: span 2;"><p style="color: var(--text-secondary);">No forecast data available.</p></div>';
         return;
     }
-    
+
     forecasts.forEach(f => {
         const card = `
             <div class="card-glass" style="padding: 1.5rem; display: flex; flex-direction: column; justify-content: space-between;">
@@ -1849,47 +1849,47 @@ function renderWeatherForecasts(forecasts) {
 function renderClimateTrendsChart(trends) {
     const container = document.getElementById('climate-svg-container');
     if (!container || !trends || trends.length === 0) return;
-    
+
     const width = container.clientWidth;
     const height = container.clientHeight;
-    
+
     const paddingLeft = 50;
     const paddingRight = 50;
     const paddingTop = 20;
     const paddingBottom = 40;
-    
+
     const graphWidth = width - paddingLeft - paddingRight;
     const graphHeight = height - paddingTop - paddingBottom;
-    
+
     const years = trends.map(t => t.year);
     const minYear = Math.min(...years);
     const maxYear = Math.max(...years);
-    
+
     const minTemp = 0;
     const maxTemp = 1.5;
-    
+
     const minRain = -25;
     const maxRain = 15;
-    
+
     const getX = (year) => paddingLeft + ((year - minYear) / (maxYear - minYear)) * graphWidth;
     const getYTemp = (val) => paddingTop + graphHeight - ((val - minTemp) / (maxTemp - minTemp)) * graphHeight;
     const getYRain = (val) => paddingTop + graphHeight - ((val - minRain) / (maxRain - minRain)) * graphHeight;
-    
+
     let svg = `<svg width="100%" height="100%" viewBox="0 0 ${width} ${height}" style="overflow:visible;">`;
-    
+
     // Gridlines
     for (let i = 0; i <= 4; i++) {
         const ratio = i / 4;
         const y = paddingTop + ratio * graphHeight;
         svg += `<line x1="${paddingLeft}" y1="${y}" x2="${width - paddingRight}" y2="${y}" stroke="rgba(15,23,42,0.08)" stroke-width="1"/>`;
-        
+
         const tempVal = (maxTemp - (ratio * (maxTemp - minTemp))).toFixed(2);
         svg += `<text x="${paddingLeft - 10}" y="${y + 4}" fill="var(--text-secondary)" font-size="10" text-anchor="end">${tempVal}°C</text>`;
-        
+
         const rainVal = Math.round(maxRain - (ratio * (maxRain - minRain)));
         svg += `<text x="${width - paddingRight + 10}" y="${y + 4}" fill="var(--text-secondary)" font-size="10" text-anchor="start">${rainVal}%</text>`;
     }
-    
+
     const labelYears = [2000, 2005, 2010, 2015, 2020, 2023, 2026];
     labelYears.forEach(year => {
         if (year >= minYear && year <= maxYear) {
@@ -1898,15 +1898,15 @@ function renderClimateTrendsChart(trends) {
             svg += `<text x="${x}" y="${paddingTop + graphHeight + 20}" fill="var(--text-secondary)" font-size="10" text-anchor="middle">${year}</text>`;
         }
     });
-    
+
     let pathTemp = '';
     let pathRain = '';
-    
+
     trends.forEach((t, idx) => {
         const x = getX(t.year);
         const yTemp = getYTemp(t.temp_anomaly);
         const yRain = getYRain(t.rainfall_deviation);
-        
+
         if (idx === 0) {
             pathTemp += `M ${x} ${yTemp}`;
             pathRain += `M ${x} ${yRain}`;
@@ -1915,19 +1915,19 @@ function renderClimateTrendsChart(trends) {
             pathRain += ` L ${x} ${yRain}`;
         }
     });
-    
+
     svg += `<path d="${pathTemp}" fill="none" stroke="#ef4444" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>`;
     svg += `<path d="${pathRain}" fill="none" stroke="#3b82f6" stroke-width="3" stroke-dasharray="4,4" stroke-linecap="round" stroke-linejoin="round"/>`;
-    
+
     trends.forEach(t => {
         const x = getX(t.year);
         const yTemp = getYTemp(t.temp_anomaly);
         const yRain = getYRain(t.rainfall_deviation);
-        
+
         svg += `<circle cx="${x}" cy="${yTemp}" r="4" fill="#ef4444" stroke="#ffffff" stroke-width="1.5"/>`;
         svg += `<circle cx="${x}" cy="${yRain}" r="4" fill="#3b82f6" stroke="#ffffff" stroke-width="1.5"/>`;
     });
-    
+
     svg += `</svg>`;
     container.innerHTML = svg;
 }
@@ -1953,23 +1953,23 @@ function stopSpeaking() {
 
 function speakActivePage() {
     stopSpeaking();
-    
+
     const activePanel = document.getElementById(`panel-${activeTab}`);
     if (!activePanel) return;
-    
+
     const elements = activePanel.querySelectorAll('h2, h3, h4, p, li, td');
     let textToSpeak = '';
-    
+
     elements.forEach(el => {
         let parent = el;
         let isVisible = true;
         while (parent && parent !== activePanel) {
             const computedStyle = window.getComputedStyle(parent);
-            if (computedStyle.display === 'none' || 
+            if (computedStyle.display === 'none' ||
                 computedStyle.visibility === 'hidden' ||
-                parent.style.display === 'none' || 
+                parent.style.display === 'none' ||
                 (parent.classList.contains('farming-sub-panel') && !parent.classList.contains('active')) ||
-                (parent.classList.contains('market-sub-panel') && !parent.classList.contains('active')) || 
+                (parent.classList.contains('market-sub-panel') && !parent.classList.contains('active')) ||
                 (parent.classList.contains('fisheries-sub-panel') && !parent.classList.contains('active'))) {
                 isVisible = false;
                 break;
@@ -1980,23 +1980,23 @@ function speakActivePage() {
             textToSpeak += el.innerText.trim() + '. ';
         }
     });
-    
+
     if (!textToSpeak) {
         textToSpeak = "Nothing to read on this page.";
     }
-    
+
     currentUtterance = new SpeechSynthesisUtterance(textToSpeak);
-    
+
     const selectEl = document.getElementById('header-language-select') || document.getElementById('access-language-select');
     const langCode = selectEl ? selectEl.value : 'en';
     const langMap = {
-        'en': 'en-IN', 'hi': 'hi-IN', 'mr': 'mr-IN', 
+        'en': 'en-IN', 'hi': 'hi-IN', 'mr': 'mr-IN',
         'ta': 'ta-IN', 'ml': 'ml-IN', 'bn': 'bn-IN', 'te': 'te-IN'
     };
     currentUtterance.lang = langMap[langCode] || 'en-IN';
     currentUtterance.rate = 1.0;
     currentUtterance.pitch = 1.0;
-    
+
     window.speechSynthesis.speak(currentUtterance);
 }
 
@@ -2392,13 +2392,13 @@ const TRANSLATIONS = {
 function translateUI(lang) {
     activeLang = lang;
     if (!TRANSLATIONS[lang]) return;
-    
+
     // Sync dropdown select values
     const hSelect = document.getElementById('header-language-select');
     if (hSelect) hSelect.value = lang;
     const aSelect = document.getElementById('access-language-select');
     if (aSelect) aSelect.value = lang;
-    
+
     const dict = TRANSLATIONS[lang];
     Object.keys(dict).forEach(id => {
         const el = document.getElementById(id);
@@ -2406,7 +2406,7 @@ function translateUI(lang) {
             el.innerHTML = dict[id];
         }
     });
-    
+
     // Also re-render chart to update language specific labels
     if (activeTab === 'weather') {
         renderGroundwaterChart();
@@ -2422,11 +2422,11 @@ async function loadGroundwaterData() {
         console.warn("Could not fetch groundwater data from API. Loading mock fallback dataset.", e);
         loadMockGroundwater();
     }
-    
+
     if (!groundwaterData || groundwaterData.length === 0) {
         loadMockGroundwater();
     }
-    
+
     // Draw default chart (National Average)
     renderGroundwaterChart();
 }
@@ -2442,7 +2442,7 @@ function loadMockGroundwater() {
         { state: "Maharashtra", district: "Pune", lat: 18.5204, lng: 73.8567, baseDepth: 14.0, baseSewage: 55.0, rate: 0.5 },
         { state: "Karnataka", district: "Mysore", lat: 12.2958, lng: 76.6394, baseDepth: 12.0, baseSewage: 30.0, rate: 0.4 }
     ];
-    
+
     groundwaterData = [];
     configs.forEach(c => {
         for (let year = 2016; year <= 2026; year++) {
@@ -2469,13 +2469,13 @@ function initGroundwaterMap() {
         setTimeout(() => groundwaterMap.invalidateSize(), 100);
         return;
     }
-    
+
     groundwaterMap = L.map('groundwater-map').setView(INDIA_CENTER, 5);
-    
+
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; OpenStreetMap contributors'
     }).addTo(groundwaterMap);
-    
+
     renderGroundwaterMarkers();
 }
 
@@ -2484,15 +2484,15 @@ let sewageMarkersList = [];
 
 function renderGroundwaterMarkers() {
     if (!groundwaterMap) return;
-    
+
     // Clear existing markers
     groundwaterMarkersList.forEach(m => groundwaterMap.removeLayer(m));
     sewageMarkersList.forEach(m => groundwaterMap.removeLayer(m));
     groundwaterMarkersList = [];
     sewageMarkersList = [];
-    
+
     const yearData = groundwaterData.filter(d => d.year === activeGroundwaterYear);
-    
+
     yearData.forEach(d => {
         // Aquifer color code: Green <15m, Orange 15-30m, Red >30m
         let color = '#10b981'; // Green
@@ -2501,17 +2501,17 @@ function renderGroundwaterMarkers() {
         } else if (d.waterTableDepth >= 15) {
             color = '#fbbf24'; // Orange
         }
-        
+
         // Radius increases with depletion depth
         const radius = 12000 + (d.waterTableDepth * 2000);
-        
+
         const aquiferMarker = L.circle([d.latitude, d.longitude], {
             color: color,
             fillColor: color,
             fillOpacity: 0.5,
             radius: radius
         }).addTo(groundwaterMap);
-        
+
         const popupContent = `
             <div style="font-family: var(--font-body); padding: 5px;">
                 <h4 style="margin-bottom: 2px; color:var(--text-primary);">${d.district} (${d.state})</h4>
@@ -2523,13 +2523,13 @@ function renderGroundwaterMarkers() {
             </div>
         `;
         aquiferMarker.bindPopup(popupContent);
-        
+
         aquiferMarker.on('click', () => {
             selectDistrictForChart(d.district);
         });
-        
+
         groundwaterMarkersList.push(aquiferMarker);
-        
+
         // Sewage overlay if toggled on
         if (isSewageOverlayVisible) {
             // Draw overlap dashed circle in purple/magenta
@@ -2542,7 +2542,7 @@ function renderGroundwaterMarkers() {
                 dashArray: '5, 5',
                 radius: sewageRadius
             }).addTo(groundwaterMap);
-            
+
             sewageMarker.bindPopup(popupContent);
             sewageMarker.on('click', () => {
                 selectDistrictForChart(d.district);
@@ -2573,11 +2573,11 @@ function renderGroundwaterChart() {
     const container = document.getElementById('groundwater-svg-container');
     const titleEl = document.getElementById('lbl-gw-chart-district');
     if (!container) return;
-    
+
     // Determine dataset for chart (specific district or national average)
     let points = [];
     const years = [2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026];
-    
+
     const localLabels = {
         'en': { natAvg: "National Average (All Districts)", dist: "District: " },
         'hi': { natAvg: "राष्ट्रीय औसत (सभी जिले)", dist: "जिला: " },
@@ -2588,12 +2588,12 @@ function renderGroundwaterChart() {
         'bn': { natAvg: "জাতীয় গড় (সমস্ত জেলা)", dist: "জেলা: " },
         'gu': { natAvg: "રાષ્ટ્રીય સરેરાશ (તમામ જિલ્લાઓ)", dist: "જિલ્લો: " }
     };
-    
+
     const labels = localLabels[activeLang] || localLabels['en'];
-    
+
     if (selectedGroundwaterDistrict) {
         if (titleEl) titleEl.innerText = `${labels.dist}${selectedGroundwaterDistrict}`;
-        
+
         const districtData = groundwaterData.filter(d => d.district === selectedGroundwaterDistrict);
         years.forEach(y => {
             const rec = districtData.find(d => d.year === y);
@@ -2603,7 +2603,7 @@ function renderGroundwaterChart() {
         });
     } else {
         if (titleEl) titleEl.innerText = labels.natAvg;
-        
+
         years.forEach(y => {
             const yearRecs = groundwaterData.filter(d => d.year === y);
             if (yearRecs.length > 0) {
@@ -2614,47 +2614,47 @@ function renderGroundwaterChart() {
             }
         });
     }
-    
+
     const width = container.clientWidth || 400;
     const height = container.clientHeight || 300;
-    
+
     const paddingLeft = 50;
     const paddingRight = 30;
     const paddingTop = 20;
     const paddingBottom = 40;
-    
+
     const graphWidth = width - paddingLeft - paddingRight;
     const graphHeight = height - paddingTop - paddingBottom;
-    
+
     const minYear = 2016;
     const maxYear = 2026;
-    
+
     // We want the chart to display from 0 to 50 mbgl
     const minDepth = 0;
     const maxDepth = 50;
-    
+
     const getX = (year) => paddingLeft + ((year - minYear) / (maxYear - minYear)) * graphWidth;
     const getY = (val) => paddingTop + ((val - minDepth) / (maxDepth - minDepth)) * graphHeight;
-    
+
     let svg = `<svg width="100%" height="100%" viewBox="0 0 ${width} ${height}" style="overflow:visible;">`;
-    
+
     // Gridlines and Y-axis labels
     for (let i = 0; i <= 5; i++) {
         const ratio = i / 5;
         const val = minDepth + ratio * (maxDepth - minDepth);
         const y = getY(val);
-        
+
         svg += `<line x1="${paddingLeft}" y1="${y}" x2="${width - paddingRight}" y2="${y}" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>`;
         svg += `<text x="${paddingLeft - 10}" y="${y + 4}" fill="var(--text-secondary)" font-size="10" text-anchor="end">${val.toFixed(0)}m</text>`;
     }
-    
+
     // X-axis labels
     years.forEach(year => {
         const x = getX(year);
         svg += `<line x1="${x}" y1="${paddingTop}" x2="${x}" y2="${paddingTop + graphHeight}" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>`;
         svg += `<text x="${x}" y="${paddingTop + graphHeight + 20}" fill="var(--text-secondary)" font-size="10" text-anchor="middle">${year}</text>`;
     });
-    
+
     // Draw the trend line
     let pathD = '';
     points.forEach((p, idx) => {
@@ -2666,24 +2666,24 @@ function renderGroundwaterChart() {
             pathD += ` L ${x} ${y}`;
         }
     });
-    
+
     svg += `<path d="${pathD}" fill="none" stroke="#10b981" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>`;
-    
+
     // Draw data points
     points.forEach(p => {
         const x = getX(p.year);
         const y = getY(p.depth);
-        
+
         const isCurrent = p.year === activeGroundwaterYear;
         const radius = isCurrent ? 7 : 4;
         const color = isCurrent ? '#ef4444' : '#10b981';
         const strokeColor = isCurrent ? '#ffffff' : '#ffffff';
-        
+
         svg += `<circle cx="${x}" cy="${y}" r="${radius}" fill="${color}" stroke="${strokeColor}" stroke-width="1.5" style="cursor:pointer;" onclick="updateGroundwaterYear(${p.year})">
             <title>Year ${p.year}: ${p.depth.toFixed(1)} mbgl</title>
         </circle>`;
     });
-    
+
     svg += `</svg>`;
     container.innerHTML = svg;
 }

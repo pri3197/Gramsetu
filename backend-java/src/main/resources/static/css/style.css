@@ -941,5 +941,215 @@ textarea:focus {
     transition: opacity 0.3s ease, transform 0.3s ease;
 }
 
+/* ==========================================
+   MOBILE RESPONSIVENESS AND PORTRAIT LAYOUTS
+   ========================================== */
+
+@media (max-width: 768px) {
+    /* 1. Header & Navigation */
+    .nav-container {
+        display: grid !important;
+        grid-template-columns: 1fr auto !important;
+        grid-template-rows: auto auto !important;
+        gap: 0.75rem !important;
+        padding: 0.85rem 1rem !important;
+    }
+
+    .logo-section {
+        grid-column: 1 !important;
+        grid-row: 1 !important;
+        justify-content: flex-start !important;
+        width: auto !important;
+    }
+
+    .header-actions {
+        grid-column: 2 !important;
+        grid-row: 1 !important;
+        justify-content: flex-end !important;
+        align-self: center !important;
+        width: auto !important;
+    }
+
+    .nav-tabs {
+        grid-column: 1 / span 2 !important;
+        grid-row: 2 !important;
+        display: flex !important;
+        flex-wrap: wrap !important;
+        justify-content: center !important;
+        gap: 0.35rem !important;
+        width: 100% !important;
+        overflow: visible !important;
+        white-space: normal !important;
+        padding-bottom: 0 !important;
+    }
+
+    .tab-btn {
+        flex: 1 1 auto !important;
+        min-width: 90px !important;
+        max-width: 100% !important;
+        padding: 0.5rem 0.5rem !important;
+        font-size: 0.82rem !important;
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 0.35rem !important;
+        border-radius: 8px !important;
+        text-align: center !important;
+        line-height: 1.15 !important;
+    }
+
+    .tab-btn i {
+        font-size: 0.95rem !important;
+    }
+
+    /* 2. Main Container Sizing */
+    main {
+        padding: 1rem !important;
+        width: 100% !important;
+        overflow-x: hidden !important;
+    }
+
+    /* 3. Hero Section */
+    .hero-section {
+        width: 100% !important;
+        left: 0 !important;
+        margin-left: 0 !important;
+        margin-top: 0 !important;
+        min-height: auto !important;
+        height: auto !important;
+        padding: 2.5rem 1.25rem !important;
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        text-align: left !important;
+        margin-bottom: 1.5rem !important;
+    }
+
+    .hero-content {
+        max-width: 100% !important;
+        margin-bottom: 75px !important; /* Prevent overlap with the morphing caption bar */
+    }
+
+    .hero-title {
+        font-size: 1.85rem !important;
+        margin-bottom: 0.75rem !important;
+    }
+
+    .hero-desc {
+        font-size: 0.95rem !important;
+        margin-bottom: 1.5rem !important;
+    }
+
+    /* 4. Sub-Navigation Tabs (Farming, Bio-Market, News Filter) */
+    .farming-subnav, .market-subnav, .news-filters-bar {
+        display: flex !important;
+        overflow-x: auto !important;
+        white-space: nowrap !important;
+        padding-bottom: 0.5rem !important;
+        width: 100% !important;
+        gap: 0.5rem !important;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .farming-subnav::-webkit-scrollbar, 
+    .market-subnav::-webkit-scrollbar,
+    .news-filters-bar::-webkit-scrollbar {
+        display: none;
+    }
+
+    .subnav-btn {
+        flex: 0 0 auto !important;
+    }
+
+    /* 5. Map Layouts Stacking (Critical fix for fixed height inline styles) */
+    .map-layout {
+        grid-template-columns: 1fr !important;
+        height: auto !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 1.25rem !important;
+    }
+
+    .map-pane, #fisheries-map-container, #cattle-heatmap-container {
+        height: 350px !important;
+        min-height: 350px !important;
+        width: 100% !important;
+        display: block !important;
+    }
+
+    .map-sidebar {
+        height: auto !important;
+        max-height: none !important;
+        width: 100% !important;
+    }
+
+    .map-sidebar .card-glass {
+        height: auto !important;
+        flex: none !important;
+    }
+
+    /* 6. Audio Acoustic Grid */
+    .audio-grid {
+        grid-template-columns: 1fr !important;
+        gap: 1.25rem !important;
+    }
+
+    .recorder-box {
+        padding: 1.5rem !important;
+        min-height: auto !important;
+    }
+
+    .mic-btn-container {
+        width: 90px !important;
+        height: 90px !important;
+    }
+
+    .mic-btn {
+        font-size: 2.2rem !important;
+    }
+
+    /* 7. Grid Layouts Adjustments */
+    .grid-cols-3, .grid-cols-2, .source-grid {
+        grid-template-columns: 1fr !important;
+        gap: 1.25rem !important;
+    }
+
+    /* 8. Filter Bar Adjustments */
+    .filter-bar {
+        padding: 0.75rem 1rem !important;
+        gap: 0.85rem !important;
+    }
+
+    .filter-group {
+        min-width: 100% !important;
+    }
+
+    /* 9. Footer Content */
+    .footer-content {
+        flex-direction: column !important;
+        gap: 1rem !important;
+        text-align: center !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .logo-text h1 {
+        font-size: 1.25rem !important;
+    }
+
+    .logo-tagline {
+        font-size: 0.65rem !important;
+    }
+
+    .card-glass {
+        padding: 1.25rem !important;
+    }
+
+    .table-container th, .table-container td {
+        padding: 0.75rem 0.85rem !important;
+        font-size: 0.85rem !important;
+    }
+}
+
 
 

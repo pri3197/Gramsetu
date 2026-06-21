@@ -1,9 +1,9 @@
-const CACHE_NAME = 'gramsetu-cache-v1';
+const CACHE_NAME = 'gramsetu-cache-v4';
 const urlsToCache = [
   '/',
   '/index.html',
-  '/css/style.css',
-  '/js/app.js',
+  '/css/style.css?v=1.0.2',
+  '/js/app.js?v=1.0.1',
   '/manifest.json',
   '/icon-192x192.png',
   '/icon-512x512.png',
