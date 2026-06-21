@@ -5,6 +5,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.Column;
 
 @Entity
 @Table(name = "feedback")
@@ -17,6 +18,7 @@ public class Feedback {
     private String category; // recommendation, review, complaint, idea
     private String senderHandle;
     private Integer rating; // 1 to 5
+    @Column(length = 1000)
     private String content;
     private String timestamp;
 
