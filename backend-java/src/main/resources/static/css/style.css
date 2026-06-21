@@ -1151,5 +1151,56 @@ textarea:focus {
     }
 }
 
+/* Mangrove Simulation & IMD Warning UI Classes */
+.warning-item-card {
+    background: rgba(251, 191, 36, 0.05);
+    border: 1px solid rgba(251, 191, 36, 0.2);
+    border-radius: 8px;
+    padding: 0.75rem;
+    transition: all 0.2s ease-in-out;
+}
+.warning-item-card:hover {
+    background: rgba(251, 191, 36, 0.08);
+    border-color: rgba(251, 191, 36, 0.35);
+    transform: translateY(-2px);
+}
+.warning-badge-urgent {
+    background: rgba(239, 68, 68, 0.15);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    font-size: 0.7rem;
+    padding: 0.15rem 0.35rem;
+    border-radius: 4px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+.warning-pdf-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.35rem 0.65rem;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid var(--border-glass);
+    border-radius: 6px;
+    font-size: 0.75rem;
+    color: var(--text-primary);
+    font-weight: 600;
+    transition: all 0.15s ease-in-out;
+    text-decoration: none !important;
+}
+.warning-pdf-btn:hover {
+    background: rgba(251, 191, 36, 0.15);
+    border-color: rgba(251, 191, 36, 0.3);
+    color: #fbbf24;
+}
+.warning-zone-title {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.35rem;
+    line-height: 1.3;
+}
+
+
 
 

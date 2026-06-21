@@ -13,9 +13,11 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 @RestController
@@ -23,6 +25,11 @@ import org.springframework.web.multipart.MultipartFile;
 public class FisheriesController {
 
     private static final Logger log = LoggerFactory.getLogger(FisheriesController.class);
+
+    @Value("${gramsetu.python.service.url}")
+    private String pythonServiceUrl;
+
+    private final RestTemplate restTemplate = new RestTemplate();
 
     @Autowired
     private MarineSightingRepository sightingRepository;
@@ -215,5 +222,35 @@ public class FisheriesController {
         
         MarineSighting saved = sightingRepository.save(sighting);
         return ResponseEntity.ok(saved);
+    }
+
+    @GetMapping("/imd-warnings")
+    public ResponseEntity<?> getImdWarnings() {
+        log.info("Fetching live fishermen warnings from Python service: {}/fisheries/imd-warnings", pythonServiceUrl);
+        try {
+            String url = pythonServiceUrl + "/fisheries/imd-warnings";
+            Map<String, Object> response = restTemplate.getForObject(url, Map.class);
+            if (response != null && response.containsKey("data")) {
+                return ResponseEntity.ok(response.get("data"));
+            }
+        } catch (Exception e) {
+            log.error("Could not fetch IMD warnings from Python service: {}", e.getMessage());
+        }
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(Map.of("error", "IMD service unreachable"));
+    }
+
+    @GetMapping("/mangroves/historical")
+    public ResponseEntity<?> getHistoricalMangroves() {
+        log.info("Fetching FSI historical mangrove cover from Python service: {}/fisheries/mangroves/historical", pythonServiceUrl);
+        try {
+            String url = pythonServiceUrl + "/fisheries/mangroves/historical";
+            Map<String, Object> response = restTemplate.getForObject(url, Map.class);
+            if (response != null && response.containsKey("data")) {
+                return ResponseEntity.ok(response.get("data"));
+            }
+        } catch (Exception e) {
+            log.error("Could not fetch historical mangrove data from Python service: {}", e.getMessage());
+        }
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(Map.of("error", "Mangrove service unreachable"));
     }
 }

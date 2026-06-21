@@ -148,7 +148,32 @@ def get_groundwater_data():
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to fetch groundwater data: {str(e)}")
 
+@app.get("/fisheries/imd-warnings")
+def get_imd_warnings():
+    """
+    Scrapes and returns the latest live fishermen weather warnings from IMD.
+    """
+    fetcher = DataFetcher()
+    try:
+        warnings = fetcher.fetch_imd_fisherman_warnings()
+        return {"count": len(warnings), "data": warnings}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to fetch IMD warnings: {str(e)}")
+
+@app.get("/fisheries/mangroves/historical")
+def get_historical_mangroves():
+    """
+    Returns state-wise historical FSI Mangrove Cover data (2005-2023).
+    """
+    fetcher = DataFetcher()
+    try:
+        data = fetcher.fetch_historical_mangroves()
+        return {"count": len(data), "data": data}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to fetch historical mangrove data: {str(e)}")
+
 if __name__ == "__main__":
     import uvicorn
     # Local development server on port 8000
     uvicorn.run(app, host="127.0.0.1", port=8000)
+

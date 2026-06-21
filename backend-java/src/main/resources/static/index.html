@@ -14,7 +14,7 @@
     <meta name="theme-color" content="#1e293b">
 
     <!-- CSS Dependencies -->
-    <link rel="stylesheet" href="css/style.css?v=1.0.2">
+    <link rel="stylesheet" href="css/style.css?v=1.0.3">
 
 
     <!-- Leaflet Map CSS -->
@@ -1296,75 +1296,80 @@
                 <!-- Sub-panel: Mangrove Protection & Savings Calculator -->
                 <div id="fisheries-sub-corals" class="fisheries-sub-panel">
                     <div class="grid-cols-2">
-                        <!-- Mangrove information panel -->
-                        <div class="card-glass">
-                            <h3 class="card-title" id="lbl-coral-title"><i class="fa-solid fa-shield-heart"></i> Mangrove Forest Protection Guide</h3>
-                            <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1rem;"
-                                id="lbl-coral-intro">
-                                Mangrove forests are vital coastal ecosystems. They serve as primary nurseries for many commercial fish, shrimp, and crab species, trap sediment to prevent erosion, and capture up to 10x more carbon than tropical rainforests (blue carbon).
-                            </p>
-                            <h4 style="color: var(--color-accent); margin-top: 1rem; margin-bottom: 0.5rem;"
-                                id="lbl-coral-why-title">Why are Mangroves Important?</h4>
-                            <ul style="color: var(--text-secondary); margin-left: 1.5rem; line-height: 1.6; font-size: 0.9rem; margin-bottom: 1rem;"
-                                id="lbl-coral-why-list">
-                                <li id="lbl-auto-136">Mangrove roots provide shelter and nutrients, increasing local fish and crab biomass.</li>
-                                <li id="lbl-auto-137">Mangrove forests absorb up to 66% of wave energy, protecting coastal villages from storms and tsunamis.</li>
-                                <li id="lbl-auto-138">They prevent shoreline erosion by trapping mud and soil sediment.</li>
-                            </ul>
-                            <h4 style="color: var(--color-danger); margin-top: 1rem; margin-bottom: 0.5rem;"
-                                id="lbl-coral-how-title">How to Protect Them?</h4>
-                            <ul style="color: var(--text-secondary); margin-left: 1.5rem; line-height: 1.6; font-size: 0.9rem;"
-                                id="lbl-coral-how-list">
-                                <li id="lbl-auto-139">Stop deforestation: Ban clearing of mangrove areas for commercial shrimp farming or urban development.</li>
-                                <li id="lbl-auto-140">Prevent pollution: Avoid discharging untreated chemical waste and plastics into estuaries.</li>
-                                <li id="lbl-auto-141">Support restoration: Replant native mangrove saplings in degraded coastal mudflats.</li>
-                            </ul>
-                        </div>
-
-                        <!-- Mangrove Savings Calculator -->
-                        <div class="card-glass"
-                            style="display: flex; flex-direction: column; justify-content: space-between;">
+                        <!-- Mangrove Canopy Cover Simulation Panel -->
+                        <div class="card-glass" style="display: flex; flex-direction: column; justify-content: space-between;">
                             <div>
-                                <h3 class="card-title" id="lbl-calc-title"><i class="fa-solid fa-calculator"></i>
-                                    Mangrove Shield & Coastal Savings Calculator</h3>
-                                <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 1.5rem;"
-                                    id="lbl-calc-desc">
-                                    Calculate how much money a coastal community saves in seawall maintenance and gains in fishing profits by actively preserving local mangrove forests.
+                                <h3 class="card-title" id="lbl-simulation-title"><i class="fa-solid fa-earth-asia"></i> Mangrove Canopy Simulation</h3>
+                                <p style="color: var(--text-secondary); font-size: 0.88rem; margin-bottom: 1.25rem;" id="lbl-simulation-desc">
+                                    Observe temporal changes in India's mangrove cover mapped from FSI and ISRO Bhuvan satellite data. Select/drag the timeline or click mapped states to query regional assessments.
                                 </p>
 
-                                <div style="display: flex; flex-direction: column; gap: 1rem;">
-                                    <div class="filter-group" style="min-width: 100%;">
-                                        <label for="calc-mangrove-area" id="lbl-calc-reef-len">Protected Mangrove Forest Area (in hectares)</label>
-                                        <input type="number" id="calc-mangrove-area" min="1" max="1000" value="50"
-                                            oninput="calculateMangroveSavings()">
+                                <!-- Time-Series Year Slider -->
+                                <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-glass); padding: 1rem; border-radius: 12px; margin-bottom: 1.25rem;">
+                                    <label for="mangrove-year-slider" style="display:flex; justify-content:space-between; font-weight:600; color:var(--text-primary); margin-bottom:0.5rem; font-size: 0.9rem;">
+                                        <span id="lbl-slider-year">FSI Assessment Year:</span>
+                                        <span id="mangrove-slider-val" style="color: var(--color-accent-light); font-size: 1.1rem; font-weight:700;">2023</span>
+                                    </label>
+                                    <input type="range" id="mangrove-year-slider" min="2005" max="2023" step="1" value="2023"
+                                        style="width: 100%; accent-color: var(--color-accent-light); cursor: pointer;"
+                                        oninput="updateMangroveYear(this.value)">
+                                    <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.25rem; font-weight:500;">
+                                        <span>2005</span>
+                                        <span>2009</span>
+                                        <span>2011</span>
+                                        <span>2013</span>
+                                        <span>2015</span>
+                                        <span>2017</span>
+                                        <span>2019</span>
+                                        <span>2021</span>
+                                        <span>2023</span>
                                     </div>
-                                    <div class="filter-group" style="min-width: 100%;">
-                                        <label for="calc-families" id="lbl-calc-boats">Number of Local Fishing Families</label>
-                                        <input type="number" id="calc-families" min="1" max="500" value="40"
-                                            oninput="calculateMangroveSavings()">
+                                </div>
+
+                                <!-- Selected State/National Canopy Cover Statistics -->
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1.25rem;" id="mangrove-stats-container">
+                                    <div class="result-card active" style="padding: 0.6rem 0.75rem; background: rgba(255,255,255,0.02); text-align: center; border: 1px solid var(--border-glass);">
+                                        <span style="font-size: 0.72rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 600;" id="lbl-selected-region">Selected Zone</span>
+                                        <div style="font-size: 1.05rem; font-weight: 700; color: var(--text-primary); margin-top: 0.2rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" id="mangrove-selected-state">All India</div>
+                                    </div>
+                                    <div class="result-card active" style="padding: 0.6rem 0.75rem; background: rgba(5, 150, 105, 0.05); text-align: center; border: 1px solid rgba(5, 150, 105, 0.2);">
+                                        <span style="font-size: 0.72rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 600;" id="lbl-canopy-cover-label">Canopy Cover</span>
+                                        <div style="font-size: 1.15rem; font-weight: 800; color: var(--color-accent-light); margin-top: 0.2rem;" id="mangrove-canopy-val">4,992.0 km²</div>
                                     </div>
                                 </div>
                             </div>
 
-                            <div class="result-card active"
-                                style="margin-top: 1.5rem; background: rgba(5, 150, 105, 0.05); border: 1px solid rgba(5, 150, 105, 0.2);"
-                                id="coral-calc-result-box">
-                                <h4 style="font-family: var(--font-heading); font-size: 1.1rem; margin-bottom: 0.5rem; color: var(--color-accent);"
-                                    id="lbl-calc-results-title">Estimated Annual Mangrove Economic Benefit</h4>
-                                <div style="display: flex; flex-direction: column; gap: 0.5rem; font-size: 0.9rem;">
-                                    <p><strong id="lbl-calc-defense">Storm Surge & Erosion Defense Savings:</strong> <span
-                                            style="color:var(--text-primary); font-weight:600;"
-                                            id="mangrove-savings-defense">₹ 90,00,000</span></p>
-                                    <p><strong id="lbl-calc-yield">Increased Fish/Crab Catch Value:</strong> <span
-                                            style="color:var(--text-primary); font-weight:600;"
-                                            id="mangrove-savings-yield">₹ 10,00,000</span></p>
-                                    <hr style="border-color: var(--border-glass); margin: 0.25rem 0;">
-                                    <p style="font-size: 1.05rem; font-weight: 700;"><span id="lbl-calc-total">Total
-                                            Economic Benefit:</span> <span style="color:var(--color-accent-light);"
-                                            id="mangrove-savings-total">₹ 1,00,00,000</span></p>
+                            <!-- Dynamic Satellite Imagery Comparison Card -->
+                            <div class="card-glass" style="padding: 0.75rem; border: 1px solid var(--border-glass); background: rgba(15, 23, 42, 0.2); margin-top: auto;">
+                                <h4 style="font-size: 0.8rem; font-weight:700; color:var(--text-primary); margin-bottom:0.5rem; display:flex; justify-content:space-between; align-items:center;" id="lbl-satellite-img-title">
+                                    <span><i class="fa-solid fa-satellite"></i> Mapped Estuary (Canopy View)</span>
+                                    <span id="mangrove-satellite-year" style="font-size:0.7rem; padding: 0.15rem 0.4rem; border-radius:6px; background:var(--color-accent); color:#fff; font-weight:700;">2026 Restored</span>
+                                </h4>
+                                <div style="width: 100%; height: 130px; overflow: hidden; border-radius: 8px; position: relative; border: 1px solid rgba(255,255,255,0.05);">
+                                    <img id="mangrove-satellite-img" src="/uploads/mangrove_2026.png" alt="Mangrove Canopy View" style="width: 100%; height: 100%; object-fit: cover; transition: opacity 0.4s ease-in-out;">
                                 </div>
-                                <p style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.75rem;"
-                                    id="lbl-calc-note">*Calculations are based on average seawall maintenance and erosion defense costs saved per hectare (approx ₹1.8L/ha/yr) and catch replenishment values of ₹25,000 per family/yr.</p>
+                                <p style="font-size: 0.7rem; color:var(--text-secondary); margin-top:0.4rem; text-align:center; margin-bottom: 0;" id="lbl-satellite-img-caption">
+                                    Canopy indicator: Lush dark green represents fully-restored dense cover.
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Live IMD Fisherman Warning Bulletin Panel -->
+                        <div class="card-glass" style="display: flex; flex-direction: column; justify-content: space-between;">
+                            <div>
+                                <h3 class="card-title" id="lbl-imd-warnings-title" style="color: #fbbf24;"><i class="fa-solid fa-triangle-exclamation"></i> Live IMD Fishermen Alerts</h3>
+                                <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 1rem;" id="lbl-imd-warnings-desc">
+                                    Real-time sea state and storm warnings published dynamically by the India Meteorological Department (IMD) for safety at sea.
+                                </p>
+                                <div id="imd-warnings-list" style="display: flex; flex-direction: column; gap: 0.65rem; max-height: 340px; overflow-y: auto; padding-right: 5px;">
+                                    <div style="text-align: center; color: var(--text-secondary); padding: 3rem 0;">
+                                        <i class="fa-solid fa-spinner fa-spin" style="font-size: 1.5rem; margin-bottom: 0.5rem; color: #fbbf24;"></i>
+                                        <p style="font-size:0.85rem;">Connecting to IMD live server...</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="margin-top: 1rem; padding-top: 0.75rem; border-top: 1px solid var(--border-glass); font-size: 0.7rem; color: var(--text-secondary); display: flex; align-items: center; gap: 0.35rem;">
+                                <i class="fa-solid fa-circle-info"></i> <span id="lbl-imd-advisory-source">Source: IMD Meteorological Bulletins updated dynamically.</span>
                             </div>
                         </div>
                     </div>
@@ -1991,6 +1996,30 @@
                     <a id="lbl-auto-200" href="https://fsi.nic.in" target="_blank" rel="noopener noreferrer"
                         class="source-link">Visit FSI India <i class="fa-solid fa-up-right-from-square"></i></a>
                 </div>
+
+                <!-- Source Card 15 -->
+                <div class="card-glass source-card">
+                    <h3 class="card-title" style="color: var(--color-accent-light);"><i class="fa-solid fa-satellite"></i>
+                        ISRO Bhuvan Coastal Zone Monitoring</h3>
+                    <p style="color: var(--text-secondary); margin-top: 0.75rem; line-height: 1.6; font-size: 0.9rem;">
+                        Provides high-resolution multi-temporal satellite imagery mapping coastal zone variations, canopy density, and reforestation drive impacts over the years.
+                    </p>
+                    <p style="color: var(--text-secondary); margin-top: 0.5rem; font-size: 0.85rem;"><strong>Refresh Rate:</strong> Near Real-Time (Satellite Pass)</p>
+                    <a href="https://bhuvan.nrsc.gov.in" target="_blank" rel="noopener noreferrer"
+                        class="source-link">Visit ISRO Bhuvan <i class="fa-solid fa-up-right-from-square"></i></a>
+                </div>
+
+                <!-- Source Card 16 -->
+                <div class="card-glass source-card">
+                    <h3 class="card-title" style="color: var(--color-accent-light);"><i class="fa-solid fa-triangle-exclamation"></i>
+                        IMD Live Marine Warning Bulletin</h3>
+                    <p style="color: var(--text-secondary); margin-top: 0.75rem; line-height: 1.6; font-size: 0.9rem;">
+                        Scrapes the live Fishermen Warning Bulletins issued by ACWCs/CWCs for coastal hazard monitoring and safety alerts.
+                    </p>
+                    <p style="color: var(--text-secondary); margin-top: 0.5rem; font-size: 0.85rem;"><strong>Refresh Rate:</strong> Dynamic (Hourly Checks)</p>
+                    <a href="https://mausam.imd.gov.in/imd_latest/contents/index_fisherman.php" target="_blank" rel="noopener noreferrer"
+                        class="source-link">Visit IMD Mausam <i class="fa-solid fa-up-right-from-square"></i></a>
+                </div>
             </div>
         </section>
 
@@ -2074,7 +2103,7 @@
 
 
     <!-- Custom Web Core Script -->
-    <script src="js/app.js?v=1.0.1"></script>
+    <script src="js/app.js?v=1.0.2"></script>
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
