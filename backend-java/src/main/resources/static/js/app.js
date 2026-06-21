@@ -74,6 +74,10 @@ function switchTab(tabId) {
     } else if (tabId === 'birds') {
         initBirdsMap();
         if (birdsMap) setTimeout(() => birdsMap.invalidateSize(), 100);
+    } else if (tabId === 'mesh') {
+        initMeshTab();
+    } else if (tabId === 'feedback') {
+        initFeedbackTab();
     } else if (tabId === 'dashboard') {
         loadDashboardStats();
     }
@@ -2037,9 +2041,34 @@ const TRANSLATIONS = {
         'lbl-groundwater-title': '<i class="fa-solid fa-droplet"></i> Groundwater Depletion & Sewage Contamination Visualizer (2016 - 2026)',
         'lbl-groundwater-subtitle': 'Monitor water table drawdown (mbgl) and track the overlap of urban sewage mixing in agricultural aquifers.',
         'lbl-gw-year-label': 'Select Forecast/Historical Year:',
-        'lbl-sewage-toggle-label': 'Show Sewage Contamination Overlay',
         'lbl-gw-map-title': 'Interactive Ground Water Aquifers Map',
-        'lbl-groundwater-chart-title': 'Water Table Level Trend (Depth in mbgl)'
+        'lbl-groundwater-chart-title': 'Water Table Level Trend (Depth in mbgl)',
+        'nav-btn-mesh': '<i class="fa-solid fa-circle-nodes"></i> Offline Mesh',
+        'lbl-mesh-title': '<i class="fa-solid fa-circle-nodes"></i> Offline Mesh Network',
+        'lbl-mesh-desc': 'Exchange alerts and short messages directly with nearby users via Bluetooth mesh technology. Operating entirely offline without cellular network coverage.',
+        'lbl-mesh-send-title': '<i class="fa-solid fa-paper-plane"></i> Broadcast Message',
+        'lbl-mesh-send-desc': 'Compose a short notification to broadcast over the local Bluetooth mesh network.',
+        'lbl-mesh-sender-label': 'Your Sender ID / Handle',
+        'lbl-mesh-urgency-label': 'Alert Urgency Level',
+        'lbl-mesh-message-label': 'Broadcast Text (Max 140 Characters)',
+        'lbl-mesh-broadcast-btn': '<i class="fa-solid fa-rss"></i> Broadcast Offline (Bluetooth)',
+        'lbl-mesh-stream-title': '<i class="fa-solid fa-list-check"></i> Live Mesh Feed',
+        'lbl-mesh-radar-title': 'Bluetooth Transceiver Active',
+        'lbl-mesh-empty-text': 'No active mesh transmissions detected yet.',
+        'lbl-mesh-bridge-status': 'Native Bridge Connection Status:',
+        'nav-btn-feedback': '<i class="fa-solid fa-comments"></i> Feedback Hub',
+        'lbl-feedback-title': '<i class="fa-solid fa-comments"></i> Feedback & Suggestions Hub',
+        'lbl-feedback-desc': 'Help us improve GramSetu. Submit your recommendations, product reviews, complaints, or new ideas directly to our platform.',
+        'lbl-feedback-form-title': '<i class="fa-solid fa-pen-to-square"></i> Share Your Thoughts',
+        'lbl-feedback-form-desc': 'Select a category, rate your experience, and write your suggestions below.',
+        'lbl-feedback-category-label': 'Feedback Category',
+        'lbl-feedback-rating-label': 'Rating',
+        'lbl-feedback-text-label': 'Message / Details',
+        'btn-submit-feedback': '<i class="fa-solid fa-paper-plane"></i> Submit Feedback',
+        'lbl-feedback-avg-rating': 'Average Rating',
+        'lbl-feedback-total-posts': 'Total Submissions',
+        'lbl-feedback-board-title': '<i class="fa-solid fa-users"></i> Community Suggestions Board',
+        'lbl-feedback-empty-board': 'No feedback or suggestions submitted yet.'
     },
     'hi': {
         'nav-btn-dashboard': '<i class="fa-solid fa-chart-line"></i> डैशबोर्ड',
@@ -2092,9 +2121,34 @@ const TRANSLATIONS = {
         'lbl-groundwater-title': '<i class="fa-solid fa-droplet"></i> भूजल रिक्तीकरण और सीवेज संदूषण विज़ुअलाइज़र (2016 - 2026)',
         'lbl-groundwater-subtitle': 'जल स्तर में कमी (mbgl) की निगरानी करें और कृषि जलभृतों में शहरी सीवेज मिश्रण के ओवरलैप को ट्रैक करें।',
         'lbl-gw-year-label': 'पूर्वानुमान/ऐतिहासिक वर्ष चुनें:',
-        'lbl-sewage-toggle-label': 'सीवेज संदूषण ओवरले दिखाएं',
         'lbl-gw-map-title': 'इंटरैक्टिव भूजल जलभृत मानचित्र',
-        'lbl-groundwater-chart-title': 'जल स्तर का रुझान (mbgl में गहराई)'
+        'lbl-groundwater-chart-title': 'जल स्तर का रुझान (mbgl में गहराई)',
+        'nav-btn-mesh': '<i class="fa-solid fa-circle-nodes"></i> ऑफलाइन मेश',
+        'lbl-mesh-title': '<i class="fa-solid fa-circle-nodes"></i> ऑफलाइन मेश नेटवर्क',
+        'lbl-mesh-desc': 'ब्लूटूथ मेश तकनीक के माध्यम से आस-पास के उपयोगकर्ताओं के साथ सीधे अलर्ट और संक्षिप्त संदेशों का आदान-प्रदान करें। बिना सेलुलर नेटवर्क कवरेज के पूरी तरह से ऑफलाइन काम करता है।',
+        'lbl-mesh-send-title': '<i class="fa-solid fa-paper-plane"></i> संदेश प्रसारित करें',
+        'lbl-mesh-send-desc': 'स्थानीय ब्लूटूथ मेश नेटवर्क पर प्रसारित करने के लिए एक संक्षिप्त अधिसूचना लिखें।',
+        'lbl-mesh-sender-label': 'आपकी प्रेषक आईडी / हैंडल',
+        'lbl-mesh-urgency-label': 'अलर्ट तात्कालिकता स्तर',
+        'lbl-mesh-message-label': 'प्रसारण पाठ (अधिकतम 140 वर्ण)',
+        'lbl-mesh-broadcast-btn': '<i class="fa-solid fa-rss"></i> ऑफलाइन प्रसारण (ब्लूटूथ)',
+        'lbl-mesh-stream-title': '<i class="fa-solid fa-list-check"></i> लाइव मेश फीड',
+        'lbl-mesh-radar-title': 'ब्लूटूथ ट्रांसीवर सक्रिय',
+        'lbl-mesh-empty-text': 'अभी तक कोई सक्रिय मेश प्रसारण नहीं मिला है।',
+        'lbl-mesh-bridge-status': 'देशी ब्रिज कनेक्शन स्थिति:',
+        'nav-btn-feedback': '<i class="fa-solid fa-comments"></i> \u092B\u0940\u0921\u092C\u0948\u0915 \u0939\u092C',
+        'lbl-feedback-title': '<i class="fa-solid fa-comments"></i> \u092B\u0940\u0921\u092C\u0948\u0915 \u0914\u0930 \u0938\u0941\u091D\u093E\u0935 \u0939\u092C',
+        'lbl-feedback-desc': '\u0917\u094D\u0930\u093E\u092E\u0938\u0947\u0924\u0941 \u0915\u094B \u092C\u0947\u0939\u0924\u0930 \u092C\u0928\u093E\u0928\u0947 \u092E\u0947\u0902 \u0939\u092E\u093E\u0930\u0940 \u092E\u0926\u0926 \u0915\u0930\u0947\u0902\u0964 \u0905\u092A\u0928\u0940 \u0938\u093F\u092B\u093E\u0930\u093F\u0936\u0947\u0902, \u0938\u092E\u0940\u0915\u094D\u0937\u093E\u090F\u0902, \u0936\u093F\u0915\u093E\u092F\u0924\u0947\u0902 \u092F\u093E \u0928\u090F \u0935\u093F\u091A\u093E\u0930 \u0938\u0940\u0927\u0947 \u0939\u092E\u093E\u0930\u0947 \u092A\u094D\u0932\u0947\u091F\u092B\u0949\u0930\u094D\u092E \u092A\u0930 \u092D\u0947\u091C\u0947\u0902\u0964',
+        'lbl-feedback-form-title': '<i class="fa-solid fa-pen-to-square"></i> \u0905\u092a\u0928\u0947 \u0935\u093f\u091a\u093e\u0930 \u0938\u093e\u091d\u093e \u0915\u0930\u0947\u0902',
+        'lbl-feedback-form-desc': '\u090f\u0915 \u0936\u094d\u0930\u094d\u0923\u0940 \u091a\u0941\u0928\u0947\u0902, \u0905\u092a\u0928\u0947 \u0905\u0928\u0941\u092d\u0935 \u0915\u094b \u0930\u0947\u091f \u0915\u0930\u0947\u0902 \u0914\u0930 \u0928\u0940\u091a\u0947 \u0905\u092a\u0928\u0947 \u0938\u0941\u091d\u093e\u0935 \u0932\u093f\u0916\u0947\u0902\u0964',
+        'lbl-feedback-category-label': '\u092b\u0940\u0921\u092c\u0948\u0915 \u0936\u094d\u0930\u094d\u0923\u0940',
+        'lbl-feedback-rating-label': '\u0930\u0947\u091f\u093f\u0902\u0917',
+        'lbl-feedback-text-label': '\u0938\u0902\u0926\u0947\u0936 / \u0935\u093f\u0935\u0930\u0923',
+        'btn-submit-feedback': '<i class="fa-solid fa-paper-plane"></i> \u092b\u0940\u0921\u092c\u0948\u0915 \u0938\u092c\u092e\u093f\u091f \u0915\u0930\u0947\u0902',
+        'lbl-feedback-avg-rating': '\u0914\u0938\u0924 \u0930\u0947\u091f\u093f\u0902\u0917',
+        'lbl-feedback-total-posts': '\u0915\u0941\u0932 \u0938\u092c\u092e\u093f\u0936\u0928',
+        'lbl-feedback-board-title': '<i class="fa-solid fa-users"></i> \u0938\u092e\u0941\u0926\u093e\u092f \u0938\u0941\u091d\u093e\u0935 \u092c\u094b\u0930\u094d\u0921',
+        'lbl-feedback-empty-board': '\u0905\u092d\u0940 \u0924\u0915 \u0915\u094b\u0908 \u092b\u0940\u0921\u092c\u0948\u0915 \u092f\u093e \u0938\u0941\u091d\u093e\u0935 \u0938\u092c\u092e\u093f\u091f \u0928\u0929\u0940\u0902 \u0915\u093f\u092f\u093e \u0917\u092f\u093e \u0939\u0948\u0964'
     },
     'mr': {
         'nav-btn-dashboard': '<i class="fa-solid fa-chart-line"></i> डॅशबोर्ड',
@@ -2147,9 +2201,34 @@ const TRANSLATIONS = {
         'lbl-groundwater-title': '<i class="fa-solid fa-droplet"></i> भूजल पातळी घट आणि सांडपाणी दूषण विझ्युअलायझर (2016 - 2026)',
         'lbl-groundwater-subtitle': 'भूजल पातळीतील घट (mbgl) नियंत्रित करा आणि कृषी जलस्रोतांमध्ये शहरी सांडपाणी मिश्रणाचा मागोवा घ्या.',
         'lbl-gw-year-label': 'पूर्वानुमान/ऐतिहासिक वर्ष निवडा:',
-        'lbl-sewage-toggle-label': 'सांडपाणी दूषण आच्छादन दाखवा',
         'lbl-gw-map-title': 'परस्परसंवादी भूजल जलस्रोत नकाशा',
-        'lbl-groundwater-chart-title': 'भूजल पातळीचा कल (mbgl मध्ये खोली)'
+        'lbl-groundwater-chart-title': 'भूजल पातळीचा कल (mbgl मध्ये खोली)',
+        'nav-btn-mesh': '<i class="fa-solid fa-circle-nodes"></i> ऑफलाइन मेश',
+        'lbl-mesh-title': '<i class="fa-solid fa-circle-nodes"></i> ऑफलाइन मेश नेटवर्क',
+        'lbl-mesh-desc': 'ब्लूटूथ मेश तंत्रज्ञानाद्वारे जवळच्या वापरकर्त्यांशी थेट अलर्ट आणि लहान संदेशांची देवाणघेवाण करा। सेल्युलर नेटवर्क कव्हरेजशिवाय पूर्णपणे ऑफलाइन कार्य करते।',
+        'lbl-mesh-send-title': '<i class="fa-solid fa-paper-plane"></i> संदेश प्रसारित करा',
+        'lbl-mesh-send-desc': 'स्थानिक ब्लूटूथ मेश नेटवर्कवर प्रसारित करण्यासाठी एक लहान सूचना तयार करा।',
+        'lbl-mesh-sender-label': 'तुमचा प्रेषक आयडी / नाव',
+        'lbl-mesh-urgency-label': 'अलर्टची निकड पातळी',
+        'lbl-mesh-message-label': 'प्रसारण मजकूर (जास्तीत जास्त १४० अक्षरे)',
+        'lbl-mesh-broadcast-btn': '<i class="fa-solid fa-rss"></i> ऑफलाइन प्रसारण (ब्लूटूथ)',
+        'lbl-mesh-stream-title': '<i class="fa-solid fa-list-check"></i> थेट मेश फीड',
+        'lbl-mesh-radar-title': 'ब्लूटूथ ट्रान्ससीव्हर सक्रिय',
+        'lbl-mesh-empty-text': 'अद्याप कोणतेही मेश प्रसारण आढळलेले नाही।',
+        'lbl-mesh-bridge-status': 'नेटिव्ह ब्रिज कनेक्शन स्थिती:',
+        'nav-btn-feedback': '<i class="fa-solid fa-comments"></i> \u0905\u092D\u093F\u092A\u094D\u0930\u093E\u092F \u0939\u092C',
+        'lbl-feedback-title': '<i class="fa-solid fa-comments"></i> \u0905\u092D\u093F\u092A\u094D\u0930\u093E\u092F \u0906\u0923\u093F \u0938\u0942\u091A\u0928\u093E \u0939\u092C',
+        'lbl-feedback-desc': '\u0917\u094D\u0930\u093E\u092E\u0938\u0947\u0924\u0942 \u0938\u0941\u0927\u093E\u0930\u0923\u094D\u092F\u093E\u0938 \u0906\u092E\u094D\u0939\u093E\u0932\u093E \u092E\u0926\u0924 \u0915\u0930\u093E. \u0924\u0941\u092E\u091A\u094D\u092F\u093E \u0936\u093F\u092B\u093E\u0930\u0938\u0940, \u092a\u0941\u0928\u0930\u093e\u0935\u0932\u094b\u0915\u0928\u0947, \u0924\u0915\u094d\u0930\u093e\u0930\u0940 \u0915\u093f\u0902\u0935\u093e \u0928\u0935\u0940\u0928 \u0915\u0932\u094d\u092a\u0928\u093e \u0925\u0947\u091f \u0906\u092e\u091a\u094d\u092f\u093e \u092a\u094d\u0932\u0945\u091f\u092b\u0949\u0930\u094D\u092e\u0935\u0930 \u0938\u092c\u092e\u093f\u091f \u0915\u0930\u093e.',
+        'lbl-feedback-form-title': '<i class="fa-solid fa-pen-to-square"></i> \u0924\u0941\u092e\u091a\u0947 \u0935\u093f\u091a\u093e\u0930 \u0936\u0947\u0905\u0930 \u0915\u0930\u093e',
+        'lbl-feedback-form-desc': '\u090f\u0915 \u0936\u094d\u0930\u0947\u0923\u0940 \u0928\u093f\u0935\u0921\u093e, \u0924\u0941\u092e\u091a\u094d\u092f\u093e \u0905\u0928\u0941\u092b\u0935\u093e\u0932\u093e \u0930\u0947\u091f \u0915\u0930\u093e \u0906\u0923\u093f \u0916\u093e\u0932\u0940 \u0924\u0941\u092e\u091a\u094d\u092f\u093e \u0938\u0942\u091a\u0928\u093e \u0932\u093f\u0939\u093e.',
+        'lbl-feedback-category-label': '\u0905\u092d\u093f\u092a\u094d\u0930\u093e\u092f \u0936\u094d\u0930\u0947\u0923\u0940',
+        'lbl-feedback-rating-label': '\u0930\u0947\u091f\u093f\u0902\u0917',
+        'lbl-feedback-text-label': '\u0938\u0902\u0926\u0947\u0936 / \u0924\u092a\u0936\u0940\u0932',
+        'btn-submit-feedback': '<i class="fa-solid fa-paper-plane"></i> \u0905\u092d\u093f\u092a\u094d\u0930\u093e\u092f \u0938\u092c\u092e\u093f\u091f \u0915\u0930\u093e',
+        'lbl-feedback-avg-rating': '\u0938\u0930\u093e\u0938\u0930\u0940 \u0930\u0947\u091f\u093f\u0902\u0917',
+        'lbl-feedback-total-posts': '\u090f\u0915\u0942\u0923 \u0938\u092c\u092e\u093f\u0936\u0928',
+        'lbl-feedback-board-title': '<i class="fa-solid fa-users"></i> \u0938\u092e\u0941\u0926\u093e\u092f \u0938\u0942\u091a\u0928\u093e \u092c\u094b\u0930\u094d\u0921',
+        'lbl-feedback-empty-board': '\u0905\u0926\u094d\u092f\u093e\u092a \u0915\u094b\u0923\u0924\u093e\u0939\u0940 \u0905\u092d\u093f\u092a\u094d\u0930\u093e\u092f \u0915\u093f\u0902\u0935\u093e \u0938\u0942\u091a\u0928\u093e \u0938\u092c\u092e\u093f\u091f \u0915\u0947\u0932\u0947\u0932\u0940 \u0928\u093e\u0939\u0940.'
     },
     'ta': {
         'nav-btn-dashboard': '<i class="fa-solid fa-chart-line"></i> முகப்பு',
@@ -2157,11 +2236,14 @@ const TRANSLATIONS = {
         'btn-farm-sub-cattle': '<i class="fa-solid fa-cow"></i> காய்஥்நடை ஆரோக்கியம்',
         'btn-farm-sub-mandi': '<i class="fa-solid fa-wheat-awn"></i> ச஥்஥ை விஜூகள்',
         'btn-farm-sub-market': '<i class="fa-solid fa-store"></i> பயோ ச஥்஥ை',
+        'btn-farm-sub-cattle': '<i class="fa-solid fa-cow"></i> கால்நடை ஆரோக்கியம்',
+        'btn-farm-sub-mandi': '<i class="fa-solid fa-wheat-awn"></i> சந்தை விலைகள்',
+        'btn-farm-sub-market': '<i class="fa-solid fa-store"></i> பயோ சந்தை',
         'nav-btn-fisheries': '<i class="fa-solid fa-ship"></i> மீன்வள மையம்',
-        'nav-btn-weather': '<i class="fa-solid fa-cloud-sun-rain"></i> வானிலை ஥கவல்கள்',
+        'nav-btn-weather': '<i class="fa-solid fa-cloud-sun-rain"></i> வானிலை தகவல்கள்',
         'nav-btn-birds': '<i class="fa-solid fa-feather-pointed"></i> பறவை ஒலி',
-        'nav-btn-news': '<i class="fa-solid fa-newspaper"></i> செய்஥ி போர்டல்',
-        'nav-btn-sources': '<i class="fa-solid fa-circle-info"></i> ஥ரவு மூலங்கள்',
+        'nav-btn-news': '<i class="fa-solid fa-newspaper"></i> செய்தி போர்டல்',
+        'nav-btn-sources': '<i class="fa-solid fa-circle-info"></i> தரவு மூலங்கள்',
         'lbl-hero-title': 'நேரடி தரவுகளுடன் கிராமப்புற இந்தியாவை மேம்படுத்துதல்',
         'lbl-hero-desc': 'கிராம்சேது கிராமப்புற நிபுணர்களை நிகழ்நேர சந்தை விலைகள், சுகாதார எச்சரிக்கைகளுடன் இணைக்கிறது.',
         'btn-sync-data': '<i class="fa-solid fa-rotate"></i> தரவை ஒத்திசைக்கவும்',
@@ -2202,9 +2284,21 @@ const TRANSLATIONS = {
         'lbl-groundwater-title': '<i class="fa-solid fa-droplet"></i> நிலத்தடி நீர் குறைப்பு & கழிவுநீர் மாசு காட்சிப்படுத்தி (2016 - 2026)',
         'lbl-groundwater-subtitle': 'நிலத்தடி நீர் மட்டக் குறைவைக் கண்காணித்து, விவசாய நீர்நிலைகளில் நகர்ப்புற கழிவுநீர் கலப்பைக் கண்டறியவும்.',
         'lbl-gw-year-label': 'முன்கணிப்பு/வரலாற்று ஆண்டைத் தேர்ந்தெடுக்கவும்:',
-        'lbl-sewage-toggle-label': 'கழிவுநீர் மாசு மேலடுக்கைக் காட்டு',
         'lbl-gw-map-title': 'ஊடாடும் நிலத்தடி நீர்நிலைகள் வரைபடம்',
-        'lbl-groundwater-chart-title': 'நிலத்தடி நீர் மட்டப் போக்கு (mbgl இல் ஆழம்)'
+        'lbl-groundwater-chart-title': 'நிலத்தடி நீர் மட்டப் போக்கு (mbgl இல் ஆழம்)',
+        'nav-btn-mesh': '<i class="fa-solid fa-circle-nodes"></i> ஆஃப்லைன் மெஷ்',
+        'lbl-mesh-title': '<i class="fa-solid fa-circle-nodes"></i> ஆஃப்லைன் மெஷ் நெட்வொர்க்',
+        'lbl-mesh-desc': 'புளூடூத் மெஷ் தொழில்நுட்பம் மூலம் அருகில் உள்ளவர்களுடன் நேரடியாக எச்சரிக்கைகள் மற்றும் குறுஞ்செய்திகளைப் பரிமாறவும்। இணையம் அல்லது மொபைல் சிக்னல் இல்லாமலே ஆஃப்லைனில் செயல்படும்।',
+        'lbl-mesh-send-title': '<i class="fa-solid fa-paper-plane"></i> செய்தியை ஒளிபரப்பவும்',
+        'lbl-mesh-send-desc': 'உள்ளூர் புளூடூத் மெஷ் நெட்வொர்க்கில் ஒளிபரப்ப ஒரு குறுஞ்செய்தியை எழுதவும்।',
+        'lbl-mesh-sender-label': 'உங்கள் அனுப்புநர் ஐடி / பெயர்',
+        'lbl-mesh-urgency-label': 'எச்சரிக்கை அவசர நிலை',
+        'lbl-mesh-message-label': 'ஒளிபரப்பு உரை (அதிகபட்சம் 140 எழுத்துக்கள்)',
+        'lbl-mesh-broadcast-btn': '<i class="fa-solid fa-rss"></i> ஆஃப்லைனில் ஒளிபரப்பவும் (புளூடூथ்)',
+        'lbl-mesh-stream-title': '<i class="fa-solid fa-list-check"></i> நேரடி மெஷ் ஊட்டம்',
+        'lbl-mesh-radar-title': 'புளூடூத் டிரான்சீவர் செயல்பாட்டில் உள்ளது',
+        'lbl-mesh-empty-text': 'இதுவரை எந்த மெஷ் ஒளிபரப்பும் கண்டறியப்படவில்லை।',
+        'lbl-mesh-bridge-status': 'நேரடி இணைப்பு நிலை:'
     },
     'ml': {
         'nav-btn-dashboard': '<i class="fa-solid fa-chart-line"></i> ഡാഷ്‌ബോർഡ്',
@@ -2260,6 +2354,33 @@ const TRANSLATIONS = {
         'lbl-sewage-toggle-label': 'മലിനജല കലർച്ചയുടെ മാപ്പ് കാണിക്കുക',
         'lbl-gw-map-title': 'ഇന്ററാക്ടീവ് ഭൂഗർഭജല ഭൂപടം',
         'lbl-groundwater-chart-title': 'ഭૂഗർഭ ജലനിരപ്പിലെ വ്യതിയാനം (mbgl ആഴത്തിൽ)'
+,
+        'nav-btn-mesh': '<i class="fa-solid fa-circle-nodes"></i> \u0D13\u0D2B\u0D4D\u200C\u0D32\u0D48\u0D7B \u0D2E\u0D46\u0D37\u0D4D',
+        'lbl-mesh-title': '<i class="fa-solid fa-circle-nodes"></i> \u0D13\u0D2B\u0D4D\u200C\u0D32\u0D48\u0D7B \u0D2E\u0D46\u0D37\u0D4D \u0D28\u0D46\u0D31\u0D4D\u0D31\u0D4D\u200C\u0D35\u0D7C\u0D15\u0D4D\u0D15\u0D4D',
+        'lbl-mesh-desc': '\u0D2C\u0D4D\u0D32\u0D42\u0D1F\u0D42\u0D24\u0D4D\u0D24\u0D4D \u0D2E\u0D46\u0D37\u0D4D \u0D38\u0D3E\u0D19\u0D4D\u0D15\u0D47\u0D24\u0D3F\u0D15\u0D35\u0D3F\u0D26\u0D4D\u0D2F \u0D35\u0D34\u0D3F \u0D05\u0D1F\u0D41\u0D24\u0D4D\u0D24\u0D41\u0D33\u0D4D\u0D33 \u0D09\u0D2A\u0D2F\u0D4B\u0D15\u0D4D\u0D24\u0D3E\u0D15\u0D4D\u0D15\u0D33\u0D41\u0D2E\u0D3E\u0D2F\u0D3F \u0D28\u0D47\u0D30\u0D3F\u0D1F\u0D4D\u0D1F\u0D4D \u0D05\u0D32\u0D47\u0D7C\u0D1F\u0D4D\u0D1F\u0D41\u0D15\u0D33\u0D41\u0D02 \u0D39\u0D4D\u0D30\u0D38\u0D4D\u0D35 \u0D38\u0D28\u0D4D\u0D26\u0D47\u0D36\u0D19\u0D4D\u0D19\u0D33\u0D41\u0D02 \u0D15\u0D48\u0D2E\u0D3E\u0D31\u0D41\u0D15. \u0D38\u0D46\u0D32\u0D4D\u0D32\u0D41\u0D32\u0D3E\u0D7C \u0D28\u0D46\u0D31\u0D4D\u0D31\u0D4D\u200C\u0D35\u0D7C\u0D15\u0D4D\u0D15\u0D4D \u0D15\u0D35\u0D31\u0D47\u0D1C\u0D4D \u0D07\u0D32\u0D4D\u0D32\u0D3E\u0D24\u0D46 \u0D2A\u0D42\u0D7C\u0D23\u0D4D\u0D23\u0D2E\u0D3E\u0D2F\u0D41\u0D02 \u0D13\u0D2B\u0D4D\u200C\u0D32\u0D48\u0D28\u0D3E\u0D2F\u0D3F \u0D2A\u0D4D\u0D30\u0D35\u0D7C\u0D24\u0D4D\u0D24\u0D3F\u0D15\u0D4D\u0D15\u0D41\u0D28\u0D4D\u0D28\u0D41.',
+        'lbl-mesh-send-title': '<i class="fa-solid fa-paper-plane"></i> \u0D38\u0D28\u0D4D\u0D26\u0D47\u0D36\u0D02 \u0D2A\u0D4D\u0D30\u0D15\u0D4D\u0D37\u0D47\u0D2A\u0D23\u0D02 \u0D1A\u0D46\u0D2F\u0D4D\u0D2F\u0D41\u0D15',
+        'lbl-mesh-send-desc': '\u0D2A\u0D4D\u0D30\u0D3E\u0D26\u0D47\u0D36\u0D3F\u0D15 \u0D2C\u0D4D\u0D32\u0D42\u0D1F\u0D42\u0D24\u0D4D\u0D24\u0D4D \u0D2E\u0D46\u0D37\u0D4D \u0D28\u0D46\u0D31\u0D4D\u0D31\u0D4D\u200C\u0D35\u0D7C\u0D15\u0D4D\u0D15\u0D3F\u0D32\u0D42\u0D1F\u0D46 \u0D2A\u0D4D\u0D30\u0D15\u0D4D\u0D37\u0D47\u0D2A\u0D23\u0D02 \u0D1A\u0D46\u0D2F\u0D4D\u0D2F\u0D3E\u0D7B \u0D12\u0D30\u0D41 \u0D39\u0D4D\u0D30\u0D38\u0D4D\u0D35 \u0D05\u0D31\u0D3F\u0D2F\u0D3F\u0D2A\u0D4D\u0D2A\u0D4D \u0D24\u0D2F\u0D4D\u0D2F\u0D3E\u0D31\u0D3E\u0D15\u0D4D\u0D15\u0D41\u0D15.',
+        'lbl-mesh-sender-label': '\u0D28\u0D3F\u0D19\u0D4D\u0D19\u0D33\u0D41\u0D1F\u0D46 \u0D05\u0D2F\u0D15\u0D4D\u0D15\u0D41\u0D28\u0D4D\u0D28\u0D2F\u0D3E\u0D33\u0D41\u0D1F\u0D46 \u0D10\u0D21\u0D3F / \u0D2A\u0D47\u0D30\u0D4D',
+        'lbl-mesh-urgency-label': '\u0D05\u0D32\u0D47\u0D7C\u0D1F\u0D4D\u0D1F\u0D3F\u0D28\u0D4D\u0D31\u0D46 \u0D05\u0D1F\u0D3F\u0D2F\u0D28\u0D4D\u0D24\u0D3F\u0D30 \u0D18\u0D1F\u0D4D\u0D1F\u0D02',
+        'lbl-mesh-message-label': '\u0D2A\u0D4D\u0D30\u0D15\u0D4D\u0D37\u0D47\u0D2A\u0D23\u0D02 \u0D1A\u0D46\u0D2F\u0D4D\u0D2F\u0D47\u0D23\u0D4D\u0D1F \u0D38\u0D28\u0D4D\u0D26\u0D47\u0D36\u0D02 (\u0D2A\u0D30\u0D2E\u0D3E\u0D35\u0D27\u0D3F 140 \u0D05\u0D15\u0D4D\u0D37\u0D30\u0D19\u0D4D\u0D19\u0D7E)',
+        'lbl-mesh-broadcast-btn': '<i class="fa-solid fa-rss"></i> \u0D13\u0D2B\u0D4D\u200C\u0D32\u0D48\u0D7B \u0D2A\u0D4D\u0D30\u0D15\u0D4D\u0D37\u0D47\u0D2A\u0D23\u0D02 (\u0D2C\u0D4D\u0D32\u0D42\u0D1F\u0D42\u0D24\u0D4D\u0D24\u0D4D)',
+        'lbl-mesh-stream-title': '<i class="fa-solid fa-list-check"></i> \u0D24\u0D24\u0D4D\u0D38\u0D2E\u0D2F \u0D2E\u0D46\u0D37\u0D4D \u0D2B\u0D40\u0D21\u0D4D',
+        'lbl-mesh-radar-title': '\u0D2C\u0D4D\u0D32\u0D42\u0D1F\u0D42\u0D24\u0D4D\u0D24\u0D4D \u0D1F\u0D4D\u0D30\u0D3E\u0D7B\u0D38\u0D40\u0D35\u0D7C \u0D38\u0D1C\u0D40\u0D35\u0D02',
+        'lbl-mesh-empty-text': '\u0D07\u0D24\u0D41\u0D35\u0D30\u0D46 \u0D2E\u0D46\u0D37\u0D4D \u0D2A\u0D4D\u0D30\u0D15\u0D4D\u0D37\u0D47\u0D2A\u0D23\u0D19\u0D4D\u0D19\u0D33\u0D4A\u0D28\u0D4D\u0D28\u0D41\u0D02 \u0D15\u0D23\u0D4D\u0D1F\u0D46\u0D24\u0D4D\u0D24\u0D3F\u0D2F\u0D3F\u0D1F\u0D4D\u0D1F\u0D3F\u0D32\u0D4D\u0D32.',
+        'lbl-mesh-bridge-status': '\u0D28\u0D47\u0D31\u0D4D\u0D31\u0D40\u0D35\u0D4D \u0D2C\u0D4D\u0D30\u0D3F\u0D21\u0D4D\u0D1C\u0D4D \u0D15\u0D23\u0D15\u0D4D\u0D37\u0D7B \u0D28\u0D3F\u0D32:',
+        'nav-btn-feedback': '<i class="fa-solid fa-comments"></i> \u0D05\u0D2D\u0D3F\u0D2A\u0D4D\u0D30\u0D3E\u0D2F \u0D15\u0D47\u0D28\u0D4D\u0D26\u0D4D\u0D30\u0D02',
+        'lbl-feedback-title': '<i class="fa-solid fa-comments"></i> \u0D05\u0D2D\u0D3F\u0D2A\u0D4D\u0D30\u0D3E\u0D2F\u0D19\u0D4D\u0D19\u0D33\u0D41\u0D02 \u0D28\u0D3F\u0D7C\u0D26\u0D4D\u0D26\u0D47\u0D36\u0D19\u0D4D\u0D19\u0D33\u0D41\u0D02',
+        'lbl-feedback-desc': '\u0D17\u0D4D\u0D30\u0D3E\u0D02\u0D38\u0D47\u0D24\u0D41 \u0D2E\u0D46\u0D1a\u0D4D\u0D1a\u0D2a\u0D4D\u0D2a\u0D46\u0D1F\u0D41\u0D24\u0D4D\u0D24\u0D3E\u0D7B \u0D1E\u0D19\u0D4D\u0D19\u0D33\u0D46 \u0D38\u0D39\u0D3E\u0D2F\u0D3F\u0D15\u0D4D\u0D15\u0D41\u0D15. \u0D28\u0D3F\u0D19\u0D4D\u0D19\u0D33\u0D41\u0D1F\u0D46 \u0D36\u0D41\u0D2A\u0D3E\u0D7C\u0D36\u0D15\u0D7E, \u0D05\u0D35\u0D32\u0D4B\u0D15\u0D28\u0D19\u0D4D\u0D19\u0D7E, \u0D2A\u0D30\u0D3E\u0D24\u0D3F\u0D15\u0D7E \u0D05\u0D32\u0D4D\u0D32\u0D46\u0D19\u0D4D\u0D15\u0D3F\u0D7D \u0D2A\u0D41\u0D24\u0D3F\u0D2F \u0D06\u0D36\u0D2F\u0D19\u0D4D\u0D19\u0D7E \u0D28\u0D47\u0D30\u0D3F\u0D1F\u0D4D\u0D1F\u0D4D \u0D38\u0D2E\u0D7C\u0D2A\u0D4D\u0D2A\u0D3F\u0D15\u0D4D\u0D15\u0D41\u0D15.',
+        'lbl-feedback-form-title': '<i class="fa-solid fa-pen-to-square"></i> \u0D28\u0D3F\u0D19\u0D4D\u0D19\u0D33\u0D41\u0D1F\u0D46 \u0D1A\u0D3F\u0D28\u0D4D\u0D24\u0D15\u0D7E \u0D2A\u0D19\u0D4D\u0D15\u0D41\u0D35\u0D46\u0D15\u0D4D\u0D15\u0D41\u0D15',
+        'lbl-feedback-form-desc': '\u0D12\u0D30\u0D41 \u0D35\u0D3F\u0D2D\u0D3E\u0D17\u0D02 \u0D24\u0D3F\u0D30\u0D1E\u0D4D\u0D1E\u0D46\u0D1F\u0D41\u0D15\u0D4D\u0D15\u0D41\u0D15, \u0D28\u0D3F\u0D19\u0D4D\u0D19\u0D33\u0D41\u0D1F\u0D46 \u0D05\u0D28\u0D41\u0D2D\u0D35\u0D24\u0D4D\u0D24\u0D3F\u0D28\u0D4D \u0D31\u0D47\u0D31\u0D4D\u0D31\u0D3F\u0D02\u0D17\u0D4D \u0D28\u0D7D\u0D15\u0D41\u0D15, \u0D24\u0D3E\u0D34\u0D46 \u0D28\u0D3F\u0D7C\u0D26\u0D4D\u0D26\u0D47\u0D36\u0D19\u0D4D\u0D19\u0D7E \u0D0E\u0D34\u0D41\u0D24\u0D41\u0D15.',
+        'lbl-feedback-category-label': '\u0D05\u0D2D\u0D3F\u0D2A\u0D4D\u0D30\u0D3E\u0D2F \u0D35\u0D3F\u0D2D\u0D3E\u0D17\u0D02',
+        'lbl-feedback-rating-label': '\u0D31\u0D47\u0D31\u0D4D\u0D31\u0D3F\u0D02\u0D17\u0D4D',
+        'lbl-feedback-text-label': '\u0D38\u0D28\u0D4D\u0D26\u0D47\u0D36\u0D02 / \u0D35\u0D3F\u0D36\u0D26\u0D3E\u0D02\u0D36\u0D19\u0D4D\u0D19\u0D7E',
+        'btn-submit-feedback': '<i class="fa-solid fa-paper-plane"></i> \u0D05\u0D2D\u0D3F\u0D2A\u0D4D\u0D30\u0D3E\u0D2F\u0D02 \u0D38\u0D2E\u0D7C\u0D2A\u0D4D\u0D2A\u0D3F\u0D15\u0D4D\u0D15\u0D41\u0D15',
+        'lbl-feedback-avg-rating': '\u0D36\u0D30\u0D3E\u0D36\u0D30\u0D3F \u0D31\u0D47\u0D31\u0D4D\u0D31\u0D3F\u0D02\u0D17\u0D4D',
+        'lbl-feedback-total-posts': '\u0D06\u0D15\u0D46 \u0D38\u0D2E\u0D7C\u0D2A\u0D4D\u0D2A\u0D23\u0D19\u0D4D\u0D19\u0D7E',
+        'lbl-feedback-board-title': '<i class="fa-solid fa-users"></i> \u0D15\u0D2E\u0D4D\u0D2E\u0D4D\u0D2F\u0D42\u0D23\u0D3F\u0D31\u0D4D\u0D31\u0D3F \u0D28\u0D3F\u0D7C\u0D26\u0D4D\u0D26\u0D47\u0D36 \u0D2C\u0D4B\u0D7C\u0D21\u0D4D',
+        'lbl-feedback-empty-board': '\u0D07\u0D24\u0D41\u0D35\u0D30\u0D46 \u0D05\u0D2D\u0D3F\u0D2A\u0D4D\u0D30\u0D3E\u0D2F\u0D19\u0D4D\u0D19\u0D33\u0D4B \u0D28\u0D3F\u0D7C\u0D26\u0D4D\u0D26\u0D47\u0D36\u0D19\u0D4D\u0D19\u0D33\u0D4B \u0D38\u0D2E\u0D7C\u0D2A\u0D4D\u0D2A\u0D3F\u0D1A\u0D4D\u0D1A\u0D3F\u0D1F\u0D4D\u0D1F\u0D3F\u0D32\u0D4D\u0D32.'
     },
     'bn': {
         'nav-btn-dashboard': '<i class="fa-solid fa-chart-line"></i> ড্যাশবোর্ড',
@@ -2312,9 +2433,21 @@ const TRANSLATIONS = {
         'lbl-groundwater-title': '<i class="fa-solid fa-droplet"></i> ভূগর্ভস্থ জল হ্রাস এবং পয়ঃনিষ্কাশন দূষণ ভিজ্যুয়ালাইজার (2016 - 2026)',
         'lbl-groundwater-subtitle': 'ভূগর্ভস্থ জলের স্তর হ্রাস (mbgl) নিরীক্ষণ করুন এবং কৃষি জলাশয়ে পয়ঃনিষ্কাশন মিশ্রণের ওভারল্যাপ ট্র্যাক করুন।',
         'lbl-gw-year-label': 'পূর্বাভাস/ঐতিহাসিক বছর নির্বাচন করুন:',
-        'lbl-sewage-toggle-label': 'পয়ঃনিষ্কাশন দূষণ ওভারলে দেখান',
         'lbl-gw-map-title': 'ইন্টারেক্টিভ ভূগর্ভস্থ জলাশয় মানচিত্র',
-        'lbl-groundwater-chart-title': 'ভূগর্ভস্থ জলের স্তরের ধারা (mbgl এ গভীরতা)'
+        'lbl-groundwater-chart-title': 'ভূগর্ভস্থ জলের স্তরের ধারা (mbgl এ গভীরতা)',
+        'nav-btn-mesh': '<i class="fa-solid fa-circle-nodes"></i> অফলাইন মেশ',
+        'lbl-mesh-title': '<i class="fa-solid fa-circle-nodes"></i> অফলাইন মেশ নেটওয়ার্ক',
+        'lbl-mesh-desc': 'ব্লুটুথ মেশ প্রযুক্তির মাধ্যমে আশেপাশের ব্যবহারকারীদের সাথে সরাসরি সতর্কতা এবং সংক্ষিপ্ত বার্তা আদান-প্রদান করুন। মোবাইল নেটওয়ার্ক ছাড়াই সম্পূর্ণরূপে অফলাইনে কাজ করে।',
+        'lbl-mesh-send-title': '<i class="fa-solid fa-paper-plane"></i> বার্তা সম্প্রচার করুন',
+        'lbl-mesh-send-desc': 'স্থানীয় ব্লুটুথ মেশ নেটওয়ার্কে সম্প্রচার করতে একটি সংক্ষিপ্ত বিজ্ঞপ্তি লিখুন।',
+        'lbl-mesh-sender-label': 'আপনার প্রেরক আইডি / নাম',
+        'lbl-mesh-urgency-label': 'সতর্কতা জরুরিতা স্তর',
+        'lbl-mesh-message-label': 'সম্প্রচার পাঠ্য (সর্বোচ্চ ১৪০ অক্ষর)',
+        'lbl-mesh-broadcast-btn': '<i class="fa-solid fa-rss"></i> অফলাইন সম্প্রচার (ব্লুটুথ)',
+        'lbl-mesh-stream-title': '<i class="fa-solid fa-list-check"></i> লাইভ মেশ ফিড',
+        'lbl-mesh-radar-title': 'ব্লুটুথ ট্রান্সসিভার সক্রিয়',
+        'lbl-mesh-empty-text': 'এখনো কোনো মেশ সম্প্রচার সনাক্ত করা যায়নি।',
+        'lbl-mesh-bridge-status': 'নেটিভ ব্রিজ সংযোগ অবস্থা:'
     },
     'te': {
         'nav-btn-dashboard': '<i class="fa-solid fa-chart-line"></i> డాష్‌బోర్డ్',
@@ -2369,7 +2502,20 @@ const TRANSLATIONS = {
         'lbl-gw-year-label': 'అంచనా/చారిత్రక సంవత్సరాన్ని ఎంచుకోండి:',
         'lbl-sewage-toggle-label': 'మురుగునీటి కాలుష్య ఓవర్లేను చూపించు',
         'lbl-gw-map-title': 'ఇంటరాక్టివ్ భూగర్భ జలాల మ్యాప్',
-        'lbl-groundwater-chart-title': 'భూగర్భ జల మట్టం సరళి (మీటర్లలో లోతు)'
+        'lbl-groundwater-chart-title': 'భూగర్భ జల మట్టం సరళి (మీటర్లలో లోతు)',
+        'nav-btn-mesh': '<i class="fa-solid fa-circle-nodes"></i> ఆఫ్-లైన్ మెష్',
+        'lbl-mesh-title': '<i class="fa-solid fa-circle-nodes"></i> ఆఫ్-లైన్ మెష్ నెట్‌వర్క్',
+        'lbl-mesh-desc': 'బ్లూటూత్ మెష్ టెక్నాలజీ ద్వారా సమీప వినియోగదారులతో నేరుగా హెచ్చరికలు మరియు చిన్న సందేశాలను మార్పిడి చేసుకోండి. సెల్యులార్ నెట్‌వర్క్ కవరేజ్ లేకుండా పూర్తిగా ఆఫ్-లైన్ లో పనిచేస్తుంది.',
+        'lbl-mesh-send-title': '<i class="fa-solid fa-paper-plane"></i> సందేశాన్ని ప్రసారం చేయండి',
+        'lbl-mesh-send-desc': 'స్థానిక బ్లూటూత్ మెష్ నెట్‌వర్క్ లో ప్రసారం చేయడానికి ఒక చిన్న నోటిఫికేషన్ రాయండి.',
+        'lbl-mesh-sender-label': 'మీ పంపినవారి ఐడి / పేరు',
+        'lbl-mesh-urgency-label': 'హెచ్చరిక అత్యవసర స్థాయి',
+        'lbl-mesh-message-label': 'ప్రసార వచనం (గరిష్టంగా 140 అక్షరాలు)',
+        'lbl-mesh-broadcast-btn': '<i class="fa-solid fa-rss"></i> ఆఫ్-లైన్ ప్రసారం (బ్లూటూత్)',
+        'lbl-mesh-stream-title': '<i class="fa-solid fa-list-check"></i> లైవ్ మెష్ ఫీడ్',
+        'lbl-mesh-radar-title': 'బ్లూటూత్ ట్రాన్స్ సీవర్ సక్రియంగా ఉంది',
+        'lbl-mesh-empty-text': 'ఇంకా ఎటువంటి మెష్ ప్రసారాలు కనుగొనబడలేదు.',
+        'lbl-mesh-bridge-status': 'నేటివ్ బ్రిడ్జ్ కనెక్షన్ స్థితి:'
     }
 };;
 
@@ -2670,6 +2816,420 @@ function renderGroundwaterChart() {
 
     svg += `</svg>`;
     container.innerHTML = svg;
+}
+
+// 14. Offline Bluetooth Mesh Notification & Android Bridge Logic
+let meshMessages = [];
+let meshSimulationInterval = null;
+let meshPollInterval = null;
+
+function toggleRecipientField(type) {
+    const group = document.getElementById('mesh-recipient-group');
+    if (group) {
+        group.style.display = (type === 'personalized') ? 'flex' : 'none';
+    }
+}
+
+function initMeshTab() {
+    // Check if Android Native layer is connected
+    const bridgeBadge = document.getElementById('mesh-bridge-badge');
+    if (bridgeBadge) {
+        if (window.Android) {
+            bridgeBadge.innerText = "Native Connected";
+            bridgeBadge.style.backgroundColor = "rgba(16, 185, 129, 0.1)";
+            bridgeBadge.style.borderColor = "rgba(16, 185, 129, 0.2)";
+            bridgeBadge.style.color = "#10b981";
+        } else {
+            bridgeBadge.innerText = "Simulated Link";
+            bridgeBadge.style.backgroundColor = "rgba(239, 68, 68, 0.1)";
+            bridgeBadge.style.borderColor = "rgba(239, 68, 68, 0.2)";
+            bridgeBadge.style.color = "#ef4444";
+        }
+    }
+
+    // Set default sender handle strictly based on device identity
+    const senderInput = document.getElementById('mesh-sender-name');
+    if (senderInput) {
+        if (window.Android && typeof window.Android.getDeviceName === 'function') {
+            senderInput.value = window.Android.getDeviceName();
+        } else {
+            let storedHandle = localStorage.getItem('mesh_sender_handle');
+            if (!storedHandle) {
+                const userAgent = navigator.userAgent;
+                let platform = "PC";
+                if (/android/i.test(userAgent)) platform = "Android";
+                else if (/iPad|iPhone|iPod/.test(userAgent)) platform = "iOS";
+                else if (/Macintosh/.test(userAgent)) platform = "Mac";
+                else if (/Windows/.test(userAgent)) platform = "Win";
+                
+                const rand = Math.floor(1000 + Math.random() * 9000);
+                storedHandle = `${platform}-${rand}`;
+                localStorage.setItem('mesh_sender_handle', storedHandle);
+            }
+            senderInput.value = storedHandle;
+        }
+        // Force the input to be read-only to represent strict device identifiers
+        senderInput.readOnly = true;
+        senderInput.style.opacity = '0.7';
+        senderInput.style.cursor = 'not-allowed';
+        senderInput.title = "Device ID is strict and cannot be modified.";
+    }
+
+    renderMeshFeed();
+
+    // Start local peer broadcast simulation and backend polling only if simulated
+    if (!window.Android) {
+        // Retrieve local host IP to display instructions for testing on a real phone
+        fetch('/api/mesh/host-ip')
+            .then(res => res.json())
+            .then(data => {
+                const hintEl = document.getElementById('mesh-test-phone-hint');
+                if (hintEl) {
+                    hintEl.innerHTML = `<i class="fa-solid fa-mobile-screen-button" style="color:#3b82f6; font-size:1rem; margin-right:0.4rem;"></i> <strong>Test on Phone:</strong> Connect your phone to the same Wi-Fi and open <a href="http://${data.ip}:${data.port}" target="_blank" style="color:#3b82f6; text-decoration:underline; font-weight:700;">http://${data.ip}:${data.port}</a> on your phone's browser to simulate mesh routing across devices.`;
+                    hintEl.style.display = 'block';
+                }
+            })
+            .catch(err => console.log('Failed to fetch host IP helper details:', err));
+
+        // Start backend polling for shared mesh channel
+        if (!meshPollInterval) {
+            meshPollInterval = setInterval(() => {
+                fetch('/api/mesh/messages')
+                    .then(res => res.json())
+                    .then(msgs => {
+                        // Deliver in reverse order (oldest to newest) to match push behavior
+                        for (let i = msgs.length - 1; i >= 0; i--) {
+                            const m = msgs[i];
+                            receiveMeshMessage(m.sender, m.text, m.urgency, m.timestamp, m.recipient);
+                        }
+                    })
+                    .catch(err => console.log('Mesh polling error:', err));
+            }, 3000);
+        }
+
+        if (!meshSimulationInterval) {
+            // Load initial dummy alerts
+            if (meshMessages.length === 0) {
+                receiveMeshMessage('System', 'Offline Mesh network initialized. Ready to transmit.', 'info', new Date().toLocaleTimeString());
+            }
+
+            meshSimulationInterval = setInterval(() => {
+                if (activeTab !== 'mesh') return;
+                
+                const myHandle = (document.getElementById('mesh-sender-name')?.value || '').trim();
+                const mockPeers = [
+                    { sender: 'IMD Alert (Tuticorin)', text: 'Warning: High storm surge wave height of 3.4m predicted off coast. Fishermen advised not to venture.', urgency: 'emergency', recipient: '' },
+                    { sender: 'Farmer Suresh', text: 'Mandi pricing update: Premium Basmati selling at ₹6,200/qtl in local mandi market.', urgency: 'info', recipient: '' },
+                    { sender: 'Vet-Officer', text: 'Precautionary FMD vaccination drive starting at Panchayat sub-center tomorrow 8 AM.', urgency: 'warning', recipient: '' },
+                    { sender: 'Fisherman-Nathan', text: 'Private Alert: Shoals of Mackerel detected 4km south-east off beach. Catch potential high.', urgency: 'info', recipient: myHandle },
+                    { sender: 'Neighbor-Ramesh', text: 'Personal Note: Direct seed trading group link established. Verify organic purity checklist.', urgency: 'info', recipient: 'User-999' }
+                ];
+
+                const mock = mockPeers[Math.floor(Math.random() * mockPeers.length)];
+                receiveMeshMessage(mock.sender, mock.text, mock.urgency, new Date().toLocaleTimeString(), mock.recipient);
+            }, 12000);
+        }
+    }
+}
+
+function sendMeshMessage() {
+    const senderInput = document.getElementById('mesh-sender-name');
+    const msgInput = document.getElementById('mesh-msg-text');
+    const urgencySelect = document.getElementById('mesh-urgency-level');
+    const msgTypeSelect = document.getElementById('mesh-msg-type');
+    const recipientInput = document.getElementById('mesh-recipient-name');
+
+    if (!senderInput || !msgInput || !urgencySelect) return;
+
+    const sender = senderInput.value.trim() || 'Anonymous';
+    const text = msgInput.value.trim();
+    const urgency = urgencySelect.value;
+    const msgType = msgTypeSelect ? msgTypeSelect.value : 'broadcast';
+    const recipient = (msgType === 'personalized' && recipientInput) ? recipientInput.value.trim() : '';
+
+    if (!text) {
+        alert('Please enter a message to broadcast.');
+        return;
+    }
+
+    if (msgType === 'personalized' && !recipient) {
+        alert('Please specify a Recipient ID/Handle.');
+        return;
+    }
+
+    localStorage.setItem('mesh_sender_handle', sender);
+
+    // Call native Android bridge layer if available
+    if (window.Android && typeof window.Android.broadcastMeshMessage === 'function') {
+        try {
+            window.Android.broadcastMeshMessage(text, urgency, recipient || '');
+        } catch (e) {
+            window.Android.broadcastMeshMessage(text, urgency);
+        }
+    } else {
+        console.log(`[Mesh Simulator] Broadcasting: [${urgency.toUpperCase()}] ${sender} -> ${recipient || 'All'}: ${text}`);
+        
+        // Post message to backend relay server so other browsers connected to this instance (like on a phone) receive it
+        fetch('/api/mesh/relay', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ sender, text, urgency, recipient })
+        }).catch(err => console.log('Failed to post mesh message relay to server:', err));
+    }
+
+    // Add to local display immediately as outgoing message
+    receiveMeshMessage(sender + ' (You)', text, urgency, new Date().toLocaleTimeString(), recipient);
+
+    // Clear input
+    msgInput.value = '';
+}
+
+// Public callback handler exposed to native Android background layers
+window.receiveMeshMessage = function(sender, text, urgency, timestamp, recipient) {
+    const myHandle = (document.getElementById('mesh-sender-name')?.value || '').trim();
+    
+    // Deduplicate incoming messages. Strip "(You)" before comparing.
+    const cleanSender = (name) => name.replace(' (You)', '').trim();
+    const isDuplicate = meshMessages.some(m => 
+        cleanSender(m.sender) === cleanSender(sender) && 
+        m.text === text && 
+        (m.recipient || '') === (recipient || '')
+    );
+    if (isDuplicate) return;
+
+    // Check if the message is private and addressed to someone else.
+    // If targeted to another handle, we simulate relaying it without showing it to this user.
+    if (recipient && recipient !== 'Broadcast' && recipient !== myHandle && !sender.endsWith('(You)')) {
+        console.log(`[Mesh Router] Relaying private message from ${sender} to ${recipient} (payload: "${text}")`);
+        return;
+    }
+
+    meshMessages.unshift({ 
+        sender, 
+        text, 
+        urgency, 
+        recipient: recipient || '', 
+        timestamp: timestamp || new Date().toLocaleTimeString() 
+    });
+    
+    // Keep max 20 messages in log
+    if (meshMessages.length > 20) {
+        meshMessages.pop();
+    }
+
+    renderMeshFeed();
+    
+    // Trigger visual highlight / flash effect on the list if active
+    const listEl = document.getElementById('mesh-messages-list');
+    if (listEl) {
+        listEl.style.boxShadow = 'inset 0 0 10px rgba(16, 185, 129, 0.2)';
+        setTimeout(() => listEl.style.boxShadow = 'none', 500);
+    }
+};
+
+function renderMeshFeed() {
+    const listEl = document.getElementById('mesh-messages-list');
+    const emptyEl = document.getElementById('mesh-feed-empty');
+    if (!listEl) return;
+
+    if (meshMessages.length === 0) {
+        if (emptyEl) emptyEl.style.display = 'block';
+        listEl.innerHTML = '';
+        return;
+    }
+
+    if (emptyEl) emptyEl.style.display = 'none';
+
+    let html = '';
+    meshMessages.forEach(m => {
+        const badgeLabel = m.urgency === 'emergency' ? 'Critical' : (m.urgency === 'warning' ? 'Alert' : 'Info');
+        const targetTag = m.recipient ? `<span class="mesh-badge" style="background: #3b82f6; margin-left: 0.5rem; text-transform: uppercase;">To: ${m.recipient}</span>` : '';
+        
+        html += `
+            <div class="mesh-msg-card ${m.urgency}">
+                <div class="mesh-msg-header">
+                    <span class="mesh-msg-sender">${m.sender}</span>
+                    <div style="display:flex; align-items:center; gap:0.5rem;">
+                        ${targetTag}
+                        <span class="mesh-badge ${m.urgency}">${badgeLabel}</span>
+                        <span class="mesh-msg-time">${m.timestamp}</span>
+                    </div>
+                </div>
+                <div class="mesh-msg-body">${m.text}</div>
+            </div>
+        `;
+    });
+    listEl.innerHTML = html;
+}
+
+// 15. Feedback & Suggestion System Logic
+let feedbackRating = 5; // Default rating to 5 stars
+
+function setFeedbackRating(val) {
+    feedbackRating = val;
+    const stars = document.querySelectorAll('.feedback-stars-selector i');
+    stars.forEach((star, idx) => {
+        if (idx < val) {
+            star.style.color = '#fbbf24'; // Active gold star
+        } else {
+            star.style.color = '#4b5563'; // Inactive gray star
+        }
+    });
+}
+
+function initFeedbackTab() {
+    setFeedbackRating(5); // Reset to 5 stars on tab load
+    const contentText = document.getElementById('feedback-content');
+    if (contentText) contentText.value = ''; // Reset text
+    fetchFeedback();
+}
+
+function fetchFeedback() {
+    fetch('/api/feedback')
+        .then(res => res.json())
+        .then(data => {
+            renderFeedbackFeed(data);
+        })
+        .catch(err => console.log('Error fetching feedback:', err));
+}
+
+function submitFeedback() {
+    const categorySelect = document.getElementById('feedback-category');
+    const contentText = document.getElementById('feedback-content');
+    const senderInput = document.getElementById('mesh-sender-name');
+
+    if (!contentText || !categorySelect) return;
+
+    const content = contentText.value.trim();
+    if (!content) {
+        alert('Please enter your feedback text.');
+        return;
+    }
+
+    const senderHandle = senderInput ? senderInput.value.trim() : 'Anonymous';
+    const category = categorySelect.value;
+    const rating = feedbackRating;
+
+    const payload = {
+        category,
+        senderHandle,
+        rating,
+        content
+    };
+
+    const submitBtn = document.getElementById('btn-submit-feedback');
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Submitting...';
+    }
+
+    fetch('/api/feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+    })
+    .then(res => {
+        if (!res.ok) throw new Error('Submission failed');
+        return res.json();
+    })
+    .then(data => {
+        contentText.value = '';
+        setFeedbackRating(5);
+        alert('Thank you! Your feedback has been posted successfully.');
+        fetchFeedback();
+    })
+    .catch(err => {
+        console.error('Error submitting feedback:', err);
+        alert('Failed to submit feedback. Please check your connection.');
+    })
+    .finally(() => {
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Submit Feedback';
+            const activeDict = TRANSLATIONS[activeLang];
+            if (activeDict && activeDict['btn-submit-feedback']) {
+                submitBtn.innerHTML = activeDict['btn-submit-feedback'];
+            }
+        }
+    });
+}
+
+function renderFeedbackFeed(feedbackList) {
+    const listEl = document.getElementById('feedback-board-list');
+    const emptyEl = document.getElementById('feedback-empty-placeholder');
+    if (!listEl) return;
+
+    const totalCount = feedbackList.length;
+    let avgRating = 0;
+    if (totalCount > 0) {
+        const sum = feedbackList.reduce((acc, f) => acc + (f.rating || 0), 0);
+        avgRating = sum / totalCount;
+    }
+
+    const countEl = document.getElementById('feedback-stat-count');
+    if (countEl) countEl.innerText = totalCount;
+
+    const avgNumEl = document.getElementById('feedback-stat-rating-num');
+    if (avgNumEl) avgNumEl.innerText = avgRating.toFixed(1);
+
+    const avgStarsEl = document.getElementById('feedback-stat-rating-stars');
+    if (avgStarsEl) {
+        let starsHtml = '';
+        const fullStars = Math.floor(avgRating);
+        const halfStar = (avgRating % 1) >= 0.5;
+        for (let i = 1; i <= 5; i++) {
+            if (i <= fullStars) {
+                starsHtml += '<i class="fa-solid fa-star"></i>';
+            } else if (i === fullStars + 1 && halfStar) {
+                starsHtml += '<i class="fa-solid fa-star-half-stroke"></i>';
+            } else {
+                starsHtml += '<i class="fa-regular fa-star"></i>';
+            }
+        }
+        avgStarsEl.innerHTML = starsHtml;
+    }
+
+    if (totalCount === 0) {
+        if (emptyEl) emptyEl.style.display = 'block';
+        listEl.innerHTML = '';
+        return;
+    }
+
+    if (emptyEl) emptyEl.style.display = 'none';
+
+    let html = '';
+    feedbackList.forEach(f => {
+        let catClass = f.category || 'recommendation';
+        let catLabel = catClass.charAt(0).toUpperCase() + catClass.slice(1);
+        
+        let starsHtml = '';
+        for (let i = 1; i <= 5; i++) {
+            if (i <= (f.rating || 0)) {
+                starsHtml += '<i class="fa-solid fa-star" style="color: #fbbf24;"></i>';
+            } else {
+                starsHtml += '<i class="fa-regular fa-star" style="color: #4b5563;"></i>';
+            }
+        }
+
+        html += `
+            <div class="feedback-msg-card ${catClass}" style="margin-bottom: 0.75rem; padding: 1rem; border-radius: 12px; background: rgba(255,255,255,0.02); border: 1px solid var(--border-glass); transition: all 0.3s ease;">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.5rem;">
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <strong style="color: var(--text-primary); font-size: 0.9rem;">${f.senderHandle || 'Anonymous'}</strong>
+                        <span class="feedback-cat-badge ${catClass}" style="font-size: 0.7rem; padding: 0.15rem 0.5rem; border-radius: 20px; font-weight: 700; text-transform: uppercase;">${catClass}</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <div style="display: flex; gap: 0.1rem; font-size: 0.75rem;">
+                            ${starsHtml}
+                        </div>
+                        <span style="font-size: 0.7rem; color: var(--text-secondary);">${f.timestamp}</span>
+                    </div>
+                </div>
+                <div style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5; word-break: break-word;">${f.content}</div>
+            </div>
+        `;
+    });
+    listEl.innerHTML = html;
 }
 
 

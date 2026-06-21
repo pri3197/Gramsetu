@@ -1201,6 +1201,136 @@ textarea:focus {
     line-height: 1.3;
 }
 
+/* Offline Bluetooth Mesh & Radar Animation Styles */
+.radar-circle {
+    position: relative;
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: rgba(16, 185, 129, 0.05);
+    border: 2px solid rgba(16, 185, 129, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.radar-wave {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    border: 1px solid rgba(16, 185, 129, 0.4);
+    animation: pulseRadar 3s infinite linear;
+    box-sizing: border-box;
+}
+@keyframes pulseRadar {
+    0% { transform: scale(1); opacity: 1; }
+    100% { transform: scale(2.5); opacity: 0; }
+}
+.mesh-msg-card {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--border-glass);
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    animation: slideUp 0.3s ease;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+.mesh-msg-card.info {
+    border-left: 4px solid #10b981;
+}
+.mesh-msg-card.warning {
+    border-left: 4px solid #fbbf24;
+    background: rgba(251, 191, 36, 0.02);
+}
+.mesh-msg-card.emergency {
+    border-left: 4px solid #ef4444;
+    background: rgba(239, 68, 68, 0.03);
+    animation: pulseEmergencyBorder 2s infinite ease-in-out, slideUp 0.3s ease;
+}
+@keyframes pulseEmergencyBorder {
+    0%, 100% { border-color: #ef4444; box-shadow: 0 0 4px rgba(239, 68, 68, 0.1); }
+    50% { border-color: rgba(239, 68, 68, 0.4); box-shadow: 0 0 12px rgba(239, 68, 68, 0.3); }
+}
+.mesh-msg-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.75rem;
+}
+.mesh-msg-sender {
+    font-weight: 700;
+    color: var(--text-primary);
+}
+.mesh-msg-time {
+    color: var(--text-secondary);
+}
+.mesh-msg-body {
+    font-size: 0.88rem;
+    color: var(--text-primary);
+    line-height: 1.4;
+    word-break: break-word;
+}
+.mesh-badge {
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    padding: 0.15rem 0.4rem;
+    border-radius: 4px;
+    color: #fff;
+}
+.mesh-badge.info { background: #10b981; }
+.mesh-badge.warning { background: #fbbf24; color: #1e293b; }
+.mesh-badge.emergency { background: #ef4444; }
+
+/* Feedback & Suggestions Hub Styles */
+.feedback-stars-selector i {
+    cursor: pointer;
+    transition: color 0.2s ease, transform 0.15s ease;
+}
+.feedback-stars-selector i:hover {
+    transform: scale(1.15);
+}
+.feedback-msg-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+    background: rgba(255, 255, 255, 0.04) !important;
+}
+.feedback-msg-card.recommendation {
+    border-left: 4px solid #3b82f6 !important;
+}
+.feedback-msg-card.review {
+    border-left: 4px solid #fbbf24 !important;
+}
+.feedback-msg-card.complaint {
+    border-left: 4px solid #ef4444 !important;
+}
+.feedback-msg-card.idea {
+    border-left: 4px solid #10b981 !important;
+}
+
+.feedback-cat-badge.recommendation {
+    background: rgba(59, 130, 246, 0.12);
+    color: #60a5fa;
+    border: 1px solid rgba(59, 130, 246, 0.25);
+}
+.feedback-cat-badge.review {
+    background: rgba(251, 191, 36, 0.12);
+    color: #fbbf24;
+    border: 1px solid rgba(251, 191, 36, 0.25);
+}
+.feedback-cat-badge.complaint {
+    background: rgba(239, 68, 68, 0.12);
+    color: #f87171;
+    border: 1px solid rgba(239, 68, 68, 0.25);
+}
+.feedback-cat-badge.idea {
+    background: rgba(16, 185, 129, 0.12);
+    color: #34d399;
+    border: 1px solid rgba(16, 185, 129, 0.25);
+}
+
 
 
 

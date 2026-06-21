@@ -14,7 +14,7 @@
     <meta name="theme-color" content="#1e293b">
 
     <!-- CSS Dependencies -->
-    <link rel="stylesheet" href="css/style.css?v=1.0.4">
+    <link rel="stylesheet" href="css/style.css?v=1.0.7">
 
 
     <!-- Leaflet Map CSS -->
@@ -61,6 +61,10 @@
                         class="fa-solid fa-feather-pointed"></i> Bird Acoustic</button>
                 <button class="tab-btn" onclick="switchTab('news')" id="nav-btn-news"><i
                         class="fa-solid fa-newspaper"></i> News Portal</button>
+                <button class="tab-btn" onclick="switchTab('mesh')" id="nav-btn-mesh"><i
+                        class="fa-solid fa-circle-nodes"></i> Offline Mesh</button>
+                <button class="tab-btn" onclick="switchTab('feedback')" id="nav-btn-feedback"><i
+                        class="fa-solid fa-comments"></i> Feedback Hub</button>
                 <button class="tab-btn" onclick="switchTab('sources')" id="nav-btn-sources"><i
                         class="fa-solid fa-circle-info"></i> Datasources</button>
             </nav>
@@ -1631,6 +1635,219 @@
 
 
 
+
+        <!-- OFFLINE BLUETOOTH MESH NETWORK TAB -->
+        <section id="panel-mesh" class="tab-panel" aria-labelledby="nav-btn-mesh">
+            <h2 class="hero-title" style="font-size: 2rem; margin-bottom: 0.5rem;" id="lbl-mesh-title">
+                <i class="fa-solid fa-circle-nodes"></i> Offline Mesh Network
+            </h2>
+            <p id="lbl-mesh-desc" style="color: var(--text-secondary); margin-bottom: 2rem;">
+                Exchange alerts and short messages directly with nearby users via Bluetooth mesh technology. Operating entirely offline without cellular network coverage.
+            </p>
+
+            <div class="grid-cols-2">
+                <!-- Outbound Broadcaster Form -->
+                <div class="card-glass" style="display: flex; flex-direction: column; justify-content: space-between;">
+                    <div>
+                        <h3 class="card-title" id="lbl-mesh-send-title">
+                            <i class="fa-solid fa-paper-plane"></i> Broadcast Message
+                        </h3>
+                        <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 1.5rem;" id="lbl-mesh-send-desc">
+                            Compose a short notification to broadcast over the local Bluetooth mesh network.
+                        </p>
+
+                        <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+                            <!-- Sender Name -->
+                            <div class="filter-group" style="min-width: 100%;">
+                                <label for="mesh-sender-name" id="lbl-mesh-sender-label">Your Sender ID / Handle</label>
+                                <input type="text" id="mesh-sender-name" placeholder="E.g. Fisherman-Raju" style="background: rgba(11, 15, 25, 0.6); border: 1px solid var(--border-glass); color: var(--text-primary); padding: 0.6rem 0.9rem; border-radius: 8px; font-family: var(--font-body); outline: none;">
+                            </div>
+
+                            <!-- Alert Level / Urgency -->
+                            <div class="filter-group" style="min-width: 100%;">
+                                <label for="mesh-urgency-level" id="lbl-mesh-urgency-label">Alert Urgency Level</label>
+                                <select id="mesh-urgency-level" style="background: rgba(11, 15, 25, 0.6); border: 1px solid var(--border-glass); color: var(--text-primary); padding: 0.6rem 0.9rem; border-radius: 8px; font-family: var(--font-body); outline: none;">
+                                    <option value="info">Informational (Green)</option>
+                                    <option value="warning">Advisory / Warning (Orange)</option>
+                                    <option value="emergency">Emergency / Critical (Red)</option>
+                                </select>
+                            </div>
+
+                            <!-- Message Type -->
+                            <div class="filter-group" style="min-width: 100%;">
+                                <label for="mesh-msg-type" id="lbl-mesh-type-label">Message Type</label>
+                                <select id="mesh-msg-type" onchange="toggleRecipientField(this.value)" style="background: rgba(11, 15, 25, 0.6); border: 1px solid var(--border-glass); color: var(--text-primary); padding: 0.6rem 0.9rem; border-radius: 8px; font-family: var(--font-body); outline: none;">
+                                    <option value="broadcast">Broadcast (All Peers)</option>
+                                    <option value="personalized">Personalized (Targeted)</option>
+                                </select>
+                            </div>
+
+                            <!-- Recipient ID -->
+                            <div class="filter-group" id="mesh-recipient-group" style="min-width: 100%; display: none;">
+                                <label for="mesh-recipient-name" id="lbl-mesh-recipient-label">Recipient ID / Handle</label>
+                                <input type="text" id="mesh-recipient-name" placeholder="E.g. Fisherman-Raju" style="background: rgba(11, 15, 25, 0.6); border: 1px solid var(--border-glass); color: var(--text-primary); padding: 0.6rem 0.9rem; border-radius: 8px; font-family: var(--font-body); outline: none;">
+                            </div>
+
+                            <!-- Message Content -->
+                            <div class="filter-group" style="min-width: 100%;">
+                                <label for="mesh-msg-text" id="lbl-mesh-message-label">Broadcast Text (Max 140 Characters)</label>
+                                <textarea id="mesh-msg-text" rows="3" maxlength="140" placeholder="Type alert or message here..." style="background: rgba(11, 15, 25, 0.6); border: 1px solid var(--border-glass); color: var(--text-primary); padding: 0.6rem 0.9rem; border-radius: 8px; font-family: var(--font-body); outline: none; resize: none;"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 1.5rem;">
+                        <button class="btn-primary" style="width: 100%;" onclick="sendMeshMessage()" id="lbl-mesh-broadcast-btn">
+                            <i class="fa-solid fa-rss"></i> Broadcast Offline (Bluetooth)
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Live Stream Feed & Radar -->
+                <div class="card-glass" style="display: flex; flex-direction: column; justify-content: space-between; height: 100%;">
+                    <div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                            <h3 class="card-title" style="margin-bottom: 0;" id="lbl-mesh-stream-title">
+                                <i class="fa-solid fa-list-check"></i> Live Mesh Feed
+                            </h3>
+                            <div style="display: flex; align-items: center; gap: 0.5rem; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2); padding: 0.25rem 0.6rem; border-radius: 20px; font-size: 0.75rem; color: #10b981; font-weight: 700;">
+                                <span class="status-dot" style="background: #10b981; width: 8px; height: 8px; margin: 0; box-shadow: 0 0 8px #10b981; animation: pulseRadar 1.5s infinite;"></span>
+                                <span id="mesh-peer-count-text">3 Peers Connected</span>
+                            </div>
+                        </div>
+
+                        <!-- Radar Visualizer -->
+                        <div style="display: flex; justify-content: center; align-items: center; margin: 1.5rem 0; height: 160px; position: relative;">
+                            <div class="radar-container" style="display: flex; flex-direction: column; align-items: center; position: relative;">
+                                <div class="radar-circle">
+                                    <div class="radar-wave"></div>
+                                    <div class="radar-wave" style="animation-delay: 1s;"></div>
+                                    <div class="radar-wave" style="animation-delay: 2s;"></div>
+                                    <i class="fa-solid fa-bluetooth" style="font-size: 2.2rem; color: #10b981; filter: drop-shadow(0 0 10px rgba(16, 185, 129, 0.4)); z-index: 10;"></i>
+                                </div>
+                                <span style="font-size: 0.75rem; color: var(--text-secondary); font-weight: 600; margin-top: 0.75rem; text-transform: uppercase; letter-spacing: 1px;" id="lbl-mesh-radar-title">Bluetooth Transceiver Active</span>
+                            </div>
+                        </div>
+
+                        <!-- Messages Feed -->
+                        <div id="mesh-messages-list" style="display: flex; flex-direction: column; gap: 0.75rem; max-height: 250px; overflow-y: auto; padding-right: 5px;">
+                            <!-- Placeholder -->
+                            <div style="text-align: center; color: var(--text-secondary); padding: 2rem 0;" id="mesh-feed-empty">
+                                <i class="fa-solid fa-satellite-dish" style="font-size: 1.8rem; margin-bottom: 0.5rem; color: var(--text-secondary);"></i>
+                                <p style="font-size: 0.85rem;" id="lbl-mesh-empty-text">No active mesh transmissions detected yet.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Integration Info -->
+                    <div style="margin-top: 1.5rem; padding-top: 0.75rem; border-top: 1px solid var(--border-glass); display: flex; justify-content: space-between; align-items: center; font-size: 0.72rem; color: var(--text-secondary);" id="mesh-integration-card">
+                        <span><i class="fa-solid fa-circle-info"></i> <span id="lbl-mesh-bridge-status">Native Bridge Connection Status:</span></span>
+                        <span id="mesh-bridge-badge" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); padding: 0.15rem 0.4rem; border-radius: 6px; color: #ef4444; font-weight: 700;">Simulated Link</span>
+                    </div>
+
+                    <!-- Phone Testing Link Hint -->
+                    <div id="mesh-test-phone-hint" style="margin-top: 1rem; padding: 0.75rem; border-radius: 8px; background: rgba(59, 130, 246, 0.08); border: 1px solid rgba(59, 130, 246, 0.15); font-size: 0.75rem; line-height: 1.4; color: var(--text-secondary); display: none;">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- FEEDBACK & RECOMMENDATIONS TAB -->
+        <section id="panel-feedback" class="tab-panel" aria-labelledby="nav-btn-feedback">
+            <h2 class="hero-title" style="font-size: 2rem; margin-bottom: 0.5rem;" id="lbl-feedback-title">
+                <i class="fa-solid fa-comments"></i> Feedback & Suggestions Hub
+            </h2>
+            <p id="lbl-feedback-desc" style="color: var(--text-secondary); margin-bottom: 2rem;">
+                Help us improve GramSetu. Submit your recommendations, product reviews, complaints, or new ideas directly to our platform.
+            </p>
+
+            <div class="grid-cols-2" style="gap: 1.5rem;">
+                <!-- Feedback Submission Form -->
+                <div class="card-glass" style="display: flex; flex-direction: column; justify-content: space-between;">
+                    <div>
+                        <h3 class="card-title" id="lbl-feedback-form-title">
+                            <i class="fa-solid fa-pen-to-square"></i> Share Your Thoughts
+                        </h3>
+                        <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 1.5rem;" id="lbl-feedback-form-desc">
+                            Select a category, rate your experience, and write your suggestions below.
+                        </p>
+
+                        <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+                            <!-- Category Select -->
+                            <div class="filter-group" style="min-width: 100%;">
+                                <label for="feedback-category" id="lbl-feedback-category-label">Feedback Category</label>
+                                <select id="feedback-category" style="background: rgba(11, 15, 25, 0.6); border: 1px solid var(--border-glass); color: var(--text-primary); padding: 0.6rem 0.9rem; border-radius: 8px; font-family: var(--font-body); outline: none;">
+                                    <option value="recommendation">Recommendation</option>
+                                    <option value="review">Product Review</option>
+                                    <option value="complaint">Complaint</option>
+                                    <option value="idea">Idea / Suggestion</option>
+                                </select>
+                            </div>
+
+                            <!-- Rating Stars Selection -->
+                            <div class="filter-group" style="min-width: 100%;">
+                                <label id="lbl-feedback-rating-label">Rating</label>
+                                <div class="feedback-stars-selector" style="display: flex; gap: 0.5rem; font-size: 1.8rem; color: #4b5563; margin-top: 0.25rem;">
+                                    <i class="fa-solid fa-star feedback-star" data-value="1" style="cursor: pointer; transition: color 0.2s;" onclick="setFeedbackRating(1)"></i>
+                                    <i class="fa-solid fa-star feedback-star" data-value="2" style="cursor: pointer; transition: color 0.2s;" onclick="setFeedbackRating(2)"></i>
+                                    <i class="fa-solid fa-star feedback-star" data-value="3" style="cursor: pointer; transition: color 0.2s;" onclick="setFeedbackRating(3)"></i>
+                                    <i class="fa-solid fa-star feedback-star" data-value="4" style="cursor: pointer; transition: color 0.2s;" onclick="setFeedbackRating(4)"></i>
+                                    <i class="fa-solid fa-star feedback-star" data-value="5" style="cursor: pointer; transition: color 0.2s;" onclick="setFeedbackRating(5)"></i>
+                                </div>
+                            </div>
+
+                            <!-- Feedback Text Content -->
+                            <div class="filter-group" style="min-width: 100%;">
+                                <label for="feedback-content" id="lbl-feedback-text-label">Message / Details</label>
+                                <textarea id="feedback-content" rows="4" maxlength="1000" placeholder="Please write your recommendation, idea, or issue here..." style="background: rgba(11, 15, 25, 0.6); border: 1px solid var(--border-glass); color: var(--text-primary); padding: 0.6rem 0.9rem; border-radius: 8px; font-family: var(--font-body); outline: none; resize: none;"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 1.5rem;">
+                        <button class="btn-primary" style="width: 100%;" onclick="submitFeedback()" id="btn-submit-feedback">
+                            <i class="fa-solid fa-paper-plane"></i> Submit Feedback
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Feedback Stats & Community Board -->
+                <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                    <!-- Stats Dashboard Row -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div class="card-glass" style="padding: 1rem; text-align: center; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+                            <span style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; text-transform: uppercase;" id="lbl-feedback-avg-rating">Average Rating</span>
+                            <span id="feedback-stat-rating-num" style="font-size: 2rem; font-weight: 800; color: #fbbf24; margin: 0.25rem 0;">0.0</span>
+                            <div id="feedback-stat-rating-stars" style="color: #fbbf24; font-size: 0.9rem; display: flex; gap: 0.1rem;">
+                                <i class="fa-regular fa-star"></i><i class="fa-regular fa-star"></i><i class="fa-regular fa-star"></i><i class="fa-regular fa-star"></i><i class="fa-regular fa-star"></i>
+                            </div>
+                        </div>
+                        <div class="card-glass" style="padding: 1rem; text-align: center; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+                            <span style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; text-transform: uppercase;" id="lbl-feedback-total-posts">Total Submissions</span>
+                            <span id="feedback-stat-count" style="font-size: 2.2rem; font-weight: 800; color: var(--color-accent); margin-top: 0.25rem;">0</span>
+                        </div>
+                    </div>
+
+                    <!-- Community Board list -->
+                    <div class="card-glass" style="flex: 1; display: flex; flex-direction: column; justify-content: space-between; min-height: 280px;">
+                        <div>
+                            <h3 class="card-title" style="margin-bottom: 1rem;" id="lbl-feedback-board-title">
+                                <i class="fa-solid fa-users"></i> Community Suggestions Board
+                            </h3>
+                            <div id="feedback-board-list" style="display: flex; flex-direction: column; gap: 0.75rem; max-height: 280px; overflow-y: auto; padding-right: 5px;">
+                                <!-- Placeholder -->
+                                <div style="text-align: center; color: var(--text-secondary); padding: 2rem 0;" id="feedback-empty-placeholder">
+                                    <i class="fa-solid fa-comments-dollar" style="font-size: 1.8rem; margin-bottom: 0.5rem; color: var(--text-secondary);"></i>
+                                    <p style="font-size: 0.85rem;" id="lbl-feedback-empty-board">No feedback or suggestions submitted yet.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <!-- DATA SOURCES LINKS TAB -->
         <section id="panel-sources" class="tab-panel" aria-labelledby="nav-btn-sources">
             <h2 class="hero-title" style="font-size: 2rem; margin-bottom: 0.5rem;"><i
@@ -1984,7 +2201,7 @@
 
 
     <!-- Custom Web Core Script -->
-    <script src="js/app.js?v=1.0.3"></script>
+    <script src="js/app.js?v=1.0.6"></script>
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
