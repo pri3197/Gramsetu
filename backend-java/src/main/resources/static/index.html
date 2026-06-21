@@ -14,7 +14,7 @@
     <meta name="theme-color" content="#1e293b">
 
     <!-- CSS Dependencies -->
-    <link rel="stylesheet" href="css/style.css?v=1.0.3">
+    <link rel="stylesheet" href="css/style.css?v=1.0.4">
 
 
     <!-- Leaflet Map CSS -->
@@ -170,8 +170,7 @@
                                 Fishery Hub</h4>
                             <p id="lbl-auto-7"
                                 style="color: var(--text-secondary); font-size: 0.9rem; line-height: 1.5;">Explore
-                                coastal depletion heatmaps, breeding calendar restriction rules, marine sightings, and
-                                coral reef protection guides.</p>
+                                coastal depletion heatmaps, breeding calendar restriction rules, and marine sightings.</p>
                         </div>
                         <span id="lbl-auto-8" class="gateway-link"
                             style="color: #3b82f6; font-weight: 600; font-size: 0.88rem; margin-top: 1rem; display: inline-flex; align-items: center; gap: 5px;">Enter
@@ -1011,8 +1010,6 @@
                         Welfare</button>
                     <button class="btn-primary subnav-btn" onclick="switchFisheriesSubView('sightings')"
                         id="btn-fish-sub-sightings"><i class="fa-solid fa-camera"></i> Marine Conservation</button>
-                    <button class="btn-primary subnav-btn" onclick="switchFisheriesSubView('corals')"
-                        id="btn-fish-sub-corals"><i class="fa-solid fa-seedling"></i> Mangrove Protection</button>
                 </div>
 
 
@@ -1293,87 +1290,7 @@
 
 
 
-                <!-- Sub-panel: Mangrove Protection & Savings Calculator -->
-                <div id="fisheries-sub-corals" class="fisheries-sub-panel">
-                    <div class="grid-cols-2">
-                        <!-- Mangrove Canopy Cover Simulation Panel -->
-                        <div class="card-glass" style="display: flex; flex-direction: column; justify-content: space-between;">
-                            <div>
-                                <h3 class="card-title" id="lbl-simulation-title"><i class="fa-solid fa-earth-asia"></i> Mangrove Canopy Simulation</h3>
-                                <p style="color: var(--text-secondary); font-size: 0.88rem; margin-bottom: 1.25rem;" id="lbl-simulation-desc">
-                                    Observe temporal changes in India's mangrove cover mapped from FSI and ISRO Bhuvan satellite data. Select/drag the timeline or click mapped states to query regional assessments.
-                                </p>
 
-                                <!-- Time-Series Year Slider -->
-                                <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-glass); padding: 1rem; border-radius: 12px; margin-bottom: 1.25rem;">
-                                    <label for="mangrove-year-slider" style="display:flex; justify-content:space-between; font-weight:600; color:var(--text-primary); margin-bottom:0.5rem; font-size: 0.9rem;">
-                                        <span id="lbl-slider-year">FSI Assessment Year:</span>
-                                        <span id="mangrove-slider-val" style="color: var(--color-accent-light); font-size: 1.1rem; font-weight:700;">2023</span>
-                                    </label>
-                                    <input type="range" id="mangrove-year-slider" min="2005" max="2023" step="1" value="2023"
-                                        style="width: 100%; accent-color: var(--color-accent-light); cursor: pointer;"
-                                        oninput="updateMangroveYear(this.value)">
-                                    <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.25rem; font-weight:500;">
-                                        <span>2005</span>
-                                        <span>2009</span>
-                                        <span>2011</span>
-                                        <span>2013</span>
-                                        <span>2015</span>
-                                        <span>2017</span>
-                                        <span>2019</span>
-                                        <span>2021</span>
-                                        <span>2023</span>
-                                    </div>
-                                </div>
-
-                                <!-- Selected State/National Canopy Cover Statistics -->
-                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1.25rem;" id="mangrove-stats-container">
-                                    <div class="result-card active" style="padding: 0.6rem 0.75rem; background: rgba(255,255,255,0.02); text-align: center; border: 1px solid var(--border-glass);">
-                                        <span style="font-size: 0.72rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 600;" id="lbl-selected-region">Selected Zone</span>
-                                        <div style="font-size: 1.05rem; font-weight: 700; color: var(--text-primary); margin-top: 0.2rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" id="mangrove-selected-state">All India</div>
-                                    </div>
-                                    <div class="result-card active" style="padding: 0.6rem 0.75rem; background: rgba(5, 150, 105, 0.05); text-align: center; border: 1px solid rgba(5, 150, 105, 0.2);">
-                                        <span style="font-size: 0.72rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 600;" id="lbl-canopy-cover-label">Canopy Cover</span>
-                                        <div style="font-size: 1.15rem; font-weight: 800; color: var(--color-accent-light); margin-top: 0.2rem;" id="mangrove-canopy-val">4,992.0 km²</div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Dynamic Satellite Imagery Comparison Card -->
-                            <div class="card-glass" style="padding: 0.75rem; border: 1px solid var(--border-glass); background: rgba(15, 23, 42, 0.2); margin-top: auto;">
-                                <h4 style="font-size: 0.8rem; font-weight:700; color:var(--text-primary); margin-bottom:0.5rem; display:flex; justify-content:space-between; align-items:center;" id="lbl-satellite-img-title">
-                                    <span><i class="fa-solid fa-satellite"></i> Mapped Estuary (Canopy View)</span>
-                                    <span id="mangrove-satellite-year" style="font-size:0.7rem; padding: 0.15rem 0.4rem; border-radius:6px; background:var(--color-accent); color:#fff; font-weight:700;">2026 Restored</span>
-                                </h4>
-                                <div style="width: 100%; height: 130px; overflow: hidden; border-radius: 8px; position: relative; border: 1px solid rgba(255,255,255,0.05);">
-                                    <img id="mangrove-satellite-img" src="/uploads/mangrove_2026.png" alt="Mangrove Canopy View" style="width: 100%; height: 100%; object-fit: cover; transition: opacity 0.4s ease-in-out;">
-                                </div>
-                                <p style="font-size: 0.7rem; color:var(--text-secondary); margin-top:0.4rem; text-align:center; margin-bottom: 0;" id="lbl-satellite-img-caption">
-                                    Canopy indicator: Lush dark green represents fully-restored dense cover.
-                                </p>
-                            </div>
-                        </div>
-
-                        <!-- Live IMD Fisherman Warning Bulletin Panel -->
-                        <div class="card-glass" style="display: flex; flex-direction: column; justify-content: space-between;">
-                            <div>
-                                <h3 class="card-title" id="lbl-imd-warnings-title" style="color: #fbbf24;"><i class="fa-solid fa-triangle-exclamation"></i> Live IMD Fishermen Alerts</h3>
-                                <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 1rem;" id="lbl-imd-warnings-desc">
-                                    Real-time sea state and storm warnings published dynamically by the India Meteorological Department (IMD) for safety at sea.
-                                </p>
-                                <div id="imd-warnings-list" style="display: flex; flex-direction: column; gap: 0.65rem; max-height: 340px; overflow-y: auto; padding-right: 5px;">
-                                    <div style="text-align: center; color: var(--text-secondary); padding: 3rem 0;">
-                                        <i class="fa-solid fa-spinner fa-spin" style="font-size: 1.5rem; margin-bottom: 0.5rem; color: #fbbf24;"></i>
-                                        <p style="font-size:0.85rem;">Connecting to IMD live server...</p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div style="margin-top: 1rem; padding-top: 0.75rem; border-top: 1px solid var(--border-glass); font-size: 0.7rem; color: var(--text-secondary); display: flex; align-items: center; gap: 0.35rem;">
-                                <i class="fa-solid fa-circle-info"></i> <span id="lbl-imd-advisory-source">Source: IMD Meteorological Bulletins updated dynamically.</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
             </div>
         </section>
 
@@ -1983,43 +1900,7 @@
 
 
 
-                <!-- Source Card 14 -->
-                <div class="card-glass source-card">
-                    <h3 class="card-title" style="color: var(--color-accent-light);"><i class="fa-solid fa-tree"></i>
-                        FSI Mangrove Cover Assessment (ISFR)</h3>
-                    <p id="lbl-auto-198"
-                        style="color: var(--text-secondary); margin-top: 0.75rem; line-height: 1.6; font-size: 0.9rem;">
-                        Provides baseline mangrove cover distribution data, state-wise density metrics, and ecological storm surge mitigation valuations published by the Forest Survey of India (FSI).
-                    </p>
-                    <p style="color: var(--text-secondary); margin-top: 0.5rem; font-size: 0.85rem;"><strong
-                            id="lbl-auto-199">Refresh Rate:</strong> Biennial (Static Reference)</p>
-                    <a id="lbl-auto-200" href="https://fsi.nic.in" target="_blank" rel="noopener noreferrer"
-                        class="source-link">Visit FSI India <i class="fa-solid fa-up-right-from-square"></i></a>
-                </div>
 
-                <!-- Source Card 15 -->
-                <div class="card-glass source-card">
-                    <h3 class="card-title" style="color: var(--color-accent-light);"><i class="fa-solid fa-satellite"></i>
-                        ISRO Bhuvan Coastal Zone Monitoring</h3>
-                    <p style="color: var(--text-secondary); margin-top: 0.75rem; line-height: 1.6; font-size: 0.9rem;">
-                        Provides high-resolution multi-temporal satellite imagery mapping coastal zone variations, canopy density, and reforestation drive impacts over the years.
-                    </p>
-                    <p style="color: var(--text-secondary); margin-top: 0.5rem; font-size: 0.85rem;"><strong>Refresh Rate:</strong> Near Real-Time (Satellite Pass)</p>
-                    <a href="https://bhuvan.nrsc.gov.in" target="_blank" rel="noopener noreferrer"
-                        class="source-link">Visit ISRO Bhuvan <i class="fa-solid fa-up-right-from-square"></i></a>
-                </div>
-
-                <!-- Source Card 16 -->
-                <div class="card-glass source-card">
-                    <h3 class="card-title" style="color: var(--color-accent-light);"><i class="fa-solid fa-triangle-exclamation"></i>
-                        IMD Live Marine Warning Bulletin</h3>
-                    <p style="color: var(--text-secondary); margin-top: 0.75rem; line-height: 1.6; font-size: 0.9rem;">
-                        Scrapes the live Fishermen Warning Bulletins issued by ACWCs/CWCs for coastal hazard monitoring and safety alerts.
-                    </p>
-                    <p style="color: var(--text-secondary); margin-top: 0.5rem; font-size: 0.85rem;"><strong>Refresh Rate:</strong> Dynamic (Hourly Checks)</p>
-                    <a href="https://mausam.imd.gov.in/imd_latest/contents/index_fisherman.php" target="_blank" rel="noopener noreferrer"
-                        class="source-link">Visit IMD Mausam <i class="fa-solid fa-up-right-from-square"></i></a>
-                </div>
             </div>
         </section>
 
@@ -2103,7 +1984,7 @@
 
 
     <!-- Custom Web Core Script -->
-    <script src="js/app.js?v=1.0.2"></script>
+    <script src="js/app.js?v=1.0.3"></script>
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
