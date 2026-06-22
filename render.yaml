@@ -30,6 +30,6 @@ services:
       - key: SPRING_DATASOURCE_DRIVER_CLASS_NAME
         value: org.postgresql.Driver
       - key: CORS_ALLOWED_ORIGINS
-        value: https://gramsetu.vercel.app
+        value: https://gramsetu-eight.vercel.app,https://gramsetu.vercel.app,http://localhost:3000,http://localhost:8081
       - key: SPRING_JPA_DATABASE_PLATFORM
         value: org.hibernate.dialect.PostgreSQLDialect
