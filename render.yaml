@@ -31,3 +31,5 @@ services:
         value: org.postgresql.Driver
       - key: CORS_ALLOWED_ORIGINS
         value: https://gramsetu.vercel.app
+      - key: SPRING_JPA_DATABASE_PLATFORM
+        value: org.hibernate.dialect.PostgreSQLDialect
