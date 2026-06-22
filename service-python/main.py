@@ -172,8 +172,43 @@ def get_historical_mangroves():
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to fetch historical mangrove data: {str(e)}")
 
+@app.get("/fisheries/fish-map")
+def get_fish_map():
+    fetcher = DataFetcher()
+    try:
+        data = fetcher.fetch_fish_map_data()
+        return {"count": len(data), "data": data}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to fetch fish map data: {str(e)}")
+
+@app.get("/fisheries/reproduction")
+def get_reproduction_bans():
+    fetcher = DataFetcher()
+    try:
+        data = fetcher.fetch_reproduction_bans()
+        return {"count": len(data), "data": data}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to fetch reproduction bans: {str(e)}")
+
+@app.get("/fisheries/trends")
+def get_historical_trends():
+    fetcher = DataFetcher()
+    try:
+        data = fetcher.fetch_historical_trends()
+        return {"count": len(data), "data": data}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to fetch historical trends: {str(e)}")
+
+@app.get("/fisheries/schemes")
+def get_fisheries_schemes():
+    fetcher = DataFetcher()
+    try:
+        data = fetcher.fetch_fisheries_schemes()
+        return {"count": len(data), "data": data}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to fetch fisheries schemes: {str(e)}")
+
 if __name__ == "__main__":
     import uvicorn
     # Local development server on port 8000
     uvicorn.run(app, host="127.0.0.1", port=8000)
-

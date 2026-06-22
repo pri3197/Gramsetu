@@ -4,6 +4,7 @@ import com.gramsetu.model.GroundwaterRecord;
 import com.gramsetu.repository.GroundwaterRecordRepository;
 import com.gramsetu.model.WeatherForecast;
 import com.gramsetu.repository.WeatherForecastRepository;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import org.slf4j.Logger;
@@ -33,16 +34,68 @@ public class WeatherController {
 
     private final RestTemplate restTemplate = new RestTemplate();
 
+    private List<GroundwaterRecord> fetchGroundwaterFromPythonService() {
+        try {
+            String url = pythonServiceUrl + "/weather/groundwater";
+            Map<String, Object> response = restTemplate.getForObject(url, Map.class);
+            List<GroundwaterRecord> list = new ArrayList<>();
+            if (response != null && response.containsKey("data")) {
+                List<Map<String, Object>> records = (List<Map<String, Object>>) response.get("data");
+                for (Map<String, Object> r : records) {
+                    GroundwaterRecord g = new GroundwaterRecord();
+                    g.setState((String) r.get("state"));
+                    g.setDistrict((String) r.get("district"));
+                    g.setLatitude(Double.valueOf(r.get("latitude").toString()));
+                    g.setLongitude(Double.valueOf(r.get("longitude").toString()));
+                    g.setYear(Integer.valueOf(r.get("year").toString()));
+                    g.setWaterTableDepth(Double.valueOf(r.get("waterTableDepth").toString()));
+                    g.setSewageContamination(Double.valueOf(r.get("sewageContamination").toString()));
+                    g.setDepletionRate(Double.valueOf(r.get("depletionRate").toString()));
+                    list.add(g);
+                }
+            }
+            return list;
+        } catch (Exception e) {
+            log.error("Failed to fetch groundwater records from Python API: {}", e.getMessage());
+            return new ArrayList<>();
+        }
+    }
+
+    private List<WeatherForecast> fetchWeatherFromPythonService() {
+        try {
+            String url = pythonServiceUrl + "/weather/forecast";
+            Map<String, Object> response = restTemplate.getForObject(url, Map.class);
+            List<WeatherForecast> forecasts = new ArrayList<>();
+            if (response != null && response.containsKey("data")) {
+                List<Map<String, Object>> records = (List<Map<String, Object>>) response.get("data");
+                for (Map<String, Object> r : records) {
+                    WeatherForecast f = new WeatherForecast();
+                    f.setRegion((String) r.get("region"));
+                    f.setCurrentTemp(Double.valueOf(r.get("current_temp").toString()));
+                    f.setForecast((String) r.get("forecast"));
+                    f.setElNinoStatus((String) r.get("el_nino_status"));
+                    f.setElNinoImpact((String) r.get("el_nino_impact"));
+                    f.setAnomalyIndex(Double.valueOf(r.get("anomaly_index").toString()));
+                    forecasts.add(f);
+                }
+            }
+            return forecasts;
+        } catch (Exception e) {
+            log.error("Failed to fetch weather forecasts from Python API: {}", e.getMessage());
+            return new ArrayList<>();
+        }
+    }
+
     @GetMapping("/groundwater")
     public ResponseEntity<List<GroundwaterRecord>> getGroundwaterRecords() {
-        log.info("Fetching groundwater records from database");
-        return ResponseEntity.ok(groundwaterRepository.findAll());
+        log.info("Fetching groundwater records from Python service");
+        return ResponseEntity.ok(fetchGroundwaterFromPythonService());
     }
 
     @GetMapping("/forecast")
     public ResponseEntity<List<WeatherForecast>> getWeatherForecast() {
-        log.info("Fetching regional weather forecasts from database");
-        return ResponseEntity.ok(weatherRepository.findAll());
+        log.info("Fetching regional weather forecasts from Python service");
+        return ResponseEntity.ok(fetchWeatherFromPythonService());
     }
 
     @GetMapping("/climate-trends")
@@ -58,19 +111,6 @@ public class WeatherController {
             log.error("Could not fetch climate trends from Python service: {}", e.getMessage());
         }
         
-        // Return a mock fallback trend dataset if the Python service is offline
-        return ResponseEntity.ok(getFallbackClimateTrends());
-    }
-
-    private List<Map<String, Object>> getFallbackClimateTrends() {
-        return List.of(
-            Map.of("year", 2000, "temp_anomaly", 0.22, "rainfall_deviation", 5.0),
-            Map.of("year", 2005, "temp_anomaly", 0.39, "rainfall_deviation", 1.0),
-            Map.of("year", 2010, "temp_anomaly", 0.60, "rainfall_deviation", 9.0),
-            Map.of("year", 2015, "temp_anomaly", 0.74, "rainfall_deviation", -14.0),
-            Map.of("year", 2020, "temp_anomaly", 0.72, "rainfall_deviation", 9.0),
-            Map.of("year", 2023, "temp_anomaly", 1.12, "rainfall_deviation", -8.0),
-            Map.of("year", 2026, "temp_anomaly", 1.15, "rainfall_deviation", -6.0)
-        );
+        return ResponseEntity.ok(List.of());
     }
 }

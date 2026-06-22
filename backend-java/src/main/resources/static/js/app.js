@@ -44,42 +44,53 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // 1. Tab Navigation Routing
 function switchTab(tabId) {
-    if (activeTab === tabId) return;
+    console.log("switchTab called with:", tabId);
+    try {
+        if (activeTab === tabId) return;
 
-    // Hide active panel and show target panel
-    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        // Hide active panel and show target panel
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
 
-    const panel = document.getElementById(`panel-${tabId}`);
-    if (panel) panel.classList.add('active');
+        const panel = document.getElementById(`panel-${tabId}`);
+        if (panel) {
+            panel.classList.add('active');
+        } else {
+            console.warn(`Panel not found for tabId: ${tabId}`);
+        }
 
-    const btn = document.getElementById(`nav-btn-${tabId}`);
-    if (btn) btn.classList.add('active');
+        const btn = document.getElementById(`nav-btn-${tabId}`);
+        if (btn) {
+            btn.classList.add('active');
+        }
 
-    activeTab = tabId;
+        activeTab = tabId;
 
-    // Lazy initialize and resize maps when they become visible
-    if (tabId === 'farming') {
-        switchFarmingSubView(activeFarmingSubView || 'mandi');
-    } else if (tabId === 'fisheries') {
-        initFisheriesMap();
-        loadFisheriesData();
-        if (fisheriesMap) setTimeout(() => fisheriesMap.invalidateSize(), 100);
-    } else if (tabId === 'news') {
-        loadNews();
-    } else if (tabId === 'weather') {
-        loadWeather();
-        initGroundwaterMap();
-        if (groundwaterMap) setTimeout(() => groundwaterMap.invalidateSize(), 100);
-    } else if (tabId === 'birds') {
-        initBirdsMap();
-        if (birdsMap) setTimeout(() => birdsMap.invalidateSize(), 100);
-    } else if (tabId === 'mesh') {
-        initMeshTab();
-    } else if (tabId === 'feedback') {
-        initFeedbackTab();
-    } else if (tabId === 'dashboard') {
-        loadDashboardStats();
+        // Lazy initialize and resize maps when they become visible
+        if (tabId === 'farming') {
+            switchFarmingSubView(activeFarmingSubView || 'mandi');
+        } else if (tabId === 'fisheries') {
+            initFisheriesMap();
+            loadFisheriesData();
+            if (fisheriesMap) setTimeout(() => fisheriesMap.invalidateSize(), 100);
+        } else if (tabId === 'news') {
+            loadNews();
+        } else if (tabId === 'weather') {
+            loadWeather();
+            initGroundwaterMap();
+            if (groundwaterMap) setTimeout(() => groundwaterMap.invalidateSize(), 100);
+        } else if (tabId === 'birds') {
+            initBirdsMap();
+            if (birdsMap) setTimeout(() => birdsMap.invalidateSize(), 100);
+        } else if (tabId === 'mesh') {
+            initMeshTab();
+        } else if (tabId === 'feedback') {
+            initFeedbackTab();
+        } else if (tabId === 'dashboard') {
+            loadDashboardStats();
+        }
+    } catch (error) {
+        console.error("Error inside switchTab:", error);
     }
 }
 
@@ -88,29 +99,34 @@ let activeFarmingSubView = 'mandi';
 let mandiPricesMap = null;
 
 function switchFarmingSubView(viewId) {
-    activeFarmingSubView = viewId;
+    console.log("switchFarmingSubView called with:", viewId);
+    try {
+        activeFarmingSubView = viewId;
 
-    // Toggles visibility of farming sub-panels
-    document.querySelectorAll('.farming-sub-panel').forEach(p => p.classList.remove('active'));
-    document.querySelectorAll('.farming-subnav .subnav-btn').forEach(b => b.classList.remove('active'));
+        // Toggles visibility of farming sub-panels
+        document.querySelectorAll('.farming-sub-panel').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.farming-subnav .subnav-btn').forEach(b => b.classList.remove('active'));
 
-    const targetPanel = document.getElementById(`farming-sub-${viewId}`);
-    if (targetPanel) targetPanel.classList.add('active');
+        const targetPanel = document.getElementById(`farming-sub-${viewId}`);
+        if (targetPanel) targetPanel.classList.add('active');
 
-    const targetBtn = document.getElementById(`btn-farm-sub-${viewId}`);
-    if (targetBtn) targetBtn.classList.add('active');
+        const targetBtn = document.getElementById(`btn-farm-sub-${viewId}`);
+        if (targetBtn) targetBtn.classList.add('active');
 
-    // Lazy initialize maps
-    if (viewId === 'cattle') {
-        initCattleMap();
-        if (cattleMap) setTimeout(() => cattleMap.invalidateSize(), 100);
-    } else if (viewId === 'mandi') {
-        initMandiPricesMap();
-        renderMandiPriceMarkers();
-        if (mandiPricesMap) setTimeout(() => mandiPricesMap.invalidateSize(), 100);
-    } else if (viewId === 'market') {
-        loadMarketProducts();
-        updateSellerUI();
+        // Lazy initialize maps
+        if (viewId === 'cattle') {
+            initCattleMap();
+            if (cattleMap) setTimeout(() => cattleMap.invalidateSize(), 100);
+        } else if (viewId === 'mandi') {
+            initMandiPricesMap();
+            renderMandiPriceMarkers();
+            if (mandiPricesMap) setTimeout(() => mandiPricesMap.invalidateSize(), 100);
+        } else if (viewId === 'market') {
+            loadMarketProducts();
+            updateSellerUI();
+        }
+    } catch (error) {
+        console.error("Error inside switchFarmingSubView:", error);
     }
 }
 
@@ -141,13 +157,13 @@ async function loadDashboardStats() {
             const avg = Math.round(sum / wheatPrices.length);
             document.getElementById('stats-wheat-price').innerText = `₹ ${avg}`;
         } else {
-            document.getElementById('stats-wheat-price').innerText = `₹ 2,320`;
+            document.getElementById('stats-wheat-price').innerText = `N/A`;
         }
     } catch (e) {
-        console.warn("Could not fetch dashboard summary stats. Using backup visual displays.", e);
-        document.getElementById('stats-outbreaks-count').innerText = "93";
-        document.getElementById('stats-wheat-price').innerText = "₹ 2,320";
-        document.getElementById('stats-bird-sightings').innerText = "8";
+        console.warn("Could not fetch dashboard summary stats.", e);
+        document.getElementById('stats-outbreaks-count').innerText = "0";
+        document.getElementById('stats-wheat-price').innerText = "N/A";
+        document.getElementById('stats-bird-sightings').innerText = "0";
     }
 }
 
@@ -2549,49 +2565,12 @@ async function loadGroundwaterData() {
         const response = await fetch('/api/weather/groundwater');
         groundwaterData = await response.json();
     } catch (e) {
-        console.warn("Could not fetch groundwater data from API. Loading mock fallback dataset.", e);
-        loadMockGroundwater();
-    }
-
-    if (!groundwaterData || groundwaterData.length === 0) {
-        loadMockGroundwater();
+        console.warn("Could not fetch groundwater data from API.", e);
+        groundwaterData = [];
     }
 
     // Draw default chart (National Average)
     renderGroundwaterChart();
-}
-
-function loadMockGroundwater() {
-    // Generate simulated data 2016-2026
-    const configs = [
-        { state: "Punjab", district: "Ludhiana", lat: 30.9010, lng: 75.8573, baseDepth: 24.5, baseSewage: 45.0, rate: 1.2 },
-        { state: "Punjab", district: "Amritsar", lat: 31.6340, lng: 74.8723, baseDepth: 18.0, baseSewage: 35.0, rate: 0.8 },
-        { state: "Rajasthan", district: "Jaipur", lat: 26.9124, lng: 75.7873, baseDepth: 35.0, baseSewage: 50.0, rate: 1.8 },
-        { state: "Rajasthan", district: "Jodhpur", lat: 26.2389, lng: 73.0243, baseDepth: 42.0, baseSewage: 30.0, rate: 2.1 },
-        { state: "Uttar Pradesh", district: "Mathura", lat: 27.4924, lng: 77.6737, baseDepth: 25.0, baseSewage: 60.0, rate: 1.3 },
-        { state: "Maharashtra", district: "Pune", lat: 18.5204, lng: 73.8567, baseDepth: 14.0, baseSewage: 55.0, rate: 0.5 },
-        { state: "Karnataka", district: "Mysore", lat: 12.2958, lng: 76.6394, baseDepth: 12.0, baseSewage: 30.0, rate: 0.4 }
-    ];
-
-    groundwaterData = [];
-    configs.forEach(c => {
-        for (let year = 2016; year <= 2026; year++) {
-            const diff = year - 2016;
-            let depth = c.baseDepth + (diff * c.rate);
-            let sewage = c.baseSewage + (diff * 2.0);
-            sewage = Math.min(100.0, sewage);
-            groundwaterData.push({
-                state: c.state,
-                district: c.district,
-                latitude: c.lat,
-                longitude: c.lng,
-                year: year,
-                waterTableDepth: depth,
-                sewageContamination: sewage,
-                depletionRate: c.rate
-            });
-        }
-    });
 }
 
 function initGroundwaterMap() {
@@ -2703,6 +2682,12 @@ function renderGroundwaterChart() {
     const container = document.getElementById('groundwater-svg-container');
     const titleEl = document.getElementById('lbl-gw-chart-district');
     if (!container) return;
+
+    if (!groundwaterData || groundwaterData.length === 0) {
+        container.innerHTML = '<div style="display:flex; align-items:center; justify-content:center; height:100%; color:var(--text-secondary); font-size:0.9rem;">No groundwater dataset loaded.</div>';
+        if (titleEl) titleEl.innerText = "";
+        return;
+    }
 
     // Determine dataset for chart (specific district or national average)
     let points = [];
@@ -2907,28 +2892,7 @@ function initMeshTab() {
             }, 3000);
         }
 
-        if (!meshSimulationInterval) {
-            // Load initial dummy alerts
-            if (meshMessages.length === 0) {
-                receiveMeshMessage('System', 'Offline Mesh network initialized. Ready to transmit.', 'info', new Date().toLocaleTimeString());
-            }
 
-            meshSimulationInterval = setInterval(() => {
-                if (activeTab !== 'mesh') return;
-                
-                const myHandle = (document.getElementById('mesh-sender-name')?.value || '').trim();
-                const mockPeers = [
-                    { sender: 'IMD Alert (Tuticorin)', text: 'Warning: High storm surge wave height of 3.4m predicted off coast. Fishermen advised not to venture.', urgency: 'emergency', recipient: '' },
-                    { sender: 'Farmer Suresh', text: 'Mandi pricing update: Premium Basmati selling at ₹6,200/qtl in local mandi market.', urgency: 'info', recipient: '' },
-                    { sender: 'Vet-Officer', text: 'Precautionary FMD vaccination drive starting at Panchayat sub-center tomorrow 8 AM.', urgency: 'warning', recipient: '' },
-                    { sender: 'Fisherman-Nathan', text: 'Private Alert: Shoals of Mackerel detected 4km south-east off beach. Catch potential high.', urgency: 'info', recipient: myHandle },
-                    { sender: 'Neighbor-Ramesh', text: 'Personal Note: Direct seed trading group link established. Verify organic purity checklist.', urgency: 'info', recipient: 'User-999' }
-                ];
-
-                const mock = mockPeers[Math.floor(Math.random() * mockPeers.length)];
-                receiveMeshMessage(mock.sender, mock.text, mock.urgency, new Date().toLocaleTimeString(), mock.recipient);
-            }, 12000);
-        }
     }
 }
 

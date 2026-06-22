@@ -19,6 +19,7 @@
     --font-body: 'Inter', sans-serif;
     --shadow-main: 0 8px 32px 0 rgba(15, 23, 42, 0.06); /* Soft shadows */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --bg-gradient: linear-gradient(rgba(241, 245, 249, 0.92), rgba(241, 245, 249, 0.95));
 }
 
 * {
@@ -37,7 +38,7 @@ body {
     flex-direction: column;
     overflow-x: hidden;
     background-image: 
-        linear-gradient(rgba(241, 245, 249, 0.92), rgba(241, 245, 249, 0.95)), 
+        var(--bg-gradient), 
         url('/uploads/farm_life_scene.png');
     background-size: cover;
     background-attachment: fixed;
@@ -946,6 +947,11 @@ textarea:focus {
    ========================================== */
 
 @media (max-width: 768px) {
+    :root {
+        /* Add green vignette tint on both sides of body background on mobile */
+        --bg-gradient: linear-gradient(to right, rgba(5, 150, 105, 0.22) 0%, rgba(241, 245, 249, 0.90) 20%, rgba(241, 245, 249, 0.92) 80%, rgba(5, 150, 105, 0.22) 100%);
+    }
+
     /* 1. Header & Navigation */
     .nav-container {
         display: grid !important;
@@ -973,9 +979,8 @@ textarea:focus {
     .nav-tabs {
         grid-column: 1 / span 2 !important;
         grid-row: 2 !important;
-        display: flex !important;
-        flex-wrap: wrap !important;
-        justify-content: center !important;
+        display: grid !important;
+        grid-template-columns: repeat(4, 1fr) !important;
         gap: 0.35rem !important;
         width: 100% !important;
         overflow: visible !important;
@@ -984,23 +989,25 @@ textarea:focus {
     }
 
     .tab-btn {
-        flex: 1 1 auto !important;
-        min-width: 90px !important;
-        max-width: 100% !important;
-        padding: 0.5rem 0.5rem !important;
-        font-size: 0.82rem !important;
+        width: 100% !important;
+        padding: 0.4rem 0.25rem !important;
+        font-size: 0.68rem !important;
         display: flex !important;
-        flex-direction: row !important;
+        flex-direction: column !important;
         align-items: center !important;
         justify-content: center !important;
-        gap: 0.35rem !important;
+        gap: 0.25rem !important;
         border-radius: 8px !important;
         text-align: center !important;
         line-height: 1.15 !important;
+        min-height: 54px !important;
     }
 
-    .tab-btn i {
+    .tab-btn i, .tab-btn .nav-tab-icon {
         font-size: 0.95rem !important;
+        margin-right: 0 !important;
+        width: 18px !important;
+        height: 18px !important;
     }
 
     /* 2. Main Container Sizing */
@@ -1329,8 +1336,33 @@ textarea:focus {
     background: rgba(16, 185, 129, 0.12);
     color: #34d399;
     border: 1px solid rgba(16, 185, 129, 0.25);
+}/* Custom Image-based Icons */
+.nav-tab-icon {
+    width: 18px;
+    height: 18px;
+    object-fit: contain;
+    vertical-align: middle;
+    margin-right: 0.35rem;
 }
 
+.subnav-icon {
+    width: 16px;
+    height: 16px;
+    object-fit: contain;
+    vertical-align: middle;
+    margin-right: 0.35rem;
+}
 
+.header-card-icon {
+    width: 36px;
+    height: 36px;
+    object-fit: contain;
+}
 
-
+.header-title-icon {
+    width: 28px;
+    height: 28px;
+    object-fit: contain;
+    vertical-align: middle;
+    margin-right: 0.5rem;
+}

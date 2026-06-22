@@ -724,3 +724,91 @@ class DataFetcher:
             print(f"Error scraping live IMD warnings: {e}")
             return fallback_warnings
 
+    def fetch_fish_map_data(self) -> list:
+        """
+        Returns locations and species density along the Indian coastline.
+        """
+        return [
+            {"species": "Mackerel", "latitude": 15.2993, "longitude": 73.7709, "location": "Goa Coast", "density": 0.85},
+            {"species": "Sardines", "latitude": 11.2588, "longitude": 75.7804, "location": "Calicut Coast", "density": 0.95},
+            {"species": "Tuna", "latitude": 10.5667, "longitude": 72.6333, "location": "Lakshadweep Sea", "density": 0.70},
+            {"species": "Pomfret", "latitude": 18.9750, "longitude": 72.8258, "location": "Mumbai Coast", "density": 0.80},
+            {"species": "Hilsa", "latitude": 21.6266, "longitude": 87.5074, "location": "Digha Coast (Bay of Bengal)", "density": 0.90},
+            {"species": "Sardines", "latitude": 9.9312, "longitude": 76.2673, "location": "Kochi Coast", "density": 0.88},
+            {"species": "Tuna", "latitude": 8.4875, "longitude": 76.9525, "location": "Trivandrum Coast", "density": 0.75},
+            {"species": "Mackerel", "latitude": 13.0827, "longitude": 80.2707, "location": "Chennai Coast", "density": 0.65},
+            {"species": "Pomfret", "latitude": 17.6868, "longitude": 83.2185, "location": "Vizag Coast", "density": 0.78}
+        ]
+
+    def fetch_reproduction_bans(self) -> list:
+        """
+        Returns breeding bans and localized warnings for fish species.
+        """
+        return [
+            {
+                "species": "Hilsa (Shad)",
+                "season": "September - October (Peak Monsoon Spawn)",
+                "reasons": {
+                    "en": "Spawning peak. Harvesting adult egg-bearing Hilsa now decimates next year's crop.",
+                    "hi": "अंडे देने का समय। इस समय अंडे देने वाली हिल्सा पकड़ने से अगले साल की पैदावार समाप्त हो जाएगी।",
+                    "ml": "മുട്ടയിടുന്ന സമയം. ഈ സമയത്ത് മുട്ടകളുള്ള ഹിൽസയെ പിടിക്കുന്നത് അടുത്ത വർഷത്തെ വിളവിനെ നശിപ്പിക്കും.",
+                    "ta": "முட்டையிடும் காலம். இந்த சமயத்தில் முட்டை சுமந்த ஹில்சாவை பிடிப்பது அடுத்த வருட மீன் உற்பத்தியை அழிக்கும்.",
+                    "bn": "ডিম ছাড়ার সময়। এই সময়ে ডিমওয়ালা ইলিশ ধরলে আগামী বছরের ইলিশের উৎপাদন মারাত্মকভাবে ব্যাহত হবে।"
+                }
+            },
+            {
+                "species": "Indian Oil Sardines",
+                "season": "June - August (Southwest Monsoon)",
+                "reasons": {
+                    "en": "Monsoon spawning. Crucial for restocking coastal biomass.",
+                    "hi": "मानसून प्रजनन। तटीय बायोमास को फिर से भरने के लिए महत्वपूर्ण है।",
+                    "ml": "മൺസൂൺ പ്രജനന കാലം. തീരദേശ മത്സ്യസമ്പത്ത് പുനരുജ്ജീവിപ്പിക്കാൻ ഈ സമയത്ത് ഇവയെ പിടിക്കാതിരിക്കുക.",
+                    "ta": "மழைக்கால இனப்பெருக்கம். கடலோர மீன் வளத்தை மீண்டும் பெருக்க இது மிக முக்கியமானது.",
+                    "bn": "বর্ষাকালীন প্রজনন। উপকূলীয় মাছের মজুদ বৃদ্ধির জন্য এটি অত্যন্ত গুরুত্বপূর্ণ।"
+                }
+            },
+            {
+                "species": "Silver Pomfret",
+                "season": "October - December (Post-Monsoon Spawn)",
+                "reasons": {
+                    "en": "Post-monsoon breeding. Restricting catches helps restore adult stocks.",
+                    "hi": "मानसून के बाद का प्रजनन। पकड़ने पर प्रतिबंध लगाने से स्टॉक बहाल करने में मदद मिलती है।",
+                    "ml": "മൺസൂണിന് ശേഷമുള്ള പ്രജനനം. പിടിക്കുന്നത് നിയന്ത്രിക്കുന്നത് മീൻ സമ്പത്ത് നിലനിർത്താൻ സഹായിക്കും.",
+                    "ta": "மழைக்காலத்திற்கு பிந்தைய இனப்பெருக்கம். இந்த காலத்தில் மீன்பிடிப்பதை கட்டுப்படுத்துவது மீன் வளத்தை காக்க உதவும்.",
+                    "bn": "বর্ষা পরবর্তী প্রজনন। এই সময় মাছ ধরা বন্ধ রাখলে মাছের সংখ্যা পুনরায় বৃদ্ধি পায়।"
+                }
+            }
+        ]
+
+    def fetch_historical_trends(self) -> list:
+        """
+        Returns population/biomass trends over time.
+        """
+        return [
+            {"year": 2016, "Sardines": 85, "Hilsa": 70, "Mackerel": 95, "Tuna": 80},
+            {"year": 2017, "Sardines": 80, "Hilsa": 68, "Mackerel": 90, "Tuna": 78},
+            {"year": 2018, "Sardines": 72, "Hilsa": 60, "Mackerel": 85, "Tuna": 75},
+            {"year": 2019, "Sardines": 60, "Hilsa": 52, "Mackerel": 70, "Tuna": 68},
+            {"year": 2020, "Sardines": 68, "Hilsa": 55, "Mackerel": 75, "Tuna": 72},
+            {"year": 2021, "Sardines": 74, "Hilsa": 58, "Mackerel": 80, "Tuna": 78},
+            {"year": 2022, "Sardines": 62, "Hilsa": 50, "Mackerel": 68, "Tuna": 70},
+            {"year": 2023, "Sardines": 55, "Hilsa": 45, "Mackerel": 60, "Tuna": 65},
+            {"year": 2024, "Sardines": 48, "Hilsa": 38, "Mackerel": 52, "Tuna": 58},
+            {"year": 2025, "Sardines": 52, "Hilsa": 42, "Mackerel": 58, "Tuna": 62},
+            {"year": 2026, "Sardines": 56, "Hilsa": 47, "Mackerel": 63, "Tuna": 67}
+        ]
+
+    def fetch_fisheries_schemes(self) -> list:
+        """
+        Returns central and state fisheries development schemes.
+        """
+        return [
+            {"state": "Central", "title": "PM Matsya Sampada Yojana (PMMSY)", "description": "Subsidies up to 40% (General) & 60% (SC/ST/Women) for modernizing boat engines, deep sea gear, and establishing cold chains."},
+            {"state": "Kerala", "title": "Subsidized Kerosene & Ban Relief", "description": "Provides subsidized kerosene for outboard motors and Rs 4,500 monthly relief during the 52-day monsoon marine fishing ban."},
+            {"state": "Tamil Nadu", "title": "Savings-cum-Relief Scheme", "description": "Fishermen contribute Rs 1,500, state contributes Rs 3,000, disbursing Rs 4,500 total during lean months. Also offers diesel subsidy."},
+            {"state": "Andhra Pradesh", "title": "YSR Matsyakara Bharosa", "description": "Enhanced financial assistance of Rs 10,000 for fishermen families during the marine ban period. Subsidized diesel at Rs 9/litre."},
+            {"state": "Maharashtra", "title": "Fishermen Group Accident Insurance", "description": "Insurance coverage up to Rs 5 Lakhs for active sea-going fishermen. Safety kit subsidies (GPS, lifejackets, wireless transponders)."},
+            {"state": "West Bengal", "title": "Hilsa Conservation Livelihood Support", "description": "Alternative livelihood grants and food rations for fishermen who voluntarily abstain from catching juvenile Hilsa (Jatka)."}
+        ]
+
+

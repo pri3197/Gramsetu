@@ -20,7 +20,7 @@ services:
     numInstances: 1
     envVars:
       - key: PYTHON_SERVICE_URL
-        value: https://gramsetu-python.onrender.com
+        value: http://gramsetu-python:8000
       - key: SPRING_DATASOURCE_URL
         sync: false   # Set manually in Render dashboard (Supabase Postgres URL)
       - key: SPRING_DATASOURCE_USERNAME

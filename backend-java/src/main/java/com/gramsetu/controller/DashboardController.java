@@ -7,6 +7,7 @@ import com.gramsetu.repository.CattleOutbreakRepository;
 import com.gramsetu.repository.CommodityPriceRepository;
 import com.gramsetu.service.BirdSightingService;
 import com.gramsetu.service.DataSyncService;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -53,24 +54,95 @@ public class DashboardController {
 
     private final RestTemplate restTemplate = new RestTemplate();
 
+    private List<CommodityPrice> fetchPricesFromPythonService() {
+        try {
+            String url = pythonServiceUrl + "/prices";
+            Map<String, Object> response = restTemplate.getForObject(url, Map.class);
+            List<CommodityPrice> prices = new ArrayList<>();
+            if (response != null && response.containsKey("data")) {
+                List<Map<String, Object>> records = (List<Map<String, Object>>) response.get("data");
+                for (Map<String, Object> r : records) {
+                    CommodityPrice p = new CommodityPrice();
+                    p.setState((String) r.get("state"));
+                    p.setDistrict((String) r.get("district"));
+                    p.setMarket((String) r.get("market"));
+                    p.setCommodity((String) r.get("commodity"));
+                    p.setVariety((String) r.get("variety"));
+                    p.setMinPrice(Double.valueOf(r.get("min_price").toString()));
+                    p.setMaxPrice(Double.valueOf(r.get("max_price").toString()));
+                    p.setModalPrice(Double.valueOf(r.get("modal_price").toString()));
+                    p.setUnit((String) r.get("unit"));
+                    p.setLastUpdated((String) r.get("last_updated"));
+                    prices.add(p);
+                }
+            }
+            return prices;
+        } catch (Exception e) {
+            log.error("Failed to fetch commodity prices from Python API: {}", e.getMessage());
+            return new ArrayList<>();
+        }
+    }
+
     @GetMapping("/prices")
     public ResponseEntity<List<CommodityPrice>> getPrices() {
-        return ResponseEntity.ok(priceRepository.findAll());
+        return ResponseEntity.ok(fetchPricesFromPythonService());
     }
 
     @GetMapping("/prices/states")
     public ResponseEntity<List<String>> getStates() {
-        return ResponseEntity.ok(priceRepository.findDistinctStates());
+        List<CommodityPrice> prices = fetchPricesFromPythonService();
+        List<String> states = prices.stream()
+                .map(CommodityPrice::getState)
+                .filter(java.util.Objects::nonNull)
+                .distinct()
+                .sorted()
+                .toList();
+        return ResponseEntity.ok(states);
     }
 
     @GetMapping("/prices/commodities")
     public ResponseEntity<List<String>> getCommodities() {
-        return ResponseEntity.ok(priceRepository.findDistinctCommodities());
+        List<CommodityPrice> prices = fetchPricesFromPythonService();
+        List<String> commodities = prices.stream()
+                .map(CommodityPrice::getCommodity)
+                .filter(java.util.Objects::nonNull)
+                .distinct()
+                .sorted()
+                .toList();
+        return ResponseEntity.ok(commodities);
+    }
+
+    private List<CattleOutbreak> fetchOutbreaksFromPythonService() {
+        try {
+            String url = pythonServiceUrl + "/diseases";
+            Map<String, Object> response = restTemplate.getForObject(url, Map.class);
+            List<CattleOutbreak> outbreaks = new ArrayList<>();
+            if (response != null && response.containsKey("data")) {
+                List<Map<String, Object>> records = (List<Map<String, Object>>) response.get("data");
+                for (Map<String, Object> r : records) {
+                    CattleOutbreak o = new CattleOutbreak();
+                    o.setState((String) r.get("state"));
+                    o.setDistrict((String) r.get("district"));
+                    o.setLatitude(Double.valueOf(r.get("latitude").toString()));
+                    o.setLongitude(Double.valueOf(r.get("longitude").toString()));
+                    o.setDisease((String) r.get("disease"));
+                    o.setSeverity((String) r.get("severity"));
+                    o.setTransmission((String) r.get("transmission"));
+                    o.setRecommendedVaccines((String) r.get("recommendedVaccines"));
+                    o.setActiveCases(Integer.valueOf(r.get("activeCases").toString()));
+                    outbreaks.add(o);
+                }
+            }
+            return outbreaks;
+        } catch (Exception e) {
+            log.error("Failed to fetch outbreaks from Python API: {}", e.getMessage());
+            return new ArrayList<>();
+        }
     }
 
     @GetMapping("/diseases")
     public ResponseEntity<List<CattleOutbreak>> getDiseases() {
-        return ResponseEntity.ok(outbreakRepository.findAll());
+        return ResponseEntity.ok(fetchOutbreaksFromPythonService());
     }
 
     @GetMapping("/birds/sightings")
@@ -117,24 +189,9 @@ public class DashboardController {
 
         } catch (Exception e) {
             log.error("Failed to classify bird sound: {}", e.getMessage());
-            
-            // Local Mock response in case the Python FastAPI classification server is offline or fails
-            // This ensures the frontend doesn't crash during evaluation if Python isn't active
-            Map<String, Object> mockResponse = new HashMap<>();
-            mockResponse.put("detected", true);
-            mockResponse.put("bird_id", "asian_koel");
-            mockResponse.put("name", "Asian Koel");
-            mockResponse.put("scientific_name", "Eudynamys scolopaceus");
-            mockResponse.put("status", "Least Concern");
-            mockResponse.put("description", "A local mock identification. The Asian Koel is a large cuckoo found in India, famous for its rising vocalizations.");
-            mockResponse.put("endangered", false);
-            mockResponse.put("confidence", 0.85);
-            
-            Map<String, Object> metrics = new HashMap<>();
-            metrics.put("note", "Fallback mock classification (Python server offline)");
-            mockResponse.put("metrics", metrics);
-            
-            return ResponseEntity.ok(mockResponse);
+            Map<String, String> err = new HashMap<>();
+            err.put("error", "Classification service is currently offline: " + e.getMessage());
+            return ResponseEntity.status(503).body(err);
         }
     }
 

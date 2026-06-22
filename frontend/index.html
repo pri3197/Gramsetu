@@ -14,7 +14,7 @@
     <meta name="theme-color" content="#1e293b">
 
     <!-- CSS Dependencies -->
-    <link rel="stylesheet" href="css/style.css?v=1.0.7">
+    <link rel="stylesheet" href="css/style.css?v=1.0.9">
 
 
     <!-- Leaflet Map CSS -->
@@ -51,18 +51,13 @@
 
 
 
-                <button class="tab-btn active" onclick="switchTab('farming')" id="nav-btn-farming"><i
-                        class="fa-solid fa-tractor"></i> Farming</button>
-                <button class="tab-btn" onclick="switchTab('fisheries')" id="nav-btn-fisheries"><i
-                        class="fa-solid fa-ship"></i> Fishery</button>
+                <button class="tab-btn" onclick="switchTab('farming')" id="nav-btn-farming"><img src="/uploads/icon_farming.png" alt="" class="nav-tab-icon"> Farming</button>
+                <button class="tab-btn" onclick="switchTab('fisheries')" id="nav-btn-fisheries"><img src="/uploads/icon_fishery.png" alt="" class="nav-tab-icon"> Fishery</button>
                 <button class="tab-btn" onclick="switchTab('weather')" id="nav-btn-weather"><i
                         class="fa-solid fa-cloud-sun-rain"></i> Weather Update</button>
-                <button class="tab-btn" onclick="switchTab('birds')" id="nav-btn-birds"><i
-                        class="fa-solid fa-feather-pointed"></i> Bird Acoustic</button>
-                <button class="tab-btn" onclick="switchTab('news')" id="nav-btn-news"><i
-                        class="fa-solid fa-newspaper"></i> News Portal</button>
-                <button class="tab-btn" onclick="switchTab('mesh')" id="nav-btn-mesh"><i
-                        class="fa-solid fa-circle-nodes"></i> Offline Mesh</button>
+                <button class="tab-btn" onclick="switchTab('birds')" id="nav-btn-birds"><img src="/uploads/icon_birds.png" alt="" class="nav-tab-icon"> Bird Acoustic</button>
+                <button class="tab-btn" onclick="switchTab('news')" id="nav-btn-news"><img src="/uploads/icon_news.png" alt="" class="nav-tab-icon"> News Portal</button>
+                <button class="tab-btn" onclick="switchTab('mesh')" id="nav-btn-mesh"><img src="/uploads/icon_mesh.png" alt="" class="nav-tab-icon"> B-Messaging</button>
                 <button class="tab-btn" onclick="switchTab('feedback')" id="nav-btn-feedback"><i
                         class="fa-solid fa-comments"></i> Feedback Hub</button>
                 <button class="tab-btn" onclick="switchTab('sources')" id="nav-btn-sources"><i
@@ -150,8 +145,7 @@
                     <div class="card-glass navigation-card" onclick="switchTab('farming')"
                         style="cursor: pointer; display: flex; flex-direction: column; justify-content: space-between; min-height: 200px; border-bottom: 3px solid var(--color-accent);">
                         <div>
-                            <div class="card-icon" style="color: var(--color-accent-light);"><i
-                                    class="fa-solid fa-tractor"></i></div>
+                            <div class="card-icon" style="color: var(--color-accent-light);"><img src="/uploads/icon_farming.png" alt="Farming" class="header-card-icon"></div>
                             <h4 id="lbl-auto-3"
                                 style="font-family: var(--font-heading); font-size: 1.25rem; color: var(--text-primary); margin-top: 0.5rem; margin-bottom: 0.5rem;">
                                 Farming Advisors</h4>
@@ -168,7 +162,7 @@
                     <div class="card-glass navigation-card" onclick="switchTab('fisheries')"
                         style="cursor: pointer; display: flex; flex-direction: column; justify-content: space-between; min-height: 200px; border-bottom: 3px solid #3b82f6;">
                         <div>
-                            <div class="card-icon" style="color: #3b82f6;"><i class="fa-solid fa-ship"></i></div>
+                            <div class="card-icon" style="color: #3b82f6;"><img src="/uploads/icon_fishery.png" alt="Fishery" class="header-card-icon"></div>
                             <h4 id="lbl-auto-6"
                                 style="font-family: var(--font-heading); font-size: 1.25rem; color: var(--text-primary); margin-top: 0.5rem; margin-bottom: 0.5rem;">
                                 Fishery Hub</h4>
@@ -202,8 +196,7 @@
                     <div class="card-glass navigation-card" onclick="switchTab('birds')"
                         style="cursor: pointer; display: flex; flex-direction: column; justify-content: space-between; min-height: 200px; border-bottom: 3px solid #f87171;">
                         <div>
-                            <div class="card-icon" style="color: #f87171;"><i class="fa-solid fa-feather-pointed"></i>
-                            </div>
+                            <div class="card-icon" style="color: #f87171;"><img src="/uploads/icon_birds.png" alt="Acoustic" class="header-card-icon"></div>
                             <h4 id="lbl-auto-12"
                                 style="font-family: var(--font-heading); font-size: 1.25rem; color: var(--text-primary); margin-top: 0.5rem; margin-bottom: 0.5rem;">
                                 Acoustic Tracker</h4>
@@ -220,7 +213,7 @@
                     <div class="card-glass navigation-card" onclick="switchTab('news')"
                         style="cursor: pointer; display: flex; flex-direction: column; justify-content: space-between; min-height: 200px; border-bottom: 3px solid #a7f3d0;">
                         <div>
-                            <div class="card-icon" style="color: #a7f3d0;"><i class="fa-solid fa-newspaper"></i></div>
+                            <div class="card-icon" style="color: #a7f3d0;"><img src="/uploads/icon_news.png" alt="News" class="header-card-icon"></div>
                             <h4 id="lbl-auto-15"
                                 style="font-family: var(--font-heading); font-size: 1.25rem; color: var(--text-primary); margin-top: 0.5rem; margin-bottom: 0.5rem;">
                                 News Portal</h4>
@@ -304,7 +297,7 @@
 
         <!-- FARMING TAB -->
         <section id="panel-farming" class="tab-panel" aria-labelledby="nav-btn-farming">
-            <h2 class="hero-title" style="font-size: 2rem; margin-bottom: 0.5rem;"><i class="fa-solid fa-tractor"></i>
+            <h2 class="hero-title" style="font-size: 2rem; margin-bottom: 0.5rem;"><img src="/uploads/icon_farming.png" alt="" class="header-title-icon">
                 Farming Dashboard & Advisors</h2>
             <p id="lbl-auto-28" style="color: var(--text-secondary); margin-bottom: 2rem;">Access agricultural mandi
                 rates with interactive maps, livestock disease tracking maps, and organic marketplaces.</p>
@@ -312,13 +305,13 @@
             <!-- Dashboard Stats Grid (Farming Context) -->
             <div class="grid-cols-3">
                 <div class="card-glass">
-                    <div class="card-icon"><i class="fa-solid fa-cow"></i></div>
+                    <div class="card-icon"><img src="/uploads/icon_cattle.png" alt="Cattle Disease Outbreaks" class="header-card-icon"></div>
                     <h3 id="lbl-auto-29" class="card-title">Cattle Disease Outbreaks</h3>
                     <div class="card-number" id="stats-outbreaks-count">767</div>
                     <p id="lbl-auto-30" class="card-desc">Active livestock outbreaks mapped in Indian districts</p>
                 </div>
                 <div class="card-glass">
-                    <div class="card-icon"><i class="fa-solid fa-indian-rupee-sign"></i></div>
+                    <div class="card-icon"><img src="/uploads/icon_mandi.png" alt="Wheat Market Rate" class="header-card-icon"></div>
                     <h3 id="lbl-auto-31" class="card-title">Wheat Market Rate</h3>
                     <div class="card-number" id="stats-wheat-price">₹ 2299</div>
                     <p id="lbl-auto-32" class="card-desc">Current average price per quintal in North Indian Mandis</p>
@@ -349,17 +342,16 @@
                 <!-- Sub Navigation inside tab -->
                 <div class="farming-subnav" style="display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
                     <button class="btn-primary subnav-btn active" onclick="switchFarmingSubView('mandi')"
-                        id="btn-farm-sub-mandi"><i class="fa-solid fa-wheat-awn"></i> Mandi Prices</button>
+                        id="btn-farm-sub-mandi"><img src="/uploads/icon_mandi.png" alt="" class="subnav-icon"> Mandi Prices</button>
                     <button class="btn-primary subnav-btn" onclick="switchFarmingSubView('cattle')"
-                        id="btn-farm-sub-cattle"><i class="fa-solid fa-cow"></i> Livestock Health</button>
+                        id="btn-farm-sub-cattle"><img src="/uploads/icon_cattle.png" alt="" class="subnav-icon"> Livestock Health</button>
                     <button class="btn-primary subnav-btn" onclick="switchFarmingSubView('market')"
-                        id="btn-farm-sub-market"><i class="fa-solid fa-store"></i> Bio Market</button>
+                        id="btn-farm-sub-market"><img src="/uploads/icon_bio_market.png" alt="" class="subnav-icon"> Bio Market</button>
                 </div>
 
                 <!-- Sub-panel: Mandi Prices -->
                 <div id="farming-sub-mandi" class="farming-sub-panel active">
-                    <h2 class="hero-title" style="font-size: 1.75rem; margin-bottom: 0.5rem;" id="lbl-mandi-title"><i
-                            class="fa-solid fa-wheat-awn"></i> Grain Market Rates (Agricultural Mandis)</h2>
+                    <h2 class="hero-title" style="font-size: 1.75rem; margin-bottom: 0.5rem;" id="lbl-mandi-title"><img src="/uploads/icon_mandi.png" alt="" class="header-title-icon"> Grain Market Rates (Agricultural Mandis)</h2>
                     <p style="color: var(--text-secondary); margin-bottom: 1.5rem;" id="lbl-mandi-subtitle">Current
                         mandi prices per quintal (100 kilograms) across Indian states, aggregated weekly directly from
                         government databases.</p>
@@ -421,8 +413,7 @@
 
                 <!-- Sub-panel: Livestock Health -->
                 <div id="farming-sub-cattle" class="farming-sub-panel">
-                    <h2 class="hero-title" style="font-size: 1.75rem; margin-bottom: 0.5rem;"><i
-                            class="fa-solid fa-cow"></i> Cattle Disease Outbreaks & Vaccination Advisor</h2>
+                    <h2 class="hero-title" style="font-size: 1.75rem; margin-bottom: 0.5rem;"><img src="/uploads/icon_cattle.png" alt="" class="header-title-icon"> Cattle Disease Outbreaks & Vaccination Advisor</h2>
                     <p id="lbl-auto-49" style="color: var(--text-secondary); margin-bottom: 1.5rem;">Explore active
                         livestock outbreaks on the interactive heat-intensity map. Select an outbreak location to view
                         immediate local veterinary guidance and immunization actions.</p>
@@ -478,8 +469,7 @@
 
                 <!-- Sub-panel: Bio Market -->
                 <div id="farming-sub-market" class="farming-sub-panel">
-                    <h2 class="hero-title" style="font-size: 1.75rem; margin-bottom: 0.5rem;"><i
-                            class="fa-solid fa-store"></i> Organic Bio Market & Authenticity Portal</h2>
+                    <h2 class="hero-title" style="font-size: 1.75rem; margin-bottom: 0.5rem;"><img src="/uploads/icon_bio_market.png" alt="" class="header-title-icon"> Organic Bio Market & Authenticity Portal</h2>
                     <p id="lbl-auto-55" style="color: var(--text-secondary); margin-bottom: 1.5rem;">Browse and trade
                         certified organic produce directly with regional farmers, or test your crop purity at home.</p>
 
@@ -990,8 +980,7 @@
 
         <!-- FISHERIES HUB TAB -->
         <section id="panel-fisheries" class="tab-panel" aria-labelledby="nav-btn-fisheries">
-            <h2 class="hero-title" style="font-size: 2rem; margin-bottom: 0.5rem;" id="lbl-fisheries-title"><i
-                    class="fa-solid fa-ship"></i> Fisheries Hub & Marine Ecosystem</h2>
+            <h2 class="hero-title" style="font-size: 2rem; margin-bottom: 0.5rem;" id="lbl-fisheries-title"><img src="/uploads/icon_fishery.png" alt="" class="header-title-icon"> Fisheries Hub & Marine Ecosystem</h2>
             <p style="color: var(--text-secondary); margin-bottom: 1.5rem;" id="lbl-fisheries-desc">Explore coastal fish
                 heatmap zones, breeding restriction calendars with multilingual conservation insights, ocean population
                 charts, and marine mammal sightings.</p>
@@ -1302,8 +1291,7 @@
 
         <!-- BIRD SOUND DETECTOR MAP TAB -->
         <section id="panel-birds" class="tab-panel" aria-labelledby="nav-btn-birds">
-            <h2 class="hero-title" style="font-size: 2rem; margin-bottom: 0.5rem;"><i
-                    class="fa-solid fa-feather-pointed"></i> Bird Sound Acoustic Classifier & Sighting Tracker</h2>
+            <h2 class="hero-title" style="font-size: 2rem; margin-bottom: 0.5rem;"><img src="/uploads/icon_birds.png" alt="" class="header-title-icon"> Bird Sound Acoustic Classifier & Sighting Tracker</h2>
             <p id="lbl-auto-142" style="color: var(--text-secondary); margin-bottom: 1.5rem;">Turn on your microphone to
                 record a bird call. Our AI matches the frequency and spectral patterns to identify the bird, assess its
                 conservation classification, and map it to log populations in the wild.</p>
@@ -1401,8 +1389,7 @@
             <div class="news-header-section"
                 style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
                 <div>
-                    <h2 class="hero-title" style="font-size: 2rem; margin-bottom: 0.5rem;"><i
-                            class="fa-solid fa-newspaper"></i> Agriculture & Fisheries News Portal</h2>
+                    <h2 class="hero-title" style="font-size: 2rem; margin-bottom: 0.5rem;"><img src="/uploads/icon_news.png" alt="" class="header-title-icon"> Agriculture & Fisheries News Portal</h2>
                     <p id="lbl-auto-148" style="color: var(--text-secondary);">Stay updated with the latest trends in
                         organic farming, modern technology, sustainable marine methods, oil spill impacts, and climate
                         changes globally.</p>
@@ -1639,7 +1626,7 @@
         <!-- OFFLINE BLUETOOTH MESH NETWORK TAB -->
         <section id="panel-mesh" class="tab-panel" aria-labelledby="nav-btn-mesh">
             <h2 class="hero-title" style="font-size: 2rem; margin-bottom: 0.5rem;" id="lbl-mesh-title">
-                <i class="fa-solid fa-circle-nodes"></i> Offline Mesh Network
+                <img src="/uploads/icon_mesh.png" alt="" class="header-title-icon"> B-Messaging Network
             </h2>
             <p id="lbl-mesh-desc" style="color: var(--text-secondary); margin-bottom: 2rem;">
                 Exchange alerts and short messages directly with nearby users via Bluetooth mesh technology. Operating entirely offline without cellular network coverage.
@@ -2201,7 +2188,7 @@
 
 
     <!-- Custom Web Core Script -->
-    <script src="js/app.js?v=1.0.6"></script>
+    <script src="js/app.js?v=1.0.9"></script>
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
