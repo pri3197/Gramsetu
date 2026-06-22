@@ -1,16 +1,34 @@
-# Stage 1: Build Java Spring Boot app using Maven
-FROM maven:3.9.6-eclipse-temurin-17 AS build
-WORKDIR /app
-COPY pom.xml .
-# Download dependencies first (cached layer)
-RUN mvn dependency:go-offline -B
-COPY src ./src
-# Build package and skip unit tests to speed up deploy
-RUN mvn package -DskipTests
+# Stage 1: Build the GraalVM Native Image
+FROM ghcr.io/graalvm/native-image-community:21 AS builder
 
-# Stage 2: Create a lightweight runtime container
-FROM eclipse-temurin:17-jre-jammy
+# Install Maven
+RUN microdnf install -y maven && microdnf clean all
+
 WORKDIR /app
-COPY --from=build /app/target/backend-java-1.0.0.jar app.jar
-EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "app.jar"]
+
+# Cache Maven dependencies
+COPY pom.xml .
+RUN mvn dependency:go-offline -B -q
+
+# Copy source and compile native image
+COPY src ./src
+RUN mvn -Pnative -DskipTests package
+
+# Stage 2: Minimal runtime image (~80 MB)
+FROM debian:bookworm-slim
+
+# Install CA certificates
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Copy the native binary and static files from builder
+COPY --from=builder /app/target/gramsetu-backend ./gramsetu-backend
+COPY --from=builder /app/src/main/resources/static ./static
+
+RUN chmod +x gramsetu-backend
+
+EXPOSE 8081
+ENTRYPOINT ["/app/gramsetu-backend"]

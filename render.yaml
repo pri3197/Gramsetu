@@ -21,4 +21,13 @@ services:
     envVars:
       - key: PYTHON_SERVICE_URL
         value: https://gramsetu-python.onrender.com
-      # Dynamic profile overrides can go here if using PostgreSQL
+      - key: SPRING_DATASOURCE_URL
+        sync: false   # Set manually in Render dashboard (Supabase Postgres URL)
+      - key: SPRING_DATASOURCE_USERNAME
+        sync: false
+      - key: SPRING_DATASOURCE_PASSWORD
+        sync: false
+      - key: SPRING_DATASOURCE_DRIVER_CLASS_NAME
+        value: org.postgresql.Driver
+      - key: CORS_ALLOWED_ORIGINS
+        value: https://gramsetu.vercel.app

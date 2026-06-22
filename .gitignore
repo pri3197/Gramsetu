@@ -32,3 +32,7 @@ env/
 # OS Files
 .DS_Store
 Thumbs.db
+
+# Environment variables (credentials)
+.env
+.env.local

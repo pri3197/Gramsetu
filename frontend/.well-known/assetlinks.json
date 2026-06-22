@@ -1,0 +1,8 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "com.onrender.gramsetu_backend_iog1.twa",
+    "sha256_cert_fingerprints": ["4F:38:8D:0E:E0:95:B2:FF:44:52:D5:FA:9D:48:6A:62:E9:83:52:CB:DE:56:3E:F8:7B:B0:B1:90:53:58:FC:02"]
+  }
+}]
