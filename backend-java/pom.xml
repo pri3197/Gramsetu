@@ -107,8 +107,10 @@
                                 <buildArg>--allow-incomplete-classpath</buildArg>
                                 <!-- Enable all security services -->
                                 <buildArg>-H:+ReportExceptionStackTraces</buildArg>
-                                <!-- Limit compilation JVM memory to 3GB to prevent OOM on Render -->
-                                <buildArg>-J-Xmx3g</buildArg>
+                                <!-- Limit compilation JVM memory to 5GB to prevent GC overhead OOM -->
+                                <buildArg>-J-Xmx5g</buildArg>
+                                <!-- Limit build parallelism to reduce concurrent memory footprint -->
+                                <buildArg>-J-XX:ActiveProcessorCount=2</buildArg>
                                 <!-- Enable quick build mode to save time and memory -->
                                 <buildArg>-Ob</buildArg>
                             </buildArgs>
