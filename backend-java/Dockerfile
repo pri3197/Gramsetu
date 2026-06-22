@@ -1,5 +1,5 @@
 # Stage 1: Build the GraalVM Native Image
-FROM ghcr.io/graalvm/native-image-community:21 AS builder
+FROM ghcr.io/graalvm/native-image-community:17 AS builder
 
 # Install Maven
 RUN microdnf install -y maven && microdnf clean all
