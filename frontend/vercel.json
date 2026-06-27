@@ -2,11 +2,11 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "https://gramsetu-backend.onrender.com/api/:path*"
+      "destination": "https://gramsetu-backend-o5r1.onrender.com/api/:path*"
     },
     {
       "source": "/uploads/:path*",
-      "destination": "https://gramsetu-backend.onrender.com/uploads/:path*"
+      "destination": "https://gramsetu-backend-o5r1.onrender.com/uploads/:path*"
     }
   ],
   "headers": [
