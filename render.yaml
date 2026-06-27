@@ -11,6 +11,10 @@ services:
     envVars:
       - key: AGMARKNET_BASE_URL
         value: http://gramsetu-agmarknet:5000
+      - key: NADRES_DATASET_ACCESS_KEY
+        value: 5489aebddf706f827b4e8cc16a34490b626b71b3d56aa8069c1f3b885eb927f9
+      - key: NEWS_API_KEY
+        value: 469db6fc98f74c8cb2e0dc7911cedc83
 
   # 2. Agmarknet API Bridge Service
   - type: web
@@ -33,11 +37,11 @@ services:
       - key: PYTHON_SERVICE_URL
         value: http://gramsetu-python:8000
       - key: SPRING_DATASOURCE_URL
-        sync: false   # Set manually in Render dashboard (Supabase Postgres URL)
+        value: jdbc:postgresql://aws-0-eu-west-1.pooler.supabase.com:6543/postgres?sslmode=require
       - key: SPRING_DATASOURCE_USERNAME
-        sync: false
+        value: postgres.vthgfbhkqjrhzofdwwuz
       - key: SPRING_DATASOURCE_PASSWORD
-        sync: false
+        value: HPCPtDnqF581Soek
       - key: SPRING_DATASOURCE_DRIVER_CLASS_NAME
         value: org.postgresql.Driver
       - key: CORS_ALLOWED_ORIGINS
