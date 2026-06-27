@@ -88,6 +88,23 @@ public class DashboardController {
         return ResponseEntity.ok(fetchPricesFromPythonService());
     }
 
+    @GetMapping("/prices/wheat-north-india")
+    public ResponseEntity<Map<String, Object>> getWheatNorthIndia() {
+        try {
+            String url = pythonServiceUrl + "/prices/wheat-north-india";
+            Map<String, Object> response = restTemplate.getForObject(url, Map.class);
+            if (response != null) {
+                // Rename snake_case avg_modal_price → camelCase avgModalPrice for JS
+                Object avg = response.get("avg_modal_price");
+                if (avg != null) response.put("avgModalPrice", avg);
+                return ResponseEntity.ok(response);
+            }
+        } catch (Exception e) {
+            log.error("Failed to fetch wheat North India prices: {}", e.getMessage());
+        }
+        return ResponseEntity.ok(Map.of("avgModalPrice", 2411, "source", "fallback", "count", 0));
+    }
+
     @GetMapping("/prices/states")
     public ResponseEntity<List<String>> getStates() {
         List<CommodityPrice> prices = fetchPricesFromPythonService();

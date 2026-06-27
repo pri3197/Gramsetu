@@ -33,7 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
     loadCattleDiseases();
     loadBirdSightings();
     loadMarketProducts();
-    loadGroundwaterData();
+    // loadGroundwaterData();
 
     // Initialize Visualizer Canvas default state
     clearCanvas();
@@ -76,6 +76,10 @@ function switchTab(tabId) {
         } else if (tabId === 'news') {
             loadNews();
         } else if (tabId === 'weather') {
+            if (climateTrendsData) {
+                // Data already fetched – just re-render the chart now that tab is visible
+                requestAnimationFrame(() => renderClimateTrendsChart(climateTrendsData));
+            }
             loadWeather();
             initGroundwaterMap();
             if (groundwaterMap) setTimeout(() => groundwaterMap.invalidateSize(), 100);
@@ -1566,6 +1570,9 @@ window.addEventListener('resize', () => {
     if (activeTab === 'fisheries' && activeFisheriesSubView === 'trends') {
         renderHistoricalChart();
     }
+    if (activeTab === 'weather' && climateTrendsData) {
+        requestAnimationFrame(() => renderClimateTrendsChart(climateTrendsData));
+    }
 });
 
 // 10. News Portal Module State & Actions
@@ -1806,6 +1813,8 @@ function animateMorphCanvas() {
 
 
 // 13. Weather & Climate Updates Loader
+let climateTrendsData = null;
+
 async function loadWeather() {
     try {
         const resForecast = await fetch('/api/weather/forecast');
@@ -1814,128 +1823,136 @@ async function loadWeather() {
         const forecasts = await resForecast.json();
         const trends = await resTrends.json();
 
+        climateTrendsData = trends;   // cache globally for re-renders on resize / tab revisit
+
         renderWeatherForecasts(forecasts);
-        renderClimateTrendsChart(trends);
+
+        // Defer chart render so the tab panel is fully visible and has real pixel dimensions
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => renderClimateTrendsChart(trends));
+        });
     } catch (e) {
         console.error("Error loading weather data:", e);
     }
 }
 
-function renderWeatherForecasts(forecasts) {
-    const grid = document.getElementById('weather-forecast-grid');
-    if (!grid) return;
-    grid.innerHTML = '';
-
-    if (!forecasts || forecasts.length === 0) {
-        grid.innerHTML = '<div class="card-glass" style="text-align: center; padding: 2rem; grid-column: span 2;"><p style="color: var(--text-secondary);">No forecast data available.</p></div>';
-        return;
-    }
-
-    forecasts.forEach(f => {
-        const card = `
-            <div class="card-glass" style="padding: 1.5rem; display: flex; flex-direction: column; justify-content: space-between;">
-                <div>
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
-                        <span class="status-badge critical" style="background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2);"><i class="fa-solid fa-temperature-three-quarters"></i> ${f.currentTemp}°C</span>
-                        <span class="status-badge" style="background: rgba(217, 119, 6, 0.1); color: var(--color-gold); border: 1px solid rgba(217, 119, 6, 0.2); font-weight:600;">ENSO Index: ${f.anomalyIndex}</span>
-                    </div>
-                    <h3 class="card-title" style="margin-bottom: 0.5rem; color: var(--text-primary); font-family: var(--font-heading); font-weight: 600;">${f.region}</h3>
-                    <p style="color: var(--text-primary); font-weight: 600; font-size: 0.95rem; margin-bottom: 0.75rem;"><i class="fa-solid fa-cloud-sun"></i> ${f.forecast}</p>
-                    <p style="color: var(--text-secondary); font-size: 0.85rem; line-height: 1.5; margin-bottom: 0.25rem;"><strong>El Niño Status:</strong> ${f.elNinoStatus}</p>
-                    <p style="color: var(--text-secondary); font-size: 0.85rem; line-height: 1.5;"><strong>Monsoon Impact:</strong> ${f.elNinoImpact}</p>
-                </div>
-            </div>
-        `;
-        grid.innerHTML += card;
-    });
-}
-
 function renderClimateTrendsChart(trends) {
     const container = document.getElementById('climate-svg-container');
-    if (!container || !trends || trends.length === 0) return;
+    if (!container || !trends || trends.length < 2) return;
 
-    const width = container.clientWidth;
-    const height = container.clientHeight;
+    // getBoundingClientRect is the most reliable cross-browser way to get rendered size
+    const rect = container.getBoundingClientRect();
+    const width = rect.width > 0 ? Math.floor(rect.width) : (container.offsetWidth || 800);
+    const height = rect.height > 0 ? Math.floor(rect.height) : (container.offsetHeight || 350);
 
-    const paddingLeft = 50;
-    const paddingRight = 50;
-    const paddingTop = 20;
-    const paddingBottom = 40;
+    if (!width || !height) return;
+
+    // Generous padding so axis labels fit INSIDE the SVG viewBox
+    const paddingLeft = 72;
+    const paddingRight = 72;
+    const paddingTop = 24;
+    const paddingBottom = 52;   // room for x-axis year labels
 
     const graphWidth = width - paddingLeft - paddingRight;
     const graphHeight = height - paddingTop - paddingBottom;
 
     const years = trends.map(t => t.year);
-    const minYear = Math.min(...years);
-    const maxYear = Math.max(...years);
+    const minYear = Math.min(...years);   // 2000
+    const maxYear = Math.max(...years);   // 2026
 
-    const minTemp = 0;
-    const maxTemp = 1.5;
+    // 1. Normalise rainfall deviation if backend sent raw mm
+    trends.forEach(t => {
+        if (t.annual_accumulated_rain_mm && (t.rainfall_deviation > 100 || t.rainfall_deviation < -100)) {
+            t.rainfall_deviation = ((t.annual_accumulated_rain_mm - 650) / 650) * 100;
+        }
+    });
 
-    const minRain = -25;
-    const maxRain = 15;
+    // 2. Dynamic bounds with 15% breathing room
+    const temps = trends.map(t => t.temp_anomaly);
+    const rains = trends.map(t => t.rainfall_deviation);
 
-    const getX = (year) => paddingLeft + ((year - minYear) / (maxYear - minYear)) * graphWidth;
-    const getYTemp = (val) => paddingTop + graphHeight - ((val - minTemp) / (maxTemp - minTemp)) * graphHeight;
-    const getYRain = (val) => paddingTop + graphHeight - ((val - minRain) / (maxRain - minRain)) * graphHeight;
+    let minTemp = Math.min(...temps);
+    let maxTemp = Math.max(...temps);
+    let minRain = Math.min(...rains);
+    let maxRain = Math.max(...rains);
 
-    let svg = `<svg width="100%" height="100%" viewBox="0 0 ${width} ${height}" style="overflow:visible;">`;
+    const tempPad = (maxTemp - minTemp) === 0 ? 0.5 : (maxTemp - minTemp) * 0.15;
+    minTemp -= tempPad; maxTemp += tempPad;
 
-    // Gridlines
-    for (let i = 0; i <= 4; i++) {
-        const ratio = i / 4;
+    const rainPad = (maxRain - minRain) === 0 ? 5 : (maxRain - minRain) * 0.15;
+    minRain -= rainPad; maxRain += rainPad;
+
+    // 3. Scale helpers — clamp Y so dots never leave the plot area
+    const getX = year => paddingLeft + ((year - minYear) / (maxYear - minYear || 1)) * graphWidth;
+    const getYTemp = val => paddingTop + graphHeight - ((val - minTemp) / (maxTemp - minTemp)) * graphHeight;
+    const getYRain = val => paddingTop + graphHeight - ((val - minRain) / (maxRain - minRain)) * graphHeight;
+    const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+
+    // 4. Build SVG — clipPath keeps lines inside the plot box
+    let svg = `<svg width="100%" height="100%" viewBox="0 0 ${width} ${height}" style="overflow:hidden; display:block;">`;
+    svg += `<defs><clipPath id="plot-clip"><rect x="${paddingLeft}" y="${paddingTop}" width="${graphWidth}" height="${graphHeight}"/></clipPath></defs>`;
+
+    // 5. Horizontal gridlines (6 bands) + dual Y-axis labels
+    const GRID_STEPS = 6;
+    for (let i = 0; i <= GRID_STEPS; i++) {
+        const ratio = i / GRID_STEPS;
         const y = paddingTop + ratio * graphHeight;
-        svg += `<line x1="${paddingLeft}" y1="${y}" x2="${width - paddingRight}" y2="${y}" stroke="rgba(15,23,42,0.08)" stroke-width="1"/>`;
-
-        const tempVal = (maxTemp - (ratio * (maxTemp - minTemp))).toFixed(2);
-        svg += `<text x="${paddingLeft - 10}" y="${y + 4}" fill="var(--text-secondary)" font-size="10" text-anchor="end">${tempVal}°C</text>`;
-
-        const rainVal = Math.round(maxRain - (ratio * (maxRain - minRain)));
-        svg += `<text x="${width - paddingRight + 10}" y="${y + 4}" fill="var(--text-secondary)" font-size="10" text-anchor="start">${rainVal}%</text>`;
+        // gridline
+        svg += `<line x1="${paddingLeft}" y1="${y}" x2="${paddingLeft + graphWidth}" y2="${y}" stroke="rgba(15,23,42,0.07)" stroke-width="1"/>`;
+        // left axis: temp anomaly (°C)
+        const tempVal = (maxTemp - ratio * (maxTemp - minTemp)).toFixed(2);
+        svg += `<text x="${paddingLeft - 8}" y="${y + 4}" fill="#ef4444" font-size="10" text-anchor="end" font-family="sans-serif">${tempVal}°C</text>`;
+        // right axis: rainfall deviation (%)
+        const rainVal = (maxRain - ratio * (maxRain - minRain)).toFixed(1);
+        svg += `<text x="${paddingLeft + graphWidth + 8}" y="${y + 4}" fill="#3b82f6" font-size="10" text-anchor="start" font-family="sans-serif">${rainVal}%</text>`;
     }
 
-    const labelYears = [2000, 2005, 2010, 2015, 2020, 2023, 2026];
-    labelYears.forEach(year => {
-        if (year >= minYear && year <= maxYear) {
-            const x = getX(year);
-            svg += `<line x1="${x}" y1="${paddingTop}" x2="${x}" y2="${paddingTop + graphHeight}" stroke="rgba(15,23,42,0.04)" stroke-width="1"/>`;
-            svg += `<text x="${x}" y="${paddingTop + graphHeight + 20}" fill="var(--text-secondary)" font-size="10" text-anchor="middle">${year}</text>`;
+    // 6. Vertical gridlines + X-axis year labels every 5 years
+    for (let yr = minYear; yr <= maxYear; yr++) {
+        const x = getX(yr);
+        const showLabel = (yr % 5 === 0) || yr === minYear || yr === maxYear;
+        if (showLabel) {
+            svg += `<line x1="${x}" y1="${paddingTop}" x2="${x}" y2="${paddingTop + graphHeight}" stroke="rgba(15,23,42,0.06)" stroke-width="1"/>`;
+            svg += `<text x="${x}" y="${paddingTop + graphHeight + 18}" fill="var(--text-secondary)" font-size="10" text-anchor="middle" font-family="sans-serif">${yr}</text>`;
         }
-    });
+    }
 
+    // 7. Axis border lines
+    svg += `<line x1="${paddingLeft}" y1="${paddingTop}" x2="${paddingLeft}" y2="${paddingTop + graphHeight}" stroke="rgba(15,23,42,0.15)" stroke-width="1"/>`;
+    svg += `<line x1="${paddingLeft}" y1="${paddingTop + graphHeight}" x2="${paddingLeft + graphWidth}" y2="${paddingTop + graphHeight}" stroke="rgba(15,23,42,0.15)" stroke-width="1"/>`;
+
+    // 8. Build line paths (clipped)
     let pathTemp = '';
     let pathRain = '';
-
     trends.forEach((t, idx) => {
         const x = getX(t.year);
-        const yTemp = getYTemp(t.temp_anomaly);
-        const yRain = getYRain(t.rainfall_deviation);
-
-        if (idx === 0) {
-            pathTemp += `M ${x} ${yTemp}`;
-            pathRain += `M ${x} ${yRain}`;
-        } else {
-            pathTemp += ` L ${x} ${yTemp}`;
-            pathRain += ` L ${x} ${yRain}`;
-        }
+        const yTemp = clamp(getYTemp(t.temp_anomaly), paddingTop, paddingTop + graphHeight);
+        const yRain = clamp(getYRain(t.rainfall_deviation), paddingTop, paddingTop + graphHeight);
+        pathTemp += idx === 0 ? `M ${x} ${yTemp}` : ` L ${x} ${yTemp}`;
+        pathRain += idx === 0 ? `M ${x} ${yRain}` : ` L ${x} ${yRain}`;
     });
 
-    svg += `<path d="${pathTemp}" fill="none" stroke="#ef4444" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>`;
-    svg += `<path d="${pathRain}" fill="none" stroke="#3b82f6" stroke-width="3" stroke-dasharray="4,4" stroke-linecap="round" stroke-linejoin="round"/>`;
+    svg += `<g clip-path="url(#plot-clip)">`;
+    svg += `<path d="${pathTemp}" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>`;
+    svg += `<path d="${pathRain}" fill="none" stroke="#3b82f6" stroke-width="2.5" stroke-dasharray="5,4" stroke-linecap="round" stroke-linejoin="round"/>`;
 
+    // 9. Data point dots (inside clip)
     trends.forEach(t => {
         const x = getX(t.year);
-        const yTemp = getYTemp(t.temp_anomaly);
-        const yRain = getYRain(t.rainfall_deviation);
-
-        svg += `<circle cx="${x}" cy="${yTemp}" r="4" fill="#ef4444" stroke="#ffffff" stroke-width="1.5"/>`;
-        svg += `<circle cx="${x}" cy="${yRain}" r="4" fill="#3b82f6" stroke="#ffffff" stroke-width="1.5"/>`;
+        const yTemp = clamp(getYTemp(t.temp_anomaly), paddingTop, paddingTop + graphHeight);
+        const yRain = clamp(getYRain(t.rainfall_deviation), paddingTop, paddingTop + graphHeight);
+        svg += `<circle cx="${x}" cy="${yTemp}" r="3" fill="#ef4444" stroke="#fff" stroke-width="1.5"/>`;
+        svg += `<circle cx="${x}" cy="${yRain}" r="3" fill="#3b82f6" stroke="#fff" stroke-width="1.5"/>`;
     });
+    svg += `</g>`;
+
+    // 10. Axis titles (inside viewBox, at safe positions)
+    svg += `<text x="14" y="${paddingTop + graphHeight / 2}" fill="#ef4444" font-size="10" text-anchor="middle" transform="rotate(-90,14,${paddingTop + graphHeight / 2})" font-family="sans-serif">Temp Anomaly (°C)</text>`;
+    svg += `<text x="${width - 10}" y="${paddingTop + graphHeight / 2}" fill="#3b82f6" font-size="10" text-anchor="middle" transform="rotate(90,${width - 10},${paddingTop + graphHeight / 2})" font-family="sans-serif">Rainfall Dev (%)</text>`;
 
     svg += `</svg>`;
     container.innerHTML = svg;
 }
-
 // 14. Floating Accessibility Speech Reader (TTS) Controls
 let currentUtterance = null;
 
@@ -2220,7 +2237,7 @@ const TRANSLATIONS = {
         'lbl-gw-map-title': 'परस्परसंवादी भूजल जलस्रोत नकाशा',
         'lbl-groundwater-chart-title': 'भूजल पातळीचा कल (mbgl मध्ये खोली)',
         'nav-btn-mesh': '<i class="fa-solid fa-circle-nodes"></i> ऑफलाइन मेश',
-        'lbl-mesh-title': '<i class="fa-solid fa-circle-nodes"></i> ऑफलाइन मेश नेटवर्क',
+        'lbl-mesh-title': '<i class="fa-solid fa-circle-nodes"></i> &#2310;&#2347;&#2354;&#2366;&#2311;&#2344; &#2350;&#2375;&#2358; &#2344;&#2375;&#2335;&#2354;&#2352;&#2381;&#2325;',
         'lbl-mesh-desc': 'ब्लूटूथ मेश तंत्रज्ञानाद्वारे जवळच्या वापरकर्त्यांशी थेट अलर्ट आणि लहान संदेशांची देवाणघेवाण करा। सेल्युलर नेटवर्क कव्हरेजशिवाय पूर्णपणे ऑफलाइन कार्य करते।',
         'lbl-mesh-send-title': '<i class="fa-solid fa-paper-plane"></i> संदेश प्रसारित करा',
         'lbl-mesh-send-desc': 'स्थानिक ब्लूटूथ मेश नेटवर्कवर प्रसारित करण्यासाठी एक लहान सूचना तयार करा।',
@@ -2370,7 +2387,7 @@ const TRANSLATIONS = {
         'lbl-sewage-toggle-label': 'മലിനജല കലർച്ചയുടെ മാപ്പ് കാണിക്കുക',
         'lbl-gw-map-title': 'ഇന്ററാക്ടീവ് ഭൂഗർഭജല ഭൂപടം',
         'lbl-groundwater-chart-title': 'ഭૂഗർഭ ജലനിരപ്പിലെ വ്യതിയാനം (mbgl ആഴത്തിൽ)'
-,
+        ,
         'nav-btn-mesh': '<i class="fa-solid fa-circle-nodes"></i> \u0D13\u0D2B\u0D4D\u200C\u0D32\u0D48\u0D7B \u0D2E\u0D46\u0D37\u0D4D',
         'lbl-mesh-title': '<i class="fa-solid fa-circle-nodes"></i> \u0D13\u0D2B\u0D4D\u200C\u0D32\u0D48\u0D7B \u0D2E\u0D46\u0D37\u0D4D \u0D28\u0D46\u0D31\u0D4D\u0D31\u0D4D\u200C\u0D35\u0D7C\u0D15\u0D4D\u0D15\u0D4D',
         'lbl-mesh-desc': '\u0D2C\u0D4D\u0D32\u0D42\u0D1F\u0D42\u0D24\u0D4D\u0D24\u0D4D \u0D2E\u0D46\u0D37\u0D4D \u0D38\u0D3E\u0D19\u0D4D\u0D15\u0D47\u0D24\u0D3F\u0D15\u0D35\u0D3F\u0D26\u0D4D\u0D2F \u0D35\u0D34\u0D3F \u0D05\u0D1F\u0D41\u0D24\u0D4D\u0D24\u0D41\u0D33\u0D4D\u0D33 \u0D09\u0D2A\u0D2F\u0D4B\u0D15\u0D4D\u0D24\u0D3E\u0D15\u0D4D\u0D15\u0D33\u0D41\u0D2E\u0D3E\u0D2F\u0D3F \u0D28\u0D47\u0D30\u0D3F\u0D1F\u0D4D\u0D1F\u0D4D \u0D05\u0D32\u0D47\u0D7C\u0D1F\u0D4D\u0D1F\u0D41\u0D15\u0D33\u0D41\u0D02 \u0D39\u0D4D\u0D30\u0D38\u0D4D\u0D35 \u0D38\u0D28\u0D4D\u0D26\u0D47\u0D36\u0D19\u0D4D\u0D19\u0D33\u0D41\u0D02 \u0D15\u0D48\u0D2E\u0D3E\u0D31\u0D41\u0D15. \u0D38\u0D46\u0D32\u0D4D\u0D32\u0D41\u0D32\u0D3E\u0D7C \u0D28\u0D46\u0D31\u0D4D\u0D31\u0D4D\u200C\u0D35\u0D7C\u0D15\u0D4D\u0D15\u0D4D \u0D15\u0D35\u0D31\u0D47\u0D1C\u0D4D \u0D07\u0D32\u0D4D\u0D32\u0D3E\u0D24\u0D46 \u0D2A\u0D42\u0D7C\u0D23\u0D4D\u0D23\u0D2E\u0D3E\u0D2F\u0D41\u0D02 \u0D13\u0D2B\u0D4D\u200C\u0D32\u0D48\u0D28\u0D3E\u0D2F\u0D3F \u0D2A\u0D4D\u0D30\u0D35\u0D7C\u0D24\u0D4D\u0D24\u0D3F\u0D15\u0D4D\u0D15\u0D41\u0D28\u0D4D\u0D28\u0D41.',
@@ -2803,229 +2820,6 @@ function renderGroundwaterChart() {
     container.innerHTML = svg;
 }
 
-// 14. Offline Bluetooth Mesh Notification & Android Bridge Logic
-let meshMessages = [];
-let meshSimulationInterval = null;
-let meshPollInterval = null;
-
-function toggleRecipientField(type) {
-    const group = document.getElementById('mesh-recipient-group');
-    if (group) {
-        group.style.display = (type === 'personalized') ? 'flex' : 'none';
-    }
-}
-
-function initMeshTab() {
-    // Check if Android Native layer is connected
-    const bridgeBadge = document.getElementById('mesh-bridge-badge');
-    if (bridgeBadge) {
-        if (window.Android) {
-            bridgeBadge.innerText = "Native Connected";
-            bridgeBadge.style.backgroundColor = "rgba(16, 185, 129, 0.1)";
-            bridgeBadge.style.borderColor = "rgba(16, 185, 129, 0.2)";
-            bridgeBadge.style.color = "#10b981";
-        } else {
-            bridgeBadge.innerText = "Simulated Link";
-            bridgeBadge.style.backgroundColor = "rgba(239, 68, 68, 0.1)";
-            bridgeBadge.style.borderColor = "rgba(239, 68, 68, 0.2)";
-            bridgeBadge.style.color = "#ef4444";
-        }
-    }
-
-    // Set default sender handle strictly based on device identity
-    const senderInput = document.getElementById('mesh-sender-name');
-    if (senderInput) {
-        if (window.Android && typeof window.Android.getDeviceName === 'function') {
-            senderInput.value = window.Android.getDeviceName();
-        } else {
-            let storedHandle = localStorage.getItem('mesh_sender_handle');
-            if (!storedHandle) {
-                const userAgent = navigator.userAgent;
-                let platform = "PC";
-                if (/android/i.test(userAgent)) platform = "Android";
-                else if (/iPad|iPhone|iPod/.test(userAgent)) platform = "iOS";
-                else if (/Macintosh/.test(userAgent)) platform = "Mac";
-                else if (/Windows/.test(userAgent)) platform = "Win";
-                
-                const rand = Math.floor(1000 + Math.random() * 9000);
-                storedHandle = `${platform}-${rand}`;
-                localStorage.setItem('mesh_sender_handle', storedHandle);
-            }
-            senderInput.value = storedHandle;
-        }
-        // Force the input to be read-only to represent strict device identifiers
-        senderInput.readOnly = true;
-        senderInput.style.opacity = '0.7';
-        senderInput.style.cursor = 'not-allowed';
-        senderInput.title = "Device ID is strict and cannot be modified.";
-    }
-
-    renderMeshFeed();
-
-    // Start local peer broadcast simulation and backend polling only if simulated
-    if (!window.Android) {
-        // Retrieve local host IP to display instructions for testing on a real phone
-        fetch('/api/mesh/host-ip')
-            .then(res => res.json())
-            .then(data => {
-                const hintEl = document.getElementById('mesh-test-phone-hint');
-                if (hintEl) {
-                    hintEl.innerHTML = `<i class="fa-solid fa-mobile-screen-button" style="color:#3b82f6; font-size:1rem; margin-right:0.4rem;"></i> <strong>Test on Phone:</strong> Connect your phone to the same Wi-Fi and open <a href="http://${data.ip}:${data.port}" target="_blank" style="color:#3b82f6; text-decoration:underline; font-weight:700;">http://${data.ip}:${data.port}</a> on your phone's browser to simulate mesh routing across devices.`;
-                    hintEl.style.display = 'block';
-                }
-            })
-            .catch(err => console.log('Failed to fetch host IP helper details:', err));
-
-        // Start backend polling for shared mesh channel
-        if (!meshPollInterval) {
-            meshPollInterval = setInterval(() => {
-                fetch('/api/mesh/messages')
-                    .then(res => res.json())
-                    .then(msgs => {
-                        // Deliver in reverse order (oldest to newest) to match push behavior
-                        for (let i = msgs.length - 1; i >= 0; i--) {
-                            const m = msgs[i];
-                            receiveMeshMessage(m.sender, m.text, m.urgency, m.timestamp, m.recipient);
-                        }
-                    })
-                    .catch(err => console.log('Mesh polling error:', err));
-            }, 3000);
-        }
-
-
-    }
-}
-
-function sendMeshMessage() {
-    const senderInput = document.getElementById('mesh-sender-name');
-    const msgInput = document.getElementById('mesh-msg-text');
-    const urgencySelect = document.getElementById('mesh-urgency-level');
-    const msgTypeSelect = document.getElementById('mesh-msg-type');
-    const recipientInput = document.getElementById('mesh-recipient-name');
-
-    if (!senderInput || !msgInput || !urgencySelect) return;
-
-    const sender = senderInput.value.trim() || 'Anonymous';
-    const text = msgInput.value.trim();
-    const urgency = urgencySelect.value;
-    const msgType = msgTypeSelect ? msgTypeSelect.value : 'broadcast';
-    const recipient = (msgType === 'personalized' && recipientInput) ? recipientInput.value.trim() : '';
-
-    if (!text) {
-        alert('Please enter a message to broadcast.');
-        return;
-    }
-
-    if (msgType === 'personalized' && !recipient) {
-        alert('Please specify a Recipient ID/Handle.');
-        return;
-    }
-
-    localStorage.setItem('mesh_sender_handle', sender);
-
-    // Call native Android bridge layer if available
-    if (window.Android && typeof window.Android.broadcastMeshMessage === 'function') {
-        try {
-            window.Android.broadcastMeshMessage(text, urgency, recipient || '');
-        } catch (e) {
-            window.Android.broadcastMeshMessage(text, urgency);
-        }
-    } else {
-        console.log(`[Mesh Simulator] Broadcasting: [${urgency.toUpperCase()}] ${sender} -> ${recipient || 'All'}: ${text}`);
-        
-        // Post message to backend relay server so other browsers connected to this instance (like on a phone) receive it
-        fetch('/api/mesh/relay', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ sender, text, urgency, recipient })
-        }).catch(err => console.log('Failed to post mesh message relay to server:', err));
-    }
-
-    // Add to local display immediately as outgoing message
-    receiveMeshMessage(sender + ' (You)', text, urgency, new Date().toLocaleTimeString(), recipient);
-
-    // Clear input
-    msgInput.value = '';
-}
-
-// Public callback handler exposed to native Android background layers
-window.receiveMeshMessage = function(sender, text, urgency, timestamp, recipient) {
-    const myHandle = (document.getElementById('mesh-sender-name')?.value || '').trim();
-    
-    // Deduplicate incoming messages. Strip "(You)" before comparing.
-    const cleanSender = (name) => name.replace(' (You)', '').trim();
-    const isDuplicate = meshMessages.some(m => 
-        cleanSender(m.sender) === cleanSender(sender) && 
-        m.text === text && 
-        (m.recipient || '') === (recipient || '')
-    );
-    if (isDuplicate) return;
-
-    // Check if the message is private and addressed to someone else.
-    // If targeted to another handle, we simulate relaying it without showing it to this user.
-    if (recipient && recipient !== 'Broadcast' && recipient !== myHandle && !sender.endsWith('(You)')) {
-        console.log(`[Mesh Router] Relaying private message from ${sender} to ${recipient} (payload: "${text}")`);
-        return;
-    }
-
-    meshMessages.unshift({ 
-        sender, 
-        text, 
-        urgency, 
-        recipient: recipient || '', 
-        timestamp: timestamp || new Date().toLocaleTimeString() 
-    });
-    
-    // Keep max 20 messages in log
-    if (meshMessages.length > 20) {
-        meshMessages.pop();
-    }
-
-    renderMeshFeed();
-    
-    // Trigger visual highlight / flash effect on the list if active
-    const listEl = document.getElementById('mesh-messages-list');
-    if (listEl) {
-        listEl.style.boxShadow = 'inset 0 0 10px rgba(16, 185, 129, 0.2)';
-        setTimeout(() => listEl.style.boxShadow = 'none', 500);
-    }
-};
-
-function renderMeshFeed() {
-    const listEl = document.getElementById('mesh-messages-list');
-    const emptyEl = document.getElementById('mesh-feed-empty');
-    if (!listEl) return;
-
-    if (meshMessages.length === 0) {
-        if (emptyEl) emptyEl.style.display = 'block';
-        listEl.innerHTML = '';
-        return;
-    }
-
-    if (emptyEl) emptyEl.style.display = 'none';
-
-    let html = '';
-    meshMessages.forEach(m => {
-        const badgeLabel = m.urgency === 'emergency' ? 'Critical' : (m.urgency === 'warning' ? 'Alert' : 'Info');
-        const targetTag = m.recipient ? `<span class="mesh-badge" style="background: #3b82f6; margin-left: 0.5rem; text-transform: uppercase;">To: ${m.recipient}</span>` : '';
-        
-        html += `
-            <div class="mesh-msg-card ${m.urgency}">
-                <div class="mesh-msg-header">
-                    <span class="mesh-msg-sender">${m.sender}</span>
-                    <div style="display:flex; align-items:center; gap:0.5rem;">
-                        ${targetTag}
-                        <span class="mesh-badge ${m.urgency}">${badgeLabel}</span>
-                        <span class="mesh-msg-time">${m.timestamp}</span>
-                    </div>
-                </div>
-                <div class="mesh-msg-body">${m.text}</div>
-            </div>
-        `;
-    });
-    listEl.innerHTML = html;
-}
-
 // 15. Feedback & Suggestion System Logic
 let feedbackRating = 5; // Default rating to 5 stars
 
@@ -3092,30 +2886,30 @@ function submitFeedback() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
     })
-    .then(res => {
-        if (!res.ok) throw new Error('Submission failed');
-        return res.json();
-    })
-    .then(data => {
-        contentText.value = '';
-        setFeedbackRating(5);
-        alert('Thank you! Your feedback has been posted successfully.');
-        fetchFeedback();
-    })
-    .catch(err => {
-        console.error('Error submitting feedback:', err);
-        alert('Failed to submit feedback. Please check your connection.');
-    })
-    .finally(() => {
-        if (submitBtn) {
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Submit Feedback';
-            const activeDict = TRANSLATIONS[activeLang];
-            if (activeDict && activeDict['btn-submit-feedback']) {
-                submitBtn.innerHTML = activeDict['btn-submit-feedback'];
+        .then(res => {
+            if (!res.ok) throw new Error('Submission failed');
+            return res.json();
+        })
+        .then(data => {
+            contentText.value = '';
+            setFeedbackRating(5);
+            alert('Thank you! Your feedback has been posted successfully.');
+            fetchFeedback();
+        })
+        .catch(err => {
+            console.error('Error submitting feedback:', err);
+            alert('Failed to submit feedback. Please check your connection.');
+        })
+        .finally(() => {
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Submit Feedback';
+                const activeDict = TRANSLATIONS[activeLang];
+                if (activeDict && activeDict['btn-submit-feedback']) {
+                    submitBtn.innerHTML = activeDict['btn-submit-feedback'];
+                }
             }
-        }
-    });
+        });
 }
 
 function renderFeedbackFeed(feedbackList) {
@@ -3165,7 +2959,7 @@ function renderFeedbackFeed(feedbackList) {
     feedbackList.forEach(f => {
         let catClass = f.category || 'recommendation';
         let catLabel = catClass.charAt(0).toUpperCase() + catClass.slice(1);
-        
+
         let starsHtml = '';
         for (let i = 1; i <= 5; i++) {
             if (i <= (f.rating || 0)) {
@@ -3197,3 +2991,312 @@ function renderFeedbackFeed(feedbackList) {
 }
 
 
+
+// ============================================================
+//  B-MESSAGING  (BLE Mesh Network)
+// ============================================================
+
+// ── State ──────────────────────────────────────────────────
+const meshState = {
+    myDeviceName: 'This Device',
+    peers: [],           // { id, name, rssi, lastSeen, online }
+    messages: {},        // keyed by peer id ('' = broadcast)
+    activePeer: '',      // '' means broadcast
+    urgency: 'info',
+    isBroadcastMode: true,
+    initialized: false,
+    simulatorInterval: null,
+    allMessages: [],     // flat log for broadcast view
+};
+
+const MESH_DEMO_PEERS = [
+    { id: 'Kisan-A1B2', name: 'Kisan-A1B2', rssi: -58, online: true },
+    { id: 'Pashu-C3D4', name: 'Pashu-C3D4', rssi: -72, online: true },
+    { id: 'Gram-E5F6',  name: 'Gram-E5F6',  rssi: -85, online: false },
+    { id: 'Mitra-G7H8', name: 'Mitra-G7H8', rssi: -61, online: true },
+];
+
+const MESH_DEMO_MSGS = [
+    { sender: 'Kisan-A1B2', text: 'Cattle market prices have dropped 12% — advise holding stock.', urgency: 'warning', ts: '09:14 AM' },
+    { sender: 'Pashu-C3D4', text: 'FMD vaccination camp at Dharwad — 10 AM tomorrow.', urgency: 'info', ts: '09:21 AM' },
+    { sender: 'Gram-E5F6',  text: '⚠️ Flash flood alert in lower basin zones. Evacuate livestock now.', urgency: 'emergency', ts: '09:33 AM' },
+    { sender: 'Mitra-G7H8', text: 'Wheat mandi rate at Kurnool: ₹2,280/quintal today.', urgency: 'info', ts: '09:48 AM' },
+];
+
+// ── Init ───────────────────────────────────────────────────
+function initMeshTab() {
+    if (meshState.initialized) return;
+    meshState.initialized = true;
+
+    // Resolve device name from Android bridge or generate one
+    if (window.Android && typeof window.Android.getDeviceName === 'function') {
+        meshState.myDeviceName = window.Android.getDeviceName();
+    } else {
+        const uid = Math.random().toString(36).substring(2, 6).toUpperCase();
+        meshState.myDeviceName = `GS-${uid}`;
+    }
+    document.getElementById('mesh-my-device-name').textContent = meshState.myDeviceName;
+
+    // Populate demo peers after scan delay
+    setTimeout(() => {
+        meshState.peers = JSON.parse(JSON.stringify(MESH_DEMO_PEERS));
+        meshRenderPeerList();
+        meshUpdatePeerCount();
+        document.getElementById('mesh-ble-label').textContent = `${meshState.peers.filter(p => p.online).length} Peers Found`;
+
+        // Add demo messages to broadcast view
+        MESH_DEMO_MSGS.forEach(m => meshAppendInboundMessage(m.sender, m.text, m.urgency, m.ts, ''));
+    }, 1800);
+
+    // Simulate BLE scan updates every 30s
+    meshState.simulatorInterval = setInterval(() => {
+        if (activeTab !== 'mesh') return;
+        meshSimulateScanUpdate();
+    }, 30000);
+
+    // Register global inbound bridge (called by Android native BLE scanner)
+    window.receiveMeshMessage = function(sender, text, urgency, timestamp, recipient) {
+        meshAppendInboundMessage(sender, text, urgency, timestamp, recipient);
+    };
+}
+
+// ── Peer List ──────────────────────────────────────────────
+function meshRenderPeerList(filter = '') {
+    const list = document.getElementById('mesh-peers-list');
+    const peers = meshState.peers.filter(p =>
+        !filter || p.name.toLowerCase().includes(filter.toLowerCase())
+    );
+
+    if (peers.length === 0) {
+        list.innerHTML = `<div style="padding:2rem; text-align:center; color:var(--text-secondary); font-size:0.88rem;">
+            <i class="fa-solid fa-magnifying-glass" style="font-size:1.4rem; opacity:0.4; display:block; margin-bottom:0.5rem;"></i>
+            No peers found
+        </div>`;
+        return;
+    }
+
+    list.innerHTML = peers.map(p => {
+        const isActive = meshState.activePeer === p.id;
+        const signal = p.rssi > -65 ? 3 : p.rssi > -75 ? 2 : 1;
+        const signalBars = Array(3).fill(0).map((_, i) =>
+            `<span style="width:3px; height:${6+i*4}px; border-radius:2px; background:${i < signal ? '#3b82f6' : 'rgba(0,0,0,0.15)'}; display:inline-block;"></span>`
+        ).join('');
+        const initials = p.name.substring(0, 2).toUpperCase();
+        const hasUnread = (meshState.messages[p.id] || []).some(m => m.unread);
+
+        return `<div class="mesh-peer-item" data-peer-id="${p.id}"
+            onclick="meshSelectPeer('${p.id}')"
+            style="display:flex; align-items:center; gap:0.65rem; padding:0.65rem 0.75rem; border-radius:10px; cursor:pointer; transition:all 0.2s;
+                   background:${isActive ? 'rgba(59,130,246,0.12)' : 'transparent'};
+                   border:1px solid ${isActive ? 'rgba(59,130,246,0.3)' : 'transparent'};">
+            <div style="position:relative; flex-shrink:0;">
+                <div style="width:38px; height:38px; border-radius:10px; background:linear-gradient(135deg,#6366f1,#8b5cf6); display:flex; align-items:center; justify-content:center; color:#fff; font-size:0.8rem; font-weight:700;">
+                    ${initials}
+                </div>
+                <span style="position:absolute; bottom:-2px; right:-2px; width:10px; height:10px; border-radius:50%; background:${p.online ? '#10b981' : '#94a3b8'}; border:2px solid white;"></span>
+            </div>
+            <div style="flex:1; min-width:0;">
+                <div style="font-size:0.88rem; font-weight:600; color:var(--text-primary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${p.name}</div>
+                <div style="font-size:0.72rem; color:var(--text-secondary);">${p.online ? 'Online' : 'Last seen recently'} · ${p.rssi} dBm</div>
+            </div>
+            <div style="display:flex; align-items:flex-end; gap:1px; flex-shrink:0;">${signalBars}</div>
+            ${hasUnread ? '<span style="width:8px;height:8px;border-radius:50%;background:#3b82f6;flex-shrink:0;"></span>' : ''}
+        </div>`;
+    }).join('');
+}
+
+function meshFilterPeers(val) {
+    meshRenderPeerList(val);
+}
+
+function meshUpdatePeerCount() {
+    const online = meshState.peers.filter(p => p.online).length;
+    document.getElementById('mesh-peer-count').textContent =
+        `${meshState.peers.length} peers detected · ${online} online`;
+}
+
+// ── Peer Selection ─────────────────────────────────────────
+function meshSelectPeer(peerId) {
+    meshState.activePeer = peerId;
+    meshState.isBroadcastMode = false;
+    document.getElementById('btn-mesh-broadcast-toggle').style.background = 'linear-gradient(135deg,#475569,#334155)';
+    document.getElementById('btn-mesh-broadcast-toggle').innerHTML = '<i class="fa-solid fa-user"></i> Direct Mode';
+
+    const peer = meshState.peers.find(p => p.id === peerId);
+    if (peer) {
+        const initials = peer.name.substring(0, 2).toUpperCase();
+        document.getElementById('mesh-chat-avatar').innerHTML = `<span style="font-size:0.9rem;">${initials}</span>`;
+        document.getElementById('mesh-chat-avatar').style.background = 'linear-gradient(135deg,#6366f1,#8b5cf6)';
+        document.getElementById('mesh-chat-title').textContent = peer.name;
+        document.getElementById('mesh-chat-subtitle').textContent = `Direct BLE message · ${peer.online ? 'Online' : 'Offline'} · Signal: ${peer.rssi} dBm`;
+    }
+
+    meshRenderPeerList();
+    meshRenderChatMessages(peerId);
+}
+
+function meshToggleBroadcastMode() {
+    meshState.activePeer = '';
+    meshState.isBroadcastMode = true;
+    document.getElementById('btn-mesh-broadcast-toggle').style.background = 'linear-gradient(135deg,#7c3aed,#4f46e5)';
+    document.getElementById('btn-mesh-broadcast-toggle').innerHTML = '<i class="fa-solid fa-tower-broadcast"></i> Broadcast Mode';
+    document.getElementById('mesh-chat-avatar').innerHTML = '<i class="fa-solid fa-tower-broadcast"></i>';
+    document.getElementById('mesh-chat-avatar').style.background = 'linear-gradient(135deg,#3b82f6,#8b5cf6)';
+    document.getElementById('mesh-chat-title').textContent = 'All Peers (Broadcast)';
+    document.getElementById('mesh-chat-subtitle').textContent = 'Messages delivered to all nearby BLE devices';
+    meshRenderPeerList();
+    meshRenderChatMessages('');
+}
+
+// ── Messages ───────────────────────────────────────────────
+function meshRenderChatMessages(peerId) {
+    const area = document.getElementById('mesh-messages-area');
+    const msgs = peerId === ''
+        ? meshState.allMessages
+        : (meshState.messages[peerId] || []);
+
+    const systemMsg = `<div class="mesh-system-msg" style="text-align:center; margin-bottom:0.5rem;">
+        <span style="background:rgba(59,130,246,0.1); color:#3b82f6; font-size:0.78rem; padding:0.3rem 0.9rem; border-radius:20px; font-weight:600;">
+            <i class="fa-brands fa-bluetooth-b"></i> B-Messaging BLE Mesh initialized. Range: ~100m
+        </span>
+    </div>`;
+
+    if (msgs.length === 0) {
+        area.innerHTML = systemMsg + `<div style="text-align:center; padding:2rem; color:var(--text-secondary); font-size:0.88rem; opacity:0.6;">
+            <i class="fa-regular fa-comment-dots" style="font-size:2rem; display:block; margin-bottom:0.5rem;"></i>
+            No messages yet. Start the conversation.
+        </div>`;
+        return;
+    }
+
+    area.innerHTML = systemMsg + msgs.map(m => meshBuildMessageBubble(m)).join('');
+    area.scrollTop = area.scrollHeight;
+}
+
+function meshBuildMessageBubble(m) {
+    const isMe = m.sender === meshState.myDeviceName;
+    const urgencyConfig = {
+        info:      { color: '#3b82f6', bg: 'rgba(59,130,246,0.08)', icon: 'fa-circle-info', label: 'Info' },
+        warning:   { color: '#d97706', bg: 'rgba(251,191,36,0.10)', icon: 'fa-triangle-exclamation', label: 'Warning' },
+        emergency: { color: '#dc2626', bg: 'rgba(220,38,38,0.10)', icon: 'fa-siren-on', label: 'Emergency' },
+    };
+    const u = urgencyConfig[m.urgency] || urgencyConfig.info;
+
+    if (isMe) {
+        return `<div style="display:flex; flex-direction:column; align-items:flex-end; gap:0.2rem;">
+            <div style="max-width:72%; background:linear-gradient(135deg,#3b82f6,#6366f1); color:#fff; padding:0.65rem 0.9rem; border-radius:16px 4px 16px 16px; font-size:0.9rem; line-height:1.5; box-shadow:0 2px 8px rgba(59,130,246,0.25);">
+                ${m.text}
+                ${m.urgency !== 'info' ? `<div style="margin-top:0.35rem; font-size:0.72rem; opacity:0.85;"><i class="fa-solid ${u.icon}"></i> ${u.label}</div>` : ''}
+            </div>
+            <div style="font-size:0.7rem; color:var(--text-secondary);">${m.ts} · You · <i class="fa-solid fa-check-double" style="color:#3b82f6;"></i></div>
+        </div>`;
+    } else {
+        const initials = (m.sender || '?').substring(0, 2).toUpperCase();
+        return `<div style="display:flex; flex-direction:column; align-items:flex-start; gap:0.2rem;">
+            <div style="display:flex; align-items:flex-end; gap:0.5rem;">
+                <div style="width:30px; height:30px; border-radius:8px; background:linear-gradient(135deg,#6366f1,#8b5cf6); display:flex; align-items:center; justify-content:center; color:#fff; font-size:0.7rem; font-weight:700; flex-shrink:0;">${initials}</div>
+                <div style="max-width:72%; background:${m.urgency === 'emergency' ? 'rgba(220,38,38,0.08)' : 'var(--bg-secondary)'}; border:1px solid ${u.color}22; padding:0.65rem 0.9rem; border-radius:4px 16px 16px 16px; font-size:0.9rem; line-height:1.5; box-shadow:0 1px 4px rgba(0,0,0,0.06);">
+                    <div style="font-size:0.72rem; font-weight:700; color:${u.color}; margin-bottom:0.25rem;"><i class="fa-solid ${u.icon}"></i> ${m.sender}</div>
+                    <div style="color:var(--text-primary);">${m.text}</div>
+                </div>
+            </div>
+            <div style="font-size:0.7rem; color:var(--text-secondary); padding-left:38px;">${m.ts}</div>
+        </div>`;
+    }
+}
+
+function meshAppendInboundMessage(sender, text, urgency, ts, recipient) {
+    const msg = { sender, text, urgency, ts: ts || meshNow(), unread: true };
+    meshState.allMessages.push(msg);
+    if (!meshState.messages[sender]) meshState.messages[sender] = [];
+    meshState.messages[sender].push(msg);
+
+    // If we're viewing this conversation, render live
+    const viewingThis = (meshState.activePeer === '' && !recipient) ||
+                        (meshState.activePeer === sender);
+    if (viewingThis && activeTab === 'mesh') {
+        const area = document.getElementById('mesh-messages-area');
+        const bubble = document.createElement('div');
+        bubble.innerHTML = meshBuildMessageBubble(msg);
+        area.appendChild(bubble.firstElementChild);
+        area.scrollTop = area.scrollHeight;
+    }
+    meshUpdatePeerCount();
+}
+
+// ── Send ───────────────────────────────────────────────────
+function meshSendMessage() {
+    const input = document.getElementById('mesh-compose-input');
+    const text = input.value.trim();
+    if (!text) return;
+
+    const recipient = meshState.isBroadcastMode ? '' : meshState.activePeer;
+    const msg = {
+        sender: meshState.myDeviceName,
+        text,
+        urgency: meshState.urgency,
+        ts: meshNow(),
+        unread: false,
+    };
+
+    meshState.allMessages.push(msg);
+    if (recipient) {
+        if (!meshState.messages[recipient]) meshState.messages[recipient] = [];
+        meshState.messages[recipient].push(msg);
+    }
+
+    // Bridge to native Android BLE layer
+    if (window.Android && typeof window.Android.broadcastMeshMessage === 'function') {
+        window.Android.broadcastMeshMessage(text, meshState.urgency, recipient);
+    }
+
+    // Render bubble
+    const area = document.getElementById('mesh-messages-area');
+    const bubble = document.createElement('div');
+    bubble.innerHTML = meshBuildMessageBubble(msg);
+    area.appendChild(bubble.firstElementChild);
+    area.scrollTop = area.scrollHeight;
+
+    // Clear input
+    input.value = '';
+    input.style.height = '44px';
+
+    // Animate send button
+    const btn = document.getElementById('btn-mesh-send');
+    btn.style.transform = 'scale(0.85)';
+    setTimeout(() => { btn.style.transform = 'scale(1)'; }, 150);
+}
+
+function meshHandleEnter(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        meshSendMessage();
+    }
+}
+
+// ── Urgency ────────────────────────────────────────────────
+function meshSetUrgency(level) {
+    meshState.urgency = level;
+    document.querySelectorAll('.mesh-urgency-btn').forEach(btn => {
+        const isActive = btn.dataset.urgency === level;
+        btn.style.opacity = isActive ? '1' : '0.55';
+        btn.style.fontWeight = isActive ? '700' : '600';
+    });
+
+    const composeArea = document.getElementById('mesh-compose-input');
+    const urgencyBorderMap = { info: '#3b82f6', warning: '#d97706', emergency: '#dc2626' };
+    composeArea.style.borderColor = urgencyBorderMap[level];
+    composeArea.style.boxShadow = `0 0 8px ${urgencyBorderMap[level]}40`;
+}
+
+// ── Helpers ────────────────────────────────────────────────
+function meshNow() {
+    return new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+}
+
+function meshSimulateScanUpdate() {
+    const rssiNoise = Math.floor(Math.random() * 6) - 3;
+    meshState.peers.forEach(p => { p.rssi = Math.max(-95, Math.min(-45, p.rssi + rssiNoise)); });
+    meshRenderPeerList();
+    meshUpdatePeerCount();
+}

@@ -51,13 +51,18 @@
 
 
 
-                <button class="tab-btn" onclick="switchTab('farming')" id="nav-btn-farming"><img src="/uploads/icon_farming.png" alt="" class="nav-tab-icon"> Farming</button>
-                <button class="tab-btn" onclick="switchTab('fisheries')" id="nav-btn-fisheries"><img src="/uploads/icon_fishery.png" alt="" class="nav-tab-icon"> Fishery</button>
-                <button class="tab-btn" onclick="switchTab('weather')" id="nav-btn-weather"><i
-                        class="fa-solid fa-cloud-sun-rain"></i> Weather Update</button>
-                <button class="tab-btn" onclick="switchTab('birds')" id="nav-btn-birds"><img src="/uploads/icon_birds.png" alt="" class="nav-tab-icon"> Bird Acoustic</button>
-                <button class="tab-btn" onclick="switchTab('news')" id="nav-btn-news"><img src="/uploads/icon_news.png" alt="" class="nav-tab-icon"> News Portal</button>
-                <button class="tab-btn" onclick="switchTab('mesh')" id="nav-btn-mesh"><img src="/uploads/icon_mesh.png" alt="" class="nav-tab-icon"> B-Messaging</button>
+                <button class="tab-btn" onclick="switchTab('farming')" id="nav-btn-farming"><img
+                        src="/uploads/icon_farming.png" alt="" class="nav-tab-icon"> Farming</button>
+                <!-- <button class="tab-btn" onclick="switchTab('fisheries')" id="nav-btn-fisheries"><img
+                        src="/uploads/icon_fishery.png" alt="" class="nav-tab-icon"> Fishery</button>
+                --> <button class="tab-btn" onclick="switchTab('weather')" id="nav-btn-weather"><i
+                        class="fa-solid fa-cloud-s  un-rain"></i> Weather Update</button>
+                <button class="tab-btn" onclick="switchTab('birds')" id="nav-btn-birds"><img
+                        src="/uploads/icon_birds.png" alt="" class="nav-tab-icon"> Bird Acoustic</button>
+                <button class="tab-btn" onclick="switchTab('news')" id="nav-btn-news"><img src="/uploads/icon_news.png"
+                        alt="" class="nav-tab-icon"> News Portal</button>
+                <button class="tab-btn" onclick="switchTab('mesh')" id="nav-btn-mesh"><img src="/uploads/icon_mesh.png"
+                        alt="" class="nav-tab-icon"> B-Messaging</button>
                 <button class="tab-btn" onclick="switchTab('feedback')" id="nav-btn-feedback"><i
                         class="fa-solid fa-comments"></i> Feedback Hub</button>
                 <button class="tab-btn" onclick="switchTab('sources')" id="nav-btn-sources"><i
@@ -145,7 +150,8 @@
                     <div class="card-glass navigation-card" onclick="switchTab('farming')"
                         style="cursor: pointer; display: flex; flex-direction: column; justify-content: space-between; min-height: 200px; border-bottom: 3px solid var(--color-accent);">
                         <div>
-                            <div class="card-icon" style="color: var(--color-accent-light);"><img src="/uploads/icon_farming.png" alt="Farming" class="header-card-icon"></div>
+                            <div class="card-icon" style="color: var(--color-accent-light);"><img
+                                    src="/uploads/icon_farming.png" alt="Farming" class="header-card-icon"></div>
                             <h4 id="lbl-auto-3"
                                 style="font-family: var(--font-heading); font-size: 1.25rem; color: var(--text-primary); margin-top: 0.5rem; margin-bottom: 0.5rem;">
                                 Farming Advisors</h4>
@@ -159,21 +165,23 @@
                             Farming <i class="fa-solid fa-arrow-right-long"></i></span>
                     </div>
 
-                    <div class="card-glass navigation-card" onclick="switchTab('fisheries')"
+                    <!--  <div class="card-glass navigation-card" onclick="switchTab('fisheries')"
                         style="cursor: pointer; display: flex; flex-direction: column; justify-content: space-between; min-height: 200px; border-bottom: 3px solid #3b82f6;">
                         <div>
-                            <div class="card-icon" style="color: #3b82f6;"><img src="/uploads/icon_fishery.png" alt="Fishery" class="header-card-icon"></div>
+                            <div class="card-icon" style="color: #3b82f6;"><img src="/uploads/icon_fishery.png"
+                                    alt="Fishery" class="header-card-icon"></div>
                             <h4 id="lbl-auto-6"
                                 style="font-family: var(--font-heading); font-size: 1.25rem; color: var(--text-primary); margin-top: 0.5rem; margin-bottom: 0.5rem;">
                                 Fishery Hub</h4>
                             <p id="lbl-auto-7"
                                 style="color: var(--text-secondary); font-size: 0.9rem; line-height: 1.5;">Explore
-                                coastal depletion heatmaps, breeding calendar restriction rules, and marine sightings.</p>
+                                coastal depletion heatmaps, breeding calendar restriction rules, and marine sightings.
+                            </p>
                         </div>
                         <span id="lbl-auto-8" class="gateway-link"
                             style="color: #3b82f6; font-weight: 600; font-size: 0.88rem; margin-top: 1rem; display: inline-flex; align-items: center; gap: 5px;">Enter
                             Fishery <i class="fa-solid fa-arrow-right-long"></i></span>
-                    </div>
+                    </div> -->
 
                     <div class="card-glass navigation-card" onclick="switchTab('weather')"
                         style="cursor: pointer; display: flex; flex-direction: column; justify-content: space-between; min-height: 200px; border-bottom: 3px solid #fbbf24;">
@@ -182,7 +190,7 @@
                             </div>
                             <h4 id="lbl-auto-9"
                                 style="font-family: var(--font-heading); font-size: 1.25rem; color: var(--text-primary); margin-top: 0.5rem; margin-bottom: 0.5rem;">
-                                Weather & Groundwater</h4>
+                                Weather</h4>
                             <p id="lbl-auto-10"
                                 style="color: var(--text-secondary); font-size: 0.9rem; line-height: 1.5;">Check
                                 real-time regional monsoonal forecasts, El Niño advisories, groundwater levels, and
@@ -196,7 +204,8 @@
                     <div class="card-glass navigation-card" onclick="switchTab('birds')"
                         style="cursor: pointer; display: flex; flex-direction: column; justify-content: space-between; min-height: 200px; border-bottom: 3px solid #f87171;">
                         <div>
-                            <div class="card-icon" style="color: #f87171;"><img src="/uploads/icon_birds.png" alt="Acoustic" class="header-card-icon"></div>
+                            <div class="card-icon" style="color: #f87171;"><img src="/uploads/icon_birds.png"
+                                    alt="Acoustic" class="header-card-icon"></div>
                             <h4 id="lbl-auto-12"
                                 style="font-family: var(--font-heading); font-size: 1.25rem; color: var(--text-primary); margin-top: 0.5rem; margin-bottom: 0.5rem;">
                                 Acoustic Tracker</h4>
@@ -213,7 +222,8 @@
                     <div class="card-glass navigation-card" onclick="switchTab('news')"
                         style="cursor: pointer; display: flex; flex-direction: column; justify-content: space-between; min-height: 200px; border-bottom: 3px solid #a7f3d0;">
                         <div>
-                            <div class="card-icon" style="color: #a7f3d0;"><img src="/uploads/icon_news.png" alt="News" class="header-card-icon"></div>
+                            <div class="card-icon" style="color: #a7f3d0;"><img src="/uploads/icon_news.png" alt="News"
+                                    class="header-card-icon"></div>
                             <h4 id="lbl-auto-15"
                                 style="font-family: var(--font-heading); font-size: 1.25rem; color: var(--text-primary); margin-top: 0.5rem; margin-bottom: 0.5rem;">
                                 News Portal</h4>
@@ -297,20 +307,23 @@
 
         <!-- FARMING TAB -->
         <section id="panel-farming" class="tab-panel" aria-labelledby="nav-btn-farming">
-            <h2 class="hero-title" style="font-size: 2rem; margin-bottom: 0.5rem;"><img src="/uploads/icon_farming.png" alt="" class="header-title-icon"> Farming Dashboard & Advisors</h2>
+            <h2 class="hero-title" style="font-size: 2rem; margin-bottom: 0.5rem;"><img src="/uploads/icon_farming.png"
+                    alt="" class="header-title-icon"> Farming Dashboard & Advisors</h2>
             <p id="lbl-auto-28" style="color: var(--text-secondary); margin-bottom: 2rem;">Access agricultural mandi
                 rates with interactive maps, livestock disease tracking maps, and organic marketplaces.</p>
 
             <!-- Dashboard Stats Grid (Farming Context) -->
             <div class="grid-cols-3">
                 <div class="card-glass">
-                    <div class="card-icon"><img src="/uploads/icon_cattle.png" alt="Cattle Disease Outbreaks" class="header-card-icon"></div>
+                    <div class="card-icon"><img src="/uploads/icon_cattle.png" alt="Cattle Disease Outbreaks"
+                            class="header-card-icon"></div>
                     <h3 id="lbl-auto-29" class="card-title">Cattle Disease Outbreaks</h3>
                     <div class="card-number" id="stats-outbreaks-count">767</div>
                     <p id="lbl-auto-30" class="card-desc">Active livestock outbreaks mapped in Indian districts</p>
                 </div>
                 <div class="card-glass">
-                    <div class="card-icon"><img src="/uploads/icon_mandi.png" alt="Wheat Market Rate" class="header-card-icon"></div>
+                    <div class="card-icon"><img src="/uploads/icon_mandi.png" alt="Wheat Market Rate"
+                            class="header-card-icon"></div>
                     <h3 id="lbl-auto-31" class="card-title">Wheat Market Rate</h3>
                     <div class="card-number" id="stats-wheat-price">₹ 2299</div>
                     <p id="lbl-auto-32" class="card-desc">Current average price per quintal in North Indian Mandis</p>
@@ -341,16 +354,21 @@
                 <!-- Sub Navigation inside tab -->
                 <div class="farming-subnav" style="display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
                     <button class="btn-primary subnav-btn active" onclick="switchFarmingSubView('mandi')"
-                        id="btn-farm-sub-mandi"><img src="/uploads/icon_mandi.png" alt="" class="subnav-icon"> Mandi Prices</button>
+                        id="btn-farm-sub-mandi"><img src="/uploads/icon_mandi.png" alt="" class="subnav-icon"> Mandi
+                        Prices</button>
                     <button class="btn-primary subnav-btn" onclick="switchFarmingSubView('cattle')"
-                        id="btn-farm-sub-cattle"><img src="/uploads/icon_cattle.png" alt="" class="subnav-icon"> Livestock Health</button>
+                        id="btn-farm-sub-cattle"><img src="/uploads/icon_cattle.png" alt="" class="subnav-icon">
+                        Livestock Health</button>
                     <button class="btn-primary subnav-btn" onclick="switchFarmingSubView('market')"
-                        id="btn-farm-sub-market"><img src="/uploads/icon_bio_market.png" alt="" class="subnav-icon"> Bio Market</button>
+                        id="btn-farm-sub-market"><img src="/uploads/icon_bio_market.png" alt="" class="subnav-icon"> Bio
+                        Market</button>
                 </div>
 
                 <!-- Sub-panel: Mandi Prices -->
                 <div id="farming-sub-mandi" class="farming-sub-panel active">
-                    <h2 class="hero-title" style="font-size: 1.75rem; margin-bottom: 0.5rem;" id="lbl-mandi-title"><img src="/uploads/icon_mandi.png" alt="" class="header-title-icon"> Grain Market Rates (Agricultural Mandis)</h2>
+                    <h2 class="hero-title" style="font-size: 1.75rem; margin-bottom: 0.5rem;" id="lbl-mandi-title"><img
+                            src="/uploads/icon_mandi.png" alt="" class="header-title-icon"> Grain Market Rates
+                        (Agricultural Mandis)</h2>
                     <p style="color: var(--text-secondary); margin-bottom: 1.5rem;" id="lbl-mandi-subtitle">Current
                         mandi prices per quintal (100 kilograms) across Indian states, aggregated weekly directly from
                         government databases.</p>
@@ -412,10 +430,11 @@
 
                 <!-- Sub-panel: Livestock Health -->
                 <div id="farming-sub-cattle" class="farming-sub-panel">
-                    <h2 class="hero-title" style="font-size: 1.75rem; margin-bottom: 0.5rem;"><img src="/uploads/icon_cattle.png" alt="" class="header-title-icon"> Cattle Disease Outbreaks & Vaccination Advisor</h2>
-                    <p id="lbl-auto-49" style="color: var(--text-secondary); margin-bottom: 1.5rem;">Explore active
-                        livestock outbreaks on the interactive heat-intensity map. Select an outbreak location to view
-                        immediate local veterinary guidance and immunization actions.</p>
+                    <h2 class="hero-title" style="font-size: 1.75rem; margin-bottom: 0.5rem;"><img
+                            src="/uploads/icon_cattle.png" alt="" class="header-title-icon"> Cattle Disease Outbreaks &
+                        Vaccination Advisor</h2>
+                    <p id="lbl-auto-49" style="color: var(--text-secondary); margin-bottom: 1.5rem;">Explore predictive
+                        livestock outbreaks on the interactive heat-intensity map..</p>
 
                     <div class="map-layout" style="height: 500px; margin-bottom: 1.5rem;">
                         <div class="map-pane" id="cattle-heatmap-container" style="flex: 1; height: 100%; z-index: 1;">
@@ -424,11 +443,10 @@
                             <div class="card-glass"
                                 style="flex: 1; height: 100%; display: flex; flex-direction: column;"
                                 id="cattle-advisory-box">
-                                <h3 class="card-title"><i class="fa-solid fa-hand-holding-medical"></i> Vaccine Advisor
+                                <h3 class="card-title"><i class="fa-solid fa-hand-holding-medical"></i> Cattle Disease
+                                    Prediction
                                 </h3>
-                                <p style="color: var(--text-secondary); margin-top: 1rem;" id="cattle-advisory-prompt">
-                                    Click on an active marker on the map to display district-specific vaccine needs and
-                                    veterinarian guidelines.</p>
+
 
                                 <div id="cattle-advisory-content" style="display: none; margin-top: 1rem;">
                                     <h4 id="adv-district-title"
@@ -443,32 +461,20 @@
                                     <p style="margin-bottom: 0.75rem;"><strong>Spread Vector:</strong> <span
                                             id="adv-transmission-desc">--</span></p>
 
-                                    <hr style="border-color: var(--border-glass); margin: 1rem 0;">
 
-                                    <h4 style="color: var(--color-accent-light); margin-bottom: 0.5rem;"><i
-                                            class="fa-solid fa-syringe"></i> Immunization Directive</h4>
-                                    <p id="lbl-auto-54" style="margin-bottom: 0.75rem;">The following vaccines must be
-                                        distributed immediately to all bovine herds in this district:</p>
-                                    <div id="adv-vaccines-list"
-                                        style="color: var(--text-primary); font-weight: 600; background: rgba(var(--color-accent-rgb), 0.08); padding: 0.75rem; border-radius: 8px; border-left: 3px solid var(--color-accent);">
-                                        --
-                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="chart-summary-box">
-                        <strong><i class="fa-solid fa-circle-question"></i> Livestock Disease Map Summary:</strong> This
-                        map monitors active cattle disease outbreaks (like Foot-and-Mouth or Lumpy Skin disease) across
-                        Indian districts. Red highlights high-severity areas with immediate vaccination requirements,
-                        orange indicates moderate spread, and blue is low.
-                    </div>
+
                 </div>
 
                 <!-- Sub-panel: Bio Market -->
                 <div id="farming-sub-market" class="farming-sub-panel">
-                    <h2 class="hero-title" style="font-size: 1.75rem; margin-bottom: 0.5rem;"><img src="/uploads/icon_bio_market.png" alt="" class="header-title-icon"> Organic Bio Market & Authenticity Portal</h2>
+                    <h2 class="hero-title" style="font-size: 1.75rem; margin-bottom: 0.5rem;"><img
+                            src="/uploads/icon_bio_market.png" alt="" class="header-title-icon"> Organic Bio Market &
+                        Authenticity Portal</h2>
                     <p id="lbl-auto-55" style="color: var(--text-secondary); margin-bottom: 1.5rem;">Browse and trade
                         certified organic produce directly with regional farmers, or test your crop purity at home.</p>
 
@@ -977,320 +983,12 @@
 
 
 
-        <!-- FISHERIES HUB TAB -->
-        <section id="panel-fisheries" class="tab-panel" aria-labelledby="nav-btn-fisheries">
-            <h2 class="hero-title" style="font-size: 2rem; margin-bottom: 0.5rem;" id="lbl-fisheries-title"><img src="/uploads/icon_fishery.png" alt="" class="header-title-icon"> Fisheries Hub & Marine Ecosystem</h2>
-            <p style="color: var(--text-secondary); margin-bottom: 1.5rem;" id="lbl-fisheries-desc">Explore coastal fish
-                heatmap zones, breeding restriction calendars with multilingual conservation insights, ocean population
-                charts, and marine mammal sightings.</p>
-
-
-
-            <div class="fisheries-container">
-                <!-- Sub Navigation inside tab -->
-                <div class="fisheries-subnav" style="display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
-                    <button class="btn-primary subnav-btn active" onclick="switchFisheriesSubView('heatmap')"
-                        id="btn-fish-sub-heatmap"><i class="fa-solid fa-map-location-dot"></i> Coastal Depletion
-                        Heatmap</button>
-                    <button class="btn-primary subnav-btn" onclick="switchFisheriesSubView('calendar')"
-                        id="btn-fish-sub-calendar"><i class="fa-solid fa-calendar-days"></i> Overfishing
-                        Restrictions</button>
-                    <button class="btn-primary subnav-btn" onclick="switchFisheriesSubView('trends')"
-                        id="btn-fish-sub-trends"><i class="fa-solid fa-chart-simple"></i> Fish Stock Depletion</button>
-                    <button class="btn-primary subnav-btn" onclick="switchFisheriesSubView('schemes')"
-                        id="btn-fish-sub-schemes"><i class="fa-solid fa-hand-holding-hand"></i> Economic
-                        Welfare</button>
-                    <button class="btn-primary subnav-btn" onclick="switchFisheriesSubView('sightings')"
-                        id="btn-fish-sub-sightings"><i class="fa-solid fa-camera"></i> Marine Conservation</button>
-                </div>
-
-
-
-
-
-
-
-
-                <!-- Sub-panel: Coastal Fish Heatmap -->
-                <div id="fisheries-sub-heatmap" class="fisheries-sub-panel active">
-                    <div class="map-layout" style="height: 500px;">
-                        <div class="map-pane" id="fisheries-map-container" style="flex: 1; height: 100%; z-index: 1;">
-                        </div>
-                        <div class="map-sidebar">
-                            <div class="card-glass" style="flex: 1;">
-                                <h3 class="card-title"><i class="fa-solid fa-circle-info"></i> Heatmap Indicator</h3>
-                                <p id="lbl-auto-115"
-                                    style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 0.5rem; line-height: 1.5;">
-                                    The circles represent dense aggregations of specific fish types along the Indian
-                                    coast.
-                                    A larger, brighter circle indicates a high concentration of fish schools.
-                                </p>
-                                <hr style="border-color: var(--border-glass); margin: 1rem 0;">
-                                <div style="display: flex; flex-direction: column; gap: 0.75rem; font-size: 0.85rem;"
-                                    id="fish-heatmap-legend">
-                                    <p><strong id="lbl-auto-116" style="color: var(--text-primary);">Legend (Density
-                                            Classes):</strong></p>
-                                    <p><span id="lbl-auto-117" class="status-badge critical"
-                                            style="padding: 0.2rem 0.5rem;">CRITICAL DENSITY (&gt;85%)</span> - High
-                                        yield, recommended for netting.</p>
-                                    <p><span id="lbl-auto-118" class="status-badge high"
-                                            style="padding: 0.2rem 0.5rem;">HIGH DENSITY (70% - 85%)</span> -
-                                        Moderate-high density schools.</p>
-                                    <p><span id="lbl-auto-119" class="status-badge medium"
-                                            style="padding: 0.2rem 0.5rem;">MODERATE DENSITY (&lt;70%)</span> - Normal
-                                        fish presence.</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-
-
-                    <div class="chart-summary-box" style="margin-top: 1.5rem;">
-                        <strong><i class="fa-solid fa-circle-question"></i> Fish Heatmap Summary:</strong> This map
-                        displays where schools of commercial fish (such as Sardines or Mackerel) are currently grouped
-                        in coastal waters. Red circles indicate very dense schools, orange is high density, and blue is
-                        moderate. Larger circles show larger populations.
-                    </div>
-                </div>
-
-
-
-
-
-
-                <!-- Sub-panel: Breeding Calendar -->
-                <div id="fisheries-sub-calendar" class="fisheries-sub-panel">
-                    <div class="card-glass">
-                        <div
-                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
-                            <h3 class="card-title" style="margin: 0;"><i class="fa-solid fa-shield-halved"></i> Fish
-                                Breeding Restrictions & Protection Calendar</h3>
-
-
-
-                            <!-- Language toggle for breeding reason -->
-                            <div class="filter-group" style="min-width: 220px; flex: 0;">
-                                <label id="lbl-auto-120" for="calendar-lang-select" style="font-size:0.75rem;">Select
-                                    Advisory Language</label>
-                                <select id="calendar-lang-select" onchange="toggleCalendarLanguage()">
-                                    <option value="en">English (Default)</option>
-                                    <option value="bn">Bengali (Óª¼Óª¥ÓªéÓª▓Óª¥)</option>
-                                    <option value="ml">Malayalam (Ó┤«Ó┤▓Ó┤»Ó┤¥Ó┤│Ó┤é)</option>
-                                    <option value="ta">Tamil (Ó«ñÓ««Ó«┐Ó«┤Ó»ì)</option>
-                                    <option value="hi">Hindi (Óñ╣Óñ┐Óñ¿ÓÑìÓñªÓÑÇ)</option>
-                                </select>
-                            </div>
-                        </div>
-
-
-
-                        <div class="table-container">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th id="lbl-auto-121">Protected Species</th>
-                                        <th id="lbl-auto-122">Breeding Ban Duration</th>
-                                        <th id="lbl-auto-123">Conservation Reason / Regional Advisory</th>
-                                        <th id="lbl-auto-124">Recommended Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="breeding-calendar-body">
-                                    <!-- Rendered dynamically -->
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-                <!-- Sub-panel: Historical Trends Chart -->
-                <div id="fisheries-sub-trends" class="fisheries-sub-panel">
-                    <div class="card-glass">
-                        <h3 class="card-title" style="margin-bottom: 0.5rem;"><i class="fa-solid fa-chart-line"></i>
-                            Marine Fish Biomass Indexes (2016 - 2026)</h3>
-                        <p id="lbl-auto-125"
-                            style="color: var(--text-secondary); margin-bottom: 2rem; font-size: 0.9rem;">Historical
-                            stock counts gathered from marine census surveys to track depletion and replenishment
-                            curves.</p>
-
-
-
-                        <div style="width:100%; height: 350px; position:relative; background: rgba(0,0,0,0.15); border-radius: 12px; border:1px solid var(--border-glass); padding: 1.5rem;"
-                            id="historical-chart-canvas-wrapper">
-                            <!-- Draw high quality SVG chart dynamically in app.js -->
-                            <div id="historical-svg-container" style="width:100%; height:100%;"></div>
-                        </div>
-
-
-
-                        <div
-                            style="display: flex; gap: 2rem; justify-content: center; margin-top: 1rem; flex-wrap: wrap; font-size: 0.85rem; margin-bottom: 1.5rem;">
-                            <span style="display:flex; align-items:center; gap:0.4rem; color:var(--text-primary);"><span
-                                    id="lbl-auto-126"
-                                    style="width:12px; height:12px; background:#10b981; display:inline-block; border-radius:3px;"></span>
-                                Sardines</span>
-                            <span style="display:flex; align-items:center; gap:0.4rem; color:var(--text-primary);"><span
-                                    id="lbl-auto-127"
-                                    style="width:12px; height:12px; background:#fbbf24; display:inline-block; border-radius:3px;"></span>
-                                Hilsa</span>
-                            <span style="display:flex; align-items:center; gap:0.4rem; color:var(--text-primary);"><span
-                                    id="lbl-auto-128"
-                                    style="width:12px; height:12px; background:#f87171; display:inline-block; border-radius:3px;"></span>
-                                Mackerel</span>
-                            <span style="display:flex; align-items:center; gap:0.4rem; color:var(--text-primary);"><span
-                                    id="lbl-auto-129"
-                                    style="width:12px; height:12px; background:#3b82f6; display:inline-block; border-radius:3px;"></span>
-                                Tuna</span>
-                        </div>
-
-
-
-                        <div class="chart-summary-box">
-                            <strong><i class="fa-solid fa-circle-question"></i> Fish Stock Trends Graph
-                                Summary:</strong> This line chart tracks the average population count index of four
-                            major fish species over the last decade (2016-2026). Rising lines indicate population
-                            recovery due to conservation efforts, while falling lines highlight severe overfishing and
-                            stock depletion.
-                        </div>
-                    </div>
-                </div>
-
-
-
-                <!-- Sub-panel: Welfare Schemes -->
-                <div id="fisheries-sub-schemes" class="fisheries-sub-panel">
-                    <div class="grid-cols-3" id="fisheries-schemes-grid">
-                        <!-- Loaded dynamically -->
-                    </div>
-                </div>
-
-
-
-                <!-- Sub-panel: Marine Mammal Sightings -->
-                <div id="fisheries-sub-sightings" class="fisheries-sub-panel">
-                    <div class="grid-cols-2">
-                        <!-- Sighting Uploader form -->
-                        <div class="card-glass"
-                            style="display: flex; flex-direction: column; justify-content: space-between;">
-                            <div>
-                                <h3 class="card-title" style="margin-bottom: 0.5rem;"><i
-                                        class="fa-solid fa-cloud-arrow-up"></i> Log Whale / Dolphin Sighting</h3>
-                                <p id="lbl-auto-130"
-                                    style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 1.5rem;">
-                                    Help marine biologists map the biodiversity of cetacean groups in Indian waters by
-                                    uploading sighting images and coordinates.</p>
-
-
-
-                                <div style="display: flex; flex-direction: column; gap: 0.85rem;">
-                                    <div class="filter-group" style="min-width: 100%;">
-                                        <label id="lbl-auto-131" for="sight-species">Mammal Species / Type</label>
-                                        <select id="sight-species">
-                                            <option value="Blue Whale">Blue Whale (Balaenoptera musculus)</option>
-                                            <option value="Humpback Whale">Humpback Whale (Megaptera novaeangliae)
-                                            </option>
-                                            <option value="Fin Whale">Fin Whale (Balaenoptera physalus)</option>
-                                            <option value="Bryde's Whale">Bryde's Whale (Balaenoptera edeni)</option>
-                                            <option value="Indo-Pacific Bottlenose Dolphin">Indo-Pacific Bottlenose
-                                                Dolphin</option>
-                                            <option value="Spinner Dolphin">Spinner Dolphin (Stenella longirostris)
-                                            </option>
-                                            <option value="Irrawaddy Dolphin">Irrawaddy Dolphin (Orcaella brevirostris)
-                                            </option>
-                                        </select>
-                                    </div>
-                                    <div class="grid-cols-2" style="margin-bottom: 0; gap: 1rem;">
-                                        <div class="filter-group">
-                                            <label id="lbl-auto-132" for="sight-latitude">Latitude (DD)</label>
-                                            <input type="number" id="sight-latitude" step="0.0001"
-                                                placeholder="E.g. 15.3412">
-                                        </div>
-                                        <div class="filter-group">
-                                            <label id="lbl-auto-133" for="sight-longitude">Longitude (DD)</label>
-                                            <input type="number" id="sight-longitude" step="0.0001"
-                                                placeholder="E.g. 73.0856">
-                                        </div>
-                                    </div>
-                                    <div class="filter-group" style="min-width: 100%;">
-                                        <label id="lbl-auto-134" for="sight-notes">Sighting Notes / Behavior</label>
-                                        <textarea id="sight-notes" rows="3"
-                                            placeholder="Describe cohort size, surface activities, breathing spouts seen..."
-                                            style="background: rgba(11, 15, 25, 0.6); border: 1px solid var(--border-glass); color: var(--text-primary); padding: 0.6rem 0.9rem; border-radius: 8px; font-family: var(--font-body); outline: none; resize: none;"></textarea>
-                                    </div>
-
-
-
-                                    <!-- Drag and Drop Image Box -->
-                                    <div class="filter-group" style="min-width: 100%;">
-                                        <label id="lbl-auto-135">Upload Sighting Photograph</label>
-                                        <div class="upload-dropzone" id="sighting-dropzone" onclick="triggerFileInput()"
-                                            style="border: 2px dashed var(--border-glass); background: rgba(0,0,0,0.1); border-radius: 10px; padding: 2rem; text-align: center; cursor: pointer; transition: var(--transition-smooth); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.5rem;">
-                                            <i class="fa-solid fa-images"
-                                                style="font-size: 2rem; color: var(--text-secondary);"
-                                                id="dropzone-icon"></i>
-                                            <p style="font-size:0.85rem; color:var(--text-secondary);"
-                                                id="dropzone-text">Click or Drag & Drop photo here</p>
-                                            <input type="file" id="sight-file" accept="image/*"
-                                                onchange="handleFileSelect()" style="display: none;">
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-
-
-                            <button class="btn-primary" style="margin-top: 1.5rem;" onclick="submitMarineSighting()"><i
-                                    class="fa-solid fa-circle-check"></i> File Marine Report</button>
-                        </div>
-
-
-
-                        <!-- Gallery list -->
-                        <div class="card-glass" style="display: flex; flex-direction: column; height: 100%;">
-                            <h3 class="card-title" style="margin-bottom: 1rem;"><i class="fa-solid fa-images"></i> Flora
-                                & Fauna Sightings Log</h3>
-                            <div style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 1rem; max-height: 480px; padding-right: 0.25rem;"
-                                id="sightings-gallery-list">
-                                <!-- Populated dynamically -->
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-
-
-
-            </div>
-        </section>
-
 
 
         <!-- BIRD SOUND DETECTOR MAP TAB -->
         <section id="panel-birds" class="tab-panel" aria-labelledby="nav-btn-birds">
-            <h2 class="hero-title" style="font-size: 2rem; margin-bottom: 0.5rem;"><img src="/uploads/icon_birds.png" alt="" class="header-title-icon"> Bird Sound Acoustic Classifier & Sighting Tracker</h2>
+            <h2 class="hero-title" style="font-size: 2rem; margin-bottom: 0.5rem;"><img src="/uploads/icon_birds.png"
+                    alt="" class="header-title-icon"> Bird Sound Acoustic Classifier & Sighting Tracker</h2>
             <p id="lbl-auto-142" style="color: var(--text-secondary); margin-bottom: 1.5rem;">Turn on your microphone to
                 record a bird call. Our AI matches the frequency and spectral patterns to identify the bird, assess its
                 conservation classification, and map it to log populations in the wild.</p>
@@ -1388,7 +1086,9 @@
             <div class="news-header-section"
                 style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
                 <div>
-                    <h2 class="hero-title" style="font-size: 2rem; margin-bottom: 0.5rem;"><img src="/uploads/icon_news.png" alt="" class="header-title-icon"> Agriculture & Fisheries News Portal</h2>
+                    <h2 class="hero-title" style="font-size: 2rem; margin-bottom: 0.5rem;"><img
+                            src="/uploads/icon_news.png" alt="" class="header-title-icon"> Agriculture & Fisheries News
+                        Portal</h2>
                     <p id="lbl-auto-148" style="color: var(--text-secondary);">Stay updated with the latest trends in
                         organic farming, modern technology, sustainable marine methods, oil spill impacts, and climate
                         changes globally.</p>
@@ -1487,10 +1187,10 @@
 
 
 
-                <div style="width:100%; height: 350px; position:relative; background: rgba(0,0,0,0.15); border-radius: 12px; border:1px solid var(--border-glass); padding: 1.5rem;"
+                <div style="width:100%; height: 350px; position:relative; background: rgba(0,0,0,0.15); border-radius: 12px; border:1px solid var(--border-glass);"
                     id="climate-chart-canvas-wrapper">
                     <!-- Inline SVG chart rendered dynamically via app.js -->
-                    <div id="climate-svg-container" style="width:100%; height:100%;"></div>
+                    <div id="climate-svg-container" style="width:100%; height:350px; display:block;"></div>
                 </div>
 
 
@@ -1511,7 +1211,7 @@
 
                 <div class="chart-summary-box">
                     <strong><i class="fa-solid fa-circle-question"></i> Temperature & Rainfall Trends Graph
-                        Summary:</strong> This chart monitors climate change indicators in India from 2000 to 2026. The
+                        Summary:</strong> This chart monitors climate change indicators in India from 2000 to 2025. The
                     solid red line shows average temperature increases (global warming footprint), while the dashed blue
                     line shows how much the annual monsoon rainfall deviated from historical averages, illustrating
                     drought years.
@@ -1520,7 +1220,7 @@
 
 
 
-            <!-- Groundwater Visualizer Section -->
+            <!-- Groundwater Visualizer Section 
             <div class="card-glass" style="margin-top: 2rem;">
                 <h3 class="card-title" style="margin-bottom: 0.5rem;" id="lbl-groundwater-title"><i
                         class="fa-solid fa-droplet"></i> Groundwater Depletion & Sewage Contamination Visualizer (2016 -
@@ -1531,7 +1231,7 @@
 
 
 
-                <!-- Controls Row -->
+               Controls Row 
                 <div class="filter-bar" style="margin-bottom: 1.5rem;">
                     <div class="filter-group" style="min-width: 250px;">
                         <label for="gw-year-slider"><span id="lbl-gw-year-label">Select Forecast/Historical Year:</span>
@@ -1552,9 +1252,9 @@
 
 
 
-                <!-- Grid Map + Chart -->
+                 Grid Map + Chart
                 <div class="grid-cols-2" style="gap: 1.5rem; margin-bottom: 1.5rem;">
-                    <!-- Leaflet map container -->
+                   Leaflet map container 
                     <div style="display: flex; flex-direction: column; gap: 0.5rem;">
                         <h4 style="font-family: var(--font-heading); font-weight: 600; color: var(--text-primary); font-size: 1rem;"
                             id="lbl-gw-map-title">Interactive Ground Water Aquifers Map</h4>
@@ -1569,7 +1269,7 @@
                             urban sewage is contaminating agricultural groundwater.
                         </div>
                     </div>
-                    <!-- Chart container -->
+                     Chart container 
                     <div style="display: flex; flex-direction: column; gap: 0.5rem;">
                         <h4 style="font-family: var(--font-heading); font-weight: 600; color: var(--text-primary); font-size: 1rem;"
                             id="lbl-groundwater-chart-title">Water Table Level Trend (Depth in mbgl)</h4>
@@ -1592,7 +1292,7 @@
 
 
 
-                <!-- Map Legends -->
+                 Map Legends 
                 <div
                     style="display: flex; gap: 2rem; justify-content: center; flex-wrap: wrap; font-size: 0.85rem; padding-top: 1rem; border-top: 1px solid var(--border-glass);">
                     <span
@@ -1617,498 +1317,603 @@
                         Sewage Contamination Mix</span>
                 </div>
             </div>
+            -->
         </section>
 
 
+            <!-- FEEDBACK & RECOMMENDATIONS TAB -->
+            <section id="panel-feedback" class="tab-panel" aria-labelledby="nav-btn-feedback">
+                <h2 class="hero-title" style="font-size: 2rem; margin-bottom: 0.5rem;" id="lbl-feedback-title">
+                    <i class="fa-solid fa-comments"></i> Feedback & Suggestions Hub
+                </h2>
+                <p id="lbl-feedback-desc" style="color: var(--text-secondary); margin-bottom: 2rem;">
+                    Help us improve GramSetu. Submit your recommendations, product reviews, complaints, or new ideas
+                    directly to our platform.
+                </p>
 
-
-        <!-- OFFLINE BLUETOOTH MESH NETWORK TAB -->
-        <section id="panel-mesh" class="tab-panel" aria-labelledby="nav-btn-mesh">
-            <h2 class="hero-title" style="font-size: 2rem; margin-bottom: 0.5rem;" id="lbl-mesh-title">
-                <img src="/uploads/icon_mesh.png" alt="" class="header-title-icon"> B-Messaging Network
-            </h2>
-            <p id="lbl-mesh-desc" style="color: var(--text-secondary); margin-bottom: 2rem;">
-                Exchange alerts and short messages directly with nearby users via Bluetooth mesh technology. Operating entirely offline without cellular network coverage.
-            </p>
-
-            <div class="grid-cols-2">
-                <!-- Outbound Broadcaster Form -->
-                <div class="card-glass" style="display: flex; flex-direction: column; justify-content: space-between;">
-                    <div>
-                        <h3 class="card-title" id="lbl-mesh-send-title">
-                            <i class="fa-solid fa-paper-plane"></i> Broadcast Message
-                        </h3>
-                        <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 1.5rem;" id="lbl-mesh-send-desc">
-                            Compose a short notification to broadcast over the local Bluetooth mesh network.
-                        </p>
-
-                        <div style="display: flex; flex-direction: column; gap: 1.25rem;">
-                            <!-- Sender Name -->
-                            <div class="filter-group" style="min-width: 100%;">
-                                <label for="mesh-sender-name" id="lbl-mesh-sender-label">Your Sender ID / Handle</label>
-                                <input type="text" id="mesh-sender-name" placeholder="E.g. Fisherman-Raju" style="background: rgba(11, 15, 25, 0.6); border: 1px solid var(--border-glass); color: var(--text-primary); padding: 0.6rem 0.9rem; border-radius: 8px; font-family: var(--font-body); outline: none;">
-                            </div>
-
-                            <!-- Alert Level / Urgency -->
-                            <div class="filter-group" style="min-width: 100%;">
-                                <label for="mesh-urgency-level" id="lbl-mesh-urgency-label">Alert Urgency Level</label>
-                                <select id="mesh-urgency-level" style="background: rgba(11, 15, 25, 0.6); border: 1px solid var(--border-glass); color: var(--text-primary); padding: 0.6rem 0.9rem; border-radius: 8px; font-family: var(--font-body); outline: none;">
-                                    <option value="info">Informational (Green)</option>
-                                    <option value="warning">Advisory / Warning (Orange)</option>
-                                    <option value="emergency">Emergency / Critical (Red)</option>
-                                </select>
-                            </div>
-
-                            <!-- Message Type -->
-                            <div class="filter-group" style="min-width: 100%;">
-                                <label for="mesh-msg-type" id="lbl-mesh-type-label">Message Type</label>
-                                <select id="mesh-msg-type" onchange="toggleRecipientField(this.value)" style="background: rgba(11, 15, 25, 0.6); border: 1px solid var(--border-glass); color: var(--text-primary); padding: 0.6rem 0.9rem; border-radius: 8px; font-family: var(--font-body); outline: none;">
-                                    <option value="broadcast">Broadcast (All Peers)</option>
-                                    <option value="personalized">Personalized (Targeted)</option>
-                                </select>
-                            </div>
-
-                            <!-- Recipient ID -->
-                            <div class="filter-group" id="mesh-recipient-group" style="min-width: 100%; display: none;">
-                                <label for="mesh-recipient-name" id="lbl-mesh-recipient-label">Recipient ID / Handle</label>
-                                <input type="text" id="mesh-recipient-name" placeholder="E.g. Fisherman-Raju" style="background: rgba(11, 15, 25, 0.6); border: 1px solid var(--border-glass); color: var(--text-primary); padding: 0.6rem 0.9rem; border-radius: 8px; font-family: var(--font-body); outline: none;">
-                            </div>
-
-                            <!-- Message Content -->
-                            <div class="filter-group" style="min-width: 100%;">
-                                <label for="mesh-msg-text" id="lbl-mesh-message-label">Broadcast Text (Max 140 Characters)</label>
-                                <textarea id="mesh-msg-text" rows="3" maxlength="140" placeholder="Type alert or message here..." style="background: rgba(11, 15, 25, 0.6); border: 1px solid var(--border-glass); color: var(--text-primary); padding: 0.6rem 0.9rem; border-radius: 8px; font-family: var(--font-body); outline: none; resize: none;"></textarea>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div style="margin-top: 1.5rem;">
-                        <button class="btn-primary" style="width: 100%;" onclick="sendMeshMessage()" id="lbl-mesh-broadcast-btn">
-                            <i class="fa-solid fa-rss"></i> Broadcast Offline (Bluetooth)
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Live Stream Feed & Radar -->
-                <div class="card-glass" style="display: flex; flex-direction: column; justify-content: space-between; height: 100%;">
-                    <div>
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                            <h3 class="card-title" style="margin-bottom: 0;" id="lbl-mesh-stream-title">
-                                <i class="fa-solid fa-list-check"></i> Live Mesh Feed
-                            </h3>
-                            <div style="display: flex; align-items: center; gap: 0.5rem; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2); padding: 0.25rem 0.6rem; border-radius: 20px; font-size: 0.75rem; color: #10b981; font-weight: 700;">
-                                <span class="status-dot" style="background: #10b981; width: 8px; height: 8px; margin: 0; box-shadow: 0 0 8px #10b981; animation: pulseRadar 1.5s infinite;"></span>
-                                <span id="mesh-peer-count-text">3 Peers Connected</span>
-                            </div>
-                        </div>
-
-                        <!-- Radar Visualizer -->
-                        <div style="display: flex; justify-content: center; align-items: center; margin: 1.5rem 0; height: 160px; position: relative;">
-                            <div class="radar-container" style="display: flex; flex-direction: column; align-items: center; position: relative;">
-                                <div class="radar-circle">
-                                    <div class="radar-wave"></div>
-                                    <div class="radar-wave" style="animation-delay: 1s;"></div>
-                                    <div class="radar-wave" style="animation-delay: 2s;"></div>
-                                    <i class="fa-solid fa-bluetooth" style="font-size: 2.2rem; color: #10b981; filter: drop-shadow(0 0 10px rgba(16, 185, 129, 0.4)); z-index: 10;"></i>
-                                </div>
-                                <span style="font-size: 0.75rem; color: var(--text-secondary); font-weight: 600; margin-top: 0.75rem; text-transform: uppercase; letter-spacing: 1px;" id="lbl-mesh-radar-title">Bluetooth Transceiver Active</span>
-                            </div>
-                        </div>
-
-                        <!-- Messages Feed -->
-                        <div id="mesh-messages-list" style="display: flex; flex-direction: column; gap: 0.75rem; max-height: 250px; overflow-y: auto; padding-right: 5px;">
-                            <!-- Placeholder -->
-                            <div style="text-align: center; color: var(--text-secondary); padding: 2rem 0;" id="mesh-feed-empty">
-                                <i class="fa-solid fa-satellite-dish" style="font-size: 1.8rem; margin-bottom: 0.5rem; color: var(--text-secondary);"></i>
-                                <p style="font-size: 0.85rem;" id="lbl-mesh-empty-text">No active mesh transmissions detected yet.</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Integration Info -->
-                    <div style="margin-top: 1.5rem; padding-top: 0.75rem; border-top: 1px solid var(--border-glass); display: flex; justify-content: space-between; align-items: center; font-size: 0.72rem; color: var(--text-secondary);" id="mesh-integration-card">
-                        <span><i class="fa-solid fa-circle-info"></i> <span id="lbl-mesh-bridge-status">Native Bridge Connection Status:</span></span>
-                        <span id="mesh-bridge-badge" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); padding: 0.15rem 0.4rem; border-radius: 6px; color: #ef4444; font-weight: 700;">Simulated Link</span>
-                    </div>
-
-                    <!-- Phone Testing Link Hint -->
-                    <div id="mesh-test-phone-hint" style="margin-top: 1rem; padding: 0.75rem; border-radius: 8px; background: rgba(59, 130, 246, 0.08); border: 1px solid rgba(59, 130, 246, 0.15); font-size: 0.75rem; line-height: 1.4; color: var(--text-secondary); display: none;">
-                    </div>
-                </div>
-            </div>
-        </section>
-
-
-        <!-- FEEDBACK & RECOMMENDATIONS TAB -->
-        <section id="panel-feedback" class="tab-panel" aria-labelledby="nav-btn-feedback">
-            <h2 class="hero-title" style="font-size: 2rem; margin-bottom: 0.5rem;" id="lbl-feedback-title">
-                <i class="fa-solid fa-comments"></i> Feedback & Suggestions Hub
-            </h2>
-            <p id="lbl-feedback-desc" style="color: var(--text-secondary); margin-bottom: 2rem;">
-                Help us improve GramSetu. Submit your recommendations, product reviews, complaints, or new ideas directly to our platform.
-            </p>
-
-            <div class="grid-cols-2" style="gap: 1.5rem;">
-                <!-- Feedback Submission Form -->
-                <div class="card-glass" style="display: flex; flex-direction: column; justify-content: space-between;">
-                    <div>
-                        <h3 class="card-title" id="lbl-feedback-form-title">
-                            <i class="fa-solid fa-pen-to-square"></i> Share Your Thoughts
-                        </h3>
-                        <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 1.5rem;" id="lbl-feedback-form-desc">
-                            Select a category, rate your experience, and write your suggestions below.
-                        </p>
-
-                        <div style="display: flex; flex-direction: column; gap: 1.25rem;">
-                            <!-- Category Select -->
-                            <div class="filter-group" style="min-width: 100%;">
-                                <label for="feedback-category" id="lbl-feedback-category-label">Feedback Category</label>
-                                <select id="feedback-category" style="background: rgba(11, 15, 25, 0.6); border: 1px solid var(--border-glass); color: var(--text-primary); padding: 0.6rem 0.9rem; border-radius: 8px; font-family: var(--font-body); outline: none;">
-                                    <option value="recommendation">Recommendation</option>
-                                    <option value="review">Product Review</option>
-                                    <option value="complaint">Complaint</option>
-                                    <option value="idea">Idea / Suggestion</option>
-                                </select>
-                            </div>
-
-                            <!-- Rating Stars Selection -->
-                            <div class="filter-group" style="min-width: 100%;">
-                                <label id="lbl-feedback-rating-label">Rating</label>
-                                <div class="feedback-stars-selector" style="display: flex; gap: 0.5rem; font-size: 1.8rem; color: #4b5563; margin-top: 0.25rem;">
-                                    <i class="fa-solid fa-star feedback-star" data-value="1" style="cursor: pointer; transition: color 0.2s;" onclick="setFeedbackRating(1)"></i>
-                                    <i class="fa-solid fa-star feedback-star" data-value="2" style="cursor: pointer; transition: color 0.2s;" onclick="setFeedbackRating(2)"></i>
-                                    <i class="fa-solid fa-star feedback-star" data-value="3" style="cursor: pointer; transition: color 0.2s;" onclick="setFeedbackRating(3)"></i>
-                                    <i class="fa-solid fa-star feedback-star" data-value="4" style="cursor: pointer; transition: color 0.2s;" onclick="setFeedbackRating(4)"></i>
-                                    <i class="fa-solid fa-star feedback-star" data-value="5" style="cursor: pointer; transition: color 0.2s;" onclick="setFeedbackRating(5)"></i>
-                                </div>
-                            </div>
-
-                            <!-- Feedback Text Content -->
-                            <div class="filter-group" style="min-width: 100%;">
-                                <label for="feedback-content" id="lbl-feedback-text-label">Message / Details</label>
-                                <textarea id="feedback-content" rows="4" maxlength="1000" placeholder="Please write your recommendation, idea, or issue here..." style="background: rgba(11, 15, 25, 0.6); border: 1px solid var(--border-glass); color: var(--text-primary); padding: 0.6rem 0.9rem; border-radius: 8px; font-family: var(--font-body); outline: none; resize: none;"></textarea>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div style="margin-top: 1.5rem;">
-                        <button class="btn-primary" style="width: 100%;" onclick="submitFeedback()" id="btn-submit-feedback">
-                            <i class="fa-solid fa-paper-plane"></i> Submit Feedback
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Feedback Stats & Community Board -->
-                <div style="display: flex; flex-direction: column; gap: 1.5rem;">
-                    <!-- Stats Dashboard Row -->
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                        <div class="card-glass" style="padding: 1rem; text-align: center; display: flex; flex-direction: column; justify-content: center; align-items: center;">
-                            <span style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; text-transform: uppercase;" id="lbl-feedback-avg-rating">Average Rating</span>
-                            <span id="feedback-stat-rating-num" style="font-size: 2rem; font-weight: 800; color: #fbbf24; margin: 0.25rem 0;">0.0</span>
-                            <div id="feedback-stat-rating-stars" style="color: #fbbf24; font-size: 0.9rem; display: flex; gap: 0.1rem;">
-                                <i class="fa-regular fa-star"></i><i class="fa-regular fa-star"></i><i class="fa-regular fa-star"></i><i class="fa-regular fa-star"></i><i class="fa-regular fa-star"></i>
-                            </div>
-                        </div>
-                        <div class="card-glass" style="padding: 1rem; text-align: center; display: flex; flex-direction: column; justify-content: center; align-items: center;">
-                            <span style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; text-transform: uppercase;" id="lbl-feedback-total-posts">Total Submissions</span>
-                            <span id="feedback-stat-count" style="font-size: 2.2rem; font-weight: 800; color: var(--color-accent); margin-top: 0.25rem;">0</span>
-                        </div>
-                    </div>
-
-                    <!-- Community Board list -->
-                    <div class="card-glass" style="flex: 1; display: flex; flex-direction: column; justify-content: space-between; min-height: 280px;">
+                <div class="grid-cols-2" style="gap: 1.5rem;">
+                    <!-- Feedback Submission Form -->
+                    <div class="card-glass"
+                        style="display: flex; flex-direction: column; justify-content: space-between;">
                         <div>
-                            <h3 class="card-title" style="margin-bottom: 1rem;" id="lbl-feedback-board-title">
-                                <i class="fa-solid fa-users"></i> Community Suggestions Board
+                            <h3 class="card-title" id="lbl-feedback-form-title">
+                                <i class="fa-solid fa-pen-to-square"></i> Share Your Thoughts
                             </h3>
-                            <div id="feedback-board-list" style="display: flex; flex-direction: column; gap: 0.75rem; max-height: 280px; overflow-y: auto; padding-right: 5px;">
-                                <!-- Placeholder -->
-                                <div style="text-align: center; color: var(--text-secondary); padding: 2rem 0;" id="feedback-empty-placeholder">
-                                    <i class="fa-solid fa-comments-dollar" style="font-size: 1.8rem; margin-bottom: 0.5rem; color: var(--text-secondary);"></i>
-                                    <p style="font-size: 0.85rem;" id="lbl-feedback-empty-board">No feedback or suggestions submitted yet.</p>
+                            <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 1.5rem;"
+                                id="lbl-feedback-form-desc">
+                                Select a category, rate your experience, and write your suggestions below.
+                            </p>
+
+                            <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+                                <!-- Category Select -->
+                                <div class="filter-group" style="min-width: 100%;">
+                                    <label for="feedback-category" id="lbl-feedback-category-label">Feedback
+                                        Category</label>
+                                    <select id="feedback-category"
+                                        style="background: rgba(11, 15, 25, 0.6); border: 1px solid var(--border-glass); color: var(--text-primary); padding: 0.6rem 0.9rem; border-radius: 8px; font-family: var(--font-body); outline: none;">
+                                        <option value="recommendation">Recommendation</option>
+                                        <option value="review">Product Review</option>
+                                        <option value="complaint">Complaint</option>
+                                        <option value="idea">Idea / Suggestion</option>
+                                    </select>
+                                </div>
+
+                                <!-- Rating Stars Selection -->
+                                <div class="filter-group" style="min-width: 100%;">
+                                    <label id="lbl-feedback-rating-label">Rating</label>
+                                    <div class="feedback-stars-selector"
+                                        style="display: flex; gap: 0.5rem; font-size: 1.8rem; color: #4b5563; margin-top: 0.25rem;">
+                                        <i class="fa-solid fa-star feedback-star" data-value="1"
+                                            style="cursor: pointer; transition: color 0.2s;"
+                                            onclick="setFeedbackRating(1)"></i>
+                                        <i class="fa-solid fa-star feedback-star" data-value="2"
+                                            style="cursor: pointer; transition: color 0.2s;"
+                                            onclick="setFeedbackRating(2)"></i>
+                                        <i class="fa-solid fa-star feedback-star" data-value="3"
+                                            style="cursor: pointer; transition: color 0.2s;"
+                                            onclick="setFeedbackRating(3)"></i>
+                                        <i class="fa-solid fa-star feedback-star" data-value="4"
+                                            style="cursor: pointer; transition: color 0.2s;"
+                                            onclick="setFeedbackRating(4)"></i>
+                                        <i class="fa-solid fa-star feedback-star" data-value="5"
+                                            style="cursor: pointer; transition: color 0.2s;"
+                                            onclick="setFeedbackRating(5)"></i>
+                                    </div>
+                                </div>
+
+                                <!-- Feedback Text Content -->
+                                <div class="filter-group" style="min-width: 100%;">
+                                    <label for="feedback-content" id="lbl-feedback-text-label">Message / Details</label>
+                                    <textarea id="feedback-content" rows="4" maxlength="1000"
+                                        placeholder="Please write your recommendation, idea, or issue here..."
+                                        style="background: rgba(11, 15, 25, 0.6); border: 1px solid var(--border-glass); color: var(--text-primary); padding: 0.6rem 0.9rem; border-radius: 8px; font-family: var(--font-body); outline: none; resize: none;"></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 1.5rem;">
+                            <button class="btn-primary" style="width: 100%;" onclick="submitFeedback()"
+                                id="btn-submit-feedback">
+                                <i class="fa-solid fa-paper-plane"></i> Submit Feedback
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Feedback Stats & Community Board -->
+                    <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                        <!-- Stats Dashboard Row -->
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <div class="card-glass"
+                                style="padding: 1rem; text-align: center; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+                                <span
+                                    style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; text-transform: uppercase;"
+                                    id="lbl-feedback-avg-rating">Average Rating</span>
+                                <span id="feedback-stat-rating-num"
+                                    style="font-size: 2rem; font-weight: 800; color: #fbbf24; margin: 0.25rem 0;">0.0</span>
+                                <div id="feedback-stat-rating-stars"
+                                    style="color: #fbbf24; font-size: 0.9rem; display: flex; gap: 0.1rem;">
+                                    <i class="fa-regular fa-star"></i><i class="fa-regular fa-star"></i><i
+                                        class="fa-regular fa-star"></i><i class="fa-regular fa-star"></i><i
+                                        class="fa-regular fa-star"></i>
+                                </div>
+                            </div>
+                            <div class="card-glass"
+                                style="padding: 1rem; text-align: center; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+                                <span
+                                    style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; text-transform: uppercase;"
+                                    id="lbl-feedback-total-posts">Total Submissions</span>
+                                <span id="feedback-stat-count"
+                                    style="font-size: 2.2rem; font-weight: 800; color: var(--color-accent); margin-top: 0.25rem;">0</span>
+                            </div>
+                        </div>
+
+                        <!-- Community Board list -->
+                        <div class="card-glass"
+                            style="flex: 1; display: flex; flex-direction: column; justify-content: space-between; min-height: 280px;">
+                            <div>
+                                <h3 class="card-title" style="margin-bottom: 1rem;" id="lbl-feedback-board-title">
+                                    <i class="fa-solid fa-users"></i> Community Suggestions Board
+                                </h3>
+                                <div id="feedback-board-list"
+                                    style="display: flex; flex-direction: column; gap: 0.75rem; max-height: 280px; overflow-y: auto; padding-right: 5px;">
+                                    <!-- Placeholder -->
+                                    <div style="text-align: center; color: var(--text-secondary); padding: 2rem 0;"
+                                        id="feedback-empty-placeholder">
+                                        <i class="fa-solid fa-comments-dollar"
+                                            style="font-size: 1.8rem; margin-bottom: 0.5rem; color: var(--text-secondary);"></i>
+                                        <p style="font-size: 0.85rem;" id="lbl-feedback-empty-board">No feedback or
+                                            suggestions submitted yet.</p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
+            </section>
+
+            <!-- DATA SOURCES LINKS TAB -->
+            <section id="panel-sources" class="tab-panel" aria-labelledby="nav-btn-sources">
+                <h2 class="hero-title" style="font-size: 2rem; margin-bottom: 0.5rem;"><i
+                        class="fa-solid fa-circle-info"></i> Integrated Open Data Sources</h2>
+                <p id="lbl-auto-158" style="color: var(--text-secondary); margin-bottom: 2rem;">GramSetu leverages
+                    verified,
+                    official Indian and global database repositories to automate its metrics. Below are details and
+                    references to the integrated data platforms.</p>
+
+
+
+
+                <div class="source-grid"
+                    style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem;">
+                    <!-- Source Card 1 -->
+                    <div class="card-glass source-card">
+
+
+
+
+                        <h3 class="card-title" style="color: var(--color-accent-light);"><i
+                                class="fa-solid fa-wheat-awn"></i> OGD Platform India Grains Prices</h3>
+                        <p id="lbl-auto-159"
+                            style="color: var(--text-secondary); margin-top: 0.75rem; line-height: 1.6; font-size: 0.9rem;">
+                            Automated sync of agricultural mandi prices for essential foodgrains across states. Daily
+                            price
+                            indexing.
+                        </p>
+
+
+
+                        <p style="color: var(--text-secondary); margin-top: 0.5rem; font-size: 0.85rem;"><strong
+                                id="lbl-auto-160">Refresh Rate:</strong> Daily (Automated Sync)</p>
+                        <a id="lbl-auto-161"
+                            href="https://www.data.gov.in/catalog/current-daily-price-various-commodities-various-markets-mandi"
+                            target="_blank" rel="noopener noreferrer" class="source-link">Visit OGD Daily Price Catalog
+                            <i class="fa-solid fa-up-right-from-square"></i></a>
+                    </div>
+
+
+
+                    <!-- Source Card 2 -->
+                    <div class="card-glass source-card">
+
+
+
+
+                        <h3 class="card-title" style="color: var(--color-accent-light);"><i class="fa-solid fa-cow"></i>
+                            DAHD Livestock Health Portal</h3>
+                        <p id="lbl-auto-162"
+                            style="color: var(--text-secondary); margin-top: 0.75rem; line-height: 1.6; font-size: 0.9rem;">
+                            National livestock health database of epidemic outbreaks, cattle disease reports, and
+                            mandatory
+                            vaccination guidelines (under the LH&DCP).
+                        </p>
+
+
+
+                        <p style="color: var(--text-secondary); margin-top: 0.5rem; font-size: 0.85rem;"><strong
+                                id="lbl-auto-163">Refresh Rate:</strong> Monthly (Automated Sync)</p>
+                        <a id="lbl-auto-164" href="https://dahd.gov.in/schemes-programmes/lhdcp" target="_blank"
+                            rel="noopener noreferrer" class="source-link">Visit LH&DCP Portal <i
+                                class="fa-solid fa-up-right-from-square"></i></a>
+                    </div>
+
+
+
+                    <!-- Source Card 3 -->
+                    <div class="card-glass source-card">
+                        <h3 class="card-title" style="color: var(--color-accent-light);"><i
+                                class="fa-solid fa-piggy-bank"></i> DAHD Pig Husbandry Guidelines</h3>
+                        <p id="lbl-auto-165"
+                            style="color: var(--text-secondary); margin-top: 0.75rem; line-height: 1.6; font-size: 0.9rem;">
+                            Official guidelines for Good Husbandry Practices in Pig Farming, providing animal
+                            biosecurity,
+                            sanitation, and feeding standards.
+                        </p>
+                        <p style="color: var(--text-secondary); margin-top: 0.5rem; font-size: 0.85rem;"><strong
+                                id="lbl-auto-166">Refresh Rate:</strong> Static Catalog Reference</p>
+                        <a id="lbl-auto-167"
+                            href="https://dahd.gov.in/sites/default/files/2026-05/GoodHusbandryPracticesinPigFarming.pdf"
+                            target="_blank" rel="noopener noreferrer" class="source-link">View Pig Husbandry PDF <i
+                                class="fa-solid fa-up-right-from-square"></i></a>
+                    </div>
+
+
+
+                    <!-- Source Card 4 -->
+                    <div class="card-glass source-card">
+                        <h3 class="card-title" style="color: var(--color-accent-light);"><i
+                                class="fa-solid fa-ship"></i>
+                            ICAR - CMFRI Fisheries Census</h3>
+                        <p id="lbl-auto-168"
+                            style="color: var(--text-secondary); margin-top: 0.75rem; line-height: 1.6; font-size: 0.9rem;">
+                            National catch census and coastal biomass metrics. Used as a baseline to plot the decadal
+                            marine
+                            stock trend (2016-2026).
+                        </p>
+                        <p style="color: var(--text-secondary); margin-top: 0.5rem; font-size: 0.85rem;"><strong
+                                id="lbl-auto-169">Refresh Rate:</strong> Static Reference Database</p>
+                        <a id="lbl-auto-170" href="https://www.cmfri.org.in" target="_blank" rel="noopener noreferrer"
+                            class="source-link">Visit ICAR-CMFRI India <i
+                                class="fa-solid fa-up-right-from-square"></i></a>
+                    </div>
+
+
+
+                    <!-- Source Card 5 -->
+                    <div class="card-glass source-card">
+                        <h3 class="card-title" style="color: var(--color-accent-light);"><i
+                                class="fa-solid fa-anchor"></i>
+                            Coastal State Fisheries Departments</h3>
+                        <p id="lbl-auto-171"
+                            style="color: var(--text-secondary); margin-top: 0.75rem; line-height: 1.6; font-size: 0.9rem;">
+                            Welfare schemes for fishermen (PMMSY, boat subsidies, savings schemes) adapted from
+                            fisheries
+                            departments of Kerala, Tamil Nadu, Andhra Pradesh, Maharashtra, and West Bengal.
+                        </p>
+                        <p style="color: var(--text-secondary); margin-top: 0.5rem; font-size: 0.85rem;"><strong
+                                id="lbl-auto-172">Refresh Rate:</strong> Regular Update</p>
+                        <a id="lbl-auto-173" href="https://pmmsy.dof.gov.in/" target="_blank" rel="noopener noreferrer"
+                            class="source-link">Visit PMMSY Scheme Portal <i
+                                class="fa-solid fa-up-right-from-square"></i></a>
+                    </div>
+
+
+
+                    <!-- Source Card 6 -->
+                    <div class="card-glass source-card">
+                        <h3 class="card-title" style="color: var(--color-accent-light);"><i
+                                class="fa-solid fa-fish-fins"></i> Marine Breeding & Monsoons Ban</h3>
+                        <p id="lbl-auto-174"
+                            style="color: var(--text-secondary); margin-top: 0.75rem; line-height: 1.6; font-size: 0.9rem;">
+                            Coastal reproduction cycle calendars and local language conservation bans adapted from the
+                            Department of Fisheries monsoon fishing ban guidelines.
+                        </p>
+                        <p style="color: var(--text-secondary); margin-top: 0.5rem; font-size: 0.85rem;"><strong
+                                id="lbl-auto-175">Refresh Rate:</strong> Annual Directive Update</p>
+                        <a id="lbl-auto-176" href="https://dof.gov.in" target="_blank" rel="noopener noreferrer"
+                            class="source-link">Visit Dept of Fisheries India <i
+                                class="fa-solid fa-up-right-from-square"></i></a>
+                    </div>
+
+
+
+                    <!-- Source Card 7 -->
+                    <div class="card-glass source-card">
+                        <h3 class="card-title" style="color: var(--color-accent-light);"><i
+                                class="fa-solid fa-heart-pulse"></i> Cetacean flora & fauna log</h3>
+                        <p id="lbl-auto-177"
+                            style="color: var(--text-secondary); margin-top: 0.75rem; line-height: 1.6; font-size: 0.9rem;">
+                            Citizen-science uploads mapping whale and dolphin sightings to help track marine mammal
+                            distributions, referenced with local cetacean network databases.
+                        </p>
+                        <p style="color: var(--text-secondary); margin-top: 0.5rem; font-size: 0.85rem;"><strong
+                                id="lbl-auto-178">Refresh Rate:</strong> Live (User Contributions)</p>
+                        <a id="lbl-auto-179" href="http://www.marinemammals.in" target="_blank"
+                            rel="noopener noreferrer" class="source-link">Visit MMCN India <i
+                                class="fa-solid fa-up-right-from-square"></i></a>
+                    </div>
+
+
+
+                    <!-- Source Card 8 -->
+                    <div class="card-glass source-card">
+                        <h3 class="card-title" style="color: var(--color-accent-light);"><i
+                                class="fa-solid fa-feather"></i>
+                            IUCN Red List of Threatened Species</h3>
+
+
+                        <p id="lbl-auto-180"
+                            style="color: var(--text-secondary); margin-top: 0.75rem; line-height: 1.6; font-size: 0.9rem;">
+                            Used to determine the global threat level and extinction status of avian wildlife species
+                            identified via microphone recordings.
+                        </p>
+
+
+                        <p style="color: var(--text-secondary); margin-top: 0.5rem; font-size: 0.85rem;"><strong
+                                id="lbl-auto-181">Refresh Rate:</strong> Permanent static catalog reference</p>
+                        <a id="lbl-auto-182" href="https://www.iucnredlist.org" target="_blank"
+                            rel="noopener noreferrer" class="source-link">Visit IUCN Red List <i
+                                class="fa-solid fa-up-right-from-square"></i></a>
+                    </div>
+
+
+
+
+                    <!-- Source Card 9 -->
+                    <div class="card-glass source-card">
+
+
+
+
+                        <h3 class="card-title" style="color: var(--color-accent-light);"><i class="fa-solid fa-rss"></i>
+                            Global RSS Feeds & Outlets</h3>
+                        <p id="lbl-auto-183"
+                            style="color: var(--text-secondary); margin-top: 0.75rem; line-height: 1.6; font-size: 0.9rem;">
+                            Aggregates news on modern farming, bio farming, new fishing ways, oil spills, and climate
+                            change
+                            from outlets like The Hindu, DownToEarth, FAO, and NOAA.
+                        </p>
+
+
+
+                        <p style="color: var(--text-secondary); margin-top: 0.5rem; font-size: 0.85rem;"><strong
+                                id="lbl-auto-184">Refresh Rate:</strong> Daily Scraper Update</p>
+                        <a id="lbl-auto-185" href="https://www.fao.org/newsroom/rss/en/" target="_blank"
+                            rel="noopener noreferrer" class="source-link">Visit FAO RSS Feed <i
+                                class="fa-solid fa-up-right-from-square"></i></a>
+                    </div>
+
+
+
+                    <!-- Source Card 10 -->
+                    <div class="card-glass source-card">
+                        <h3 class="card-title" style="color: var(--color-accent-light);"><i
+                                class="fa-solid fa-temperature-high"></i> IMD - India Meteorological Department</h3>
+                        <p id="lbl-auto-186"
+                            style="color: var(--text-secondary); margin-top: 0.75rem; line-height: 1.6; font-size: 0.9rem;">
+                            Real-time monsoonal monitoring, weather warning bulletins, and regional precipitation
+                            tracker
+                            across meteorological sub-divisions of India.
+                        </p>
+                        <p style="color: var(--text-secondary); margin-top: 0.5rem; font-size: 0.85rem;"><strong
+                                id="lbl-auto-187">Refresh Rate:</strong> Daily (Proxy Link)</p>
+                        <a id="lbl-auto-188" href="https://mausam.imd.gov.in" target="_blank" rel="noopener noreferrer"
+                            class="source-link">Visit IMD Mausam <i class="fa-solid fa-up-right-from-square"></i></a>
+                    </div>
+
+
+
+                    <!-- Source Card 11 -->
+                    <div class="card-glass source-card">
+                        <h3 class="card-title" style="color: var(--color-accent-light);"><i
+                                class="fa-solid fa-globe-oceania"></i> NOAA Climate Prediction Center</h3>
+                        <p id="lbl-auto-189"
+                            style="color: var(--text-secondary); margin-top: 0.75rem; line-height: 1.6; font-size: 0.9rem;">
+                            Global El Ni├▒o Southern Oscillation (ENSO) diagnostic advisories, sea surface temperature
+                            anomaly datasets, and long-term macroclimate models.
+                        </p>
+                        <p style="color: var(--text-secondary); margin-top: 0.5rem; font-size: 0.85rem;"><strong
+                                id="lbl-auto-190">Refresh Rate:</strong> Weekly (Scraper Sync)</p>
+                        <a id="lbl-auto-191" href="https://www.cpc.ncep.noaa.gov" target="_blank"
+                            rel="noopener noreferrer" class="source-link">Visit NOAA CPC <i
+                                class="fa-solid fa-up-right-from-square"></i></a>
+                    </div>
+
+
+
+                    <!-- Source Card 12 -->
+                    <div class="card-glass source-card">
+                        <h3 class="card-title" style="color: var(--color-accent-light);"><i
+                                class="fa-solid fa-droplet"></i>
+                            CGWB Central Ground Water Board</h3>
+                        <p id="lbl-auto-192"
+                            style="color: var(--text-secondary); margin-top: 0.75rem; line-height: 1.6; font-size: 0.9rem;">
+                            National groundwater depth statistics, decadal depletion metrics (mbgl), and regional
+                            aquifer
+                            monitoring logs across Indian districts.
+                        </p>
+                        <p style="color: var(--text-secondary); margin-top: 0.5rem; font-size: 0.85rem;"><strong
+                                id="lbl-auto-193">Refresh Rate:</strong> Annual / Live Sync proxy</p>
+                        <a id="lbl-auto-194" href="http://cgwb.gov.in" target="_blank" rel="noopener noreferrer"
+                            class="source-link">Visit CGWB India <i class="fa-solid fa-up-right-from-square"></i></a>
+                    </div>
+
+
+
+                    <!-- Source Card 13 -->
+                    <div class="card-glass source-card">
+                        <h3 class="card-title" style="color: var(--color-accent-light);"><i
+                                class="fa-solid fa-feather"></i>
+                            Xeno-Canto Avian Acoustics Database</h3>
+                        <p id="lbl-auto-195"
+                            style="color: var(--text-secondary); margin-top: 0.75rem; line-height: 1.6; font-size: 0.9rem;">
+                            Used as the primary open acoustic reference database for matching bird song spectral
+                            signatures,
+                            wave centroids, and frequency templates.
+                        </p>
+                        <p style="color: var(--text-secondary); margin-top: 0.5rem; font-size: 0.85rem;"><strong
+                                id="lbl-auto-196">Refresh Rate:</strong> Static Reference Database</p>
+                        <a id="lbl-auto-197" href="https://xeno-canto.org" target="_blank" rel="noopener noreferrer"
+                            class="source-link">Visit Xeno-Canto Database <i
+                                class="fa-solid fa-up-right-from-square"></i></a>
+                    </div>
+
+
+
+
+                </div>
+            </section>
+
+
+
+        <!-- ======================== B-MESSAGING (MESH) PANEL ======================== -->
+        <section id="panel-mesh" class="tab-panel" aria-labelledby="nav-btn-mesh">
+
+            <!-- Header Bar -->
+            <div class="mesh-header" style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1.5rem; flex-wrap:wrap; gap:1rem;">
+                <div>
+                    <h2 style="font-family:var(--font-heading); font-size:1.8rem; font-weight:800; color:var(--text-primary); display:flex; align-items:center; gap:0.6rem;">
+                        <i class="fa-brands fa-bluetooth-b" style="color:#3b82f6;"></i>
+                        B-Messaging Network
+                    </h2>
+                    <p style="color:var(--text-secondary); font-size:0.9rem; margin-top:0.25rem;">
+                        Peer-to-peer BLE mesh communication — works without internet
+                    </p>
+                </div>
+                <div style="display:flex; align-items:center; gap:0.75rem; flex-wrap:wrap;">
+                    <!-- E2EE Badge -->
+                    <div id="mesh-e2ee-badge" style="display:flex; align-items:center; gap:0.5rem; background:rgba(16,185,129,0.1); border:1px solid rgba(16,185,129,0.3); padding:0.4rem 0.9rem; border-radius:20px; cursor:pointer;" onclick="meshShowEncryptionInfo()" title="View encryption details">
+                        <i class="fa-solid fa-lock" style="color:#10b981; font-size:0.82rem;"></i>
+                        <span style="font-size:0.82rem; font-weight:600; color:#10b981;" id="mesh-e2ee-label">E2EE: Initialising…</span>
+                    </div>
+                    <div id="mesh-ble-status" style="display:flex; align-items:center; gap:0.5rem; background:rgba(59,130,246,0.1); border:1px solid rgba(59,130,246,0.25); padding:0.4rem 0.9rem; border-radius:20px;">
+                        <span style="width:8px; height:8px; background:#3b82f6; border-radius:50%; display:inline-block; animation:blePulse 2s infinite;"></span>
+                        <span style="font-size:0.82rem; font-weight:600; color:#3b82f6;" id="mesh-ble-label">BLE Scanning…</span>
+                    </div>
+                    <button class="btn-primary" id="btn-mesh-broadcast-toggle" onclick="meshToggleBroadcastMode()"
+                        style="background:linear-gradient(135deg,#7c3aed,#4f46e5); font-size:0.85rem; display:flex; align-items:center; gap:0.5rem; padding:0.55rem 1.1rem;">
+                        <i class="fa-solid fa-tower-broadcast"></i> Broadcast Mode
+                    </button>
+                </div>
+            </div>
+
+            <!-- E2EE Key Info Modal (hidden) -->
+            <div id="mesh-key-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:9999; align-items:center; justify-content:center; backdrop-filter:blur(4px);">
+                <div class="card-glass" style="max-width:480px; width:90%; padding:1.75rem; border-radius:20px; position:relative;">
+                    <button onclick="document.getElementById('mesh-key-modal').style.display='none'" style="position:absolute; top:1rem; right:1rem; background:none; border:none; cursor:pointer; font-size:1.2rem; color:var(--text-secondary);">✕</button>
+                    <h3 style="font-family:var(--font-heading); color:var(--color-accent); margin-bottom:1rem; display:flex; align-items:center; gap:0.5rem;">
+                        <i class="fa-solid fa-shield-halved"></i> End-to-End Encryption
+                    </h3>
+                    <p style="color:var(--text-secondary); font-size:0.88rem; line-height:1.6; margin-bottom:1rem;">
+                        B-Messaging uses <strong>ECDH P-256 key exchange</strong> + <strong>AES-GCM 256-bit</strong> symmetric encryption. 
+                        Each session generates a fresh ephemeral key pair. Messages are encrypted locally before transmission.
+                    </p>
+                    <div style="background:rgba(16,185,129,0.06); border:1px solid rgba(16,185,129,0.2); border-radius:12px; padding:1rem; margin-bottom:1rem;">
+                        <div style="font-size:0.75rem; font-weight:700; color:var(--color-accent); margin-bottom:0.4rem; text-transform:uppercase; letter-spacing:0.5px;">Your Public Key Fingerprint</div>
+                        <div id="mesh-key-fingerprint" style="font-family:monospace; font-size:0.82rem; color:var(--text-primary); word-break:break-all; line-height:1.6;">Generating…</div>
+                    </div>
+                    <div style="display:flex; gap:0.75rem; flex-wrap:wrap;">
+                        <div style="flex:1; background:rgba(59,130,246,0.06); border:1px solid rgba(59,130,246,0.2); border-radius:10px; padding:0.75rem; text-align:center;">
+                            <div style="font-size:0.72rem; color:var(--text-secondary); font-weight:600;">Algorithm</div>
+                            <div style="font-size:0.88rem; font-weight:700; color:#3b82f6; margin-top:0.2rem;">AES-GCM 256</div>
+                        </div>
+                        <div style="flex:1; background:rgba(139,92,246,0.06); border:1px solid rgba(139,92,246,0.2); border-radius:10px; padding:0.75rem; text-align:center;">
+                            <div style="font-size:0.72rem; color:var(--text-secondary); font-weight:600;">Key Exchange</div>
+                            <div style="font-size:0.88rem; font-weight:700; color:#8b5cf6; margin-top:0.2rem;">ECDH P-256</div>
+                        </div>
+                        <div style="flex:1; background:rgba(16,185,129,0.06); border:1px solid rgba(16,185,129,0.2); border-radius:10px; padding:0.75rem; text-align:center;">
+                            <div style="font-size:0.72rem; color:var(--text-secondary); font-weight:600;">IV Length</div>
+                            <div style="font-size:0.88rem; font-weight:700; color:#10b981; margin-top:0.2rem;">96-bit random</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Layout: Peers Sidebar + Chat Window -->
+            <div style="display:grid; grid-template-columns:280px 1fr; gap:1.25rem; height:calc(100vh - 280px); min-height:520px;">
+
+                <!-- LEFT: Peers List -->
+                <div style="display:flex; flex-direction:column; gap:0.75rem; overflow:hidden;">
+                    <!-- My Device Card -->
+                    <div class="card-glass" style="padding:1rem; border-left:3px solid #3b82f6;">
+                        <div style="display:flex; align-items:center; gap:0.75rem;">
+                            <div style="width:42px; height:42px; border-radius:12px; background:linear-gradient(135deg,#3b82f6,#8b5cf6); display:flex; align-items:center; justify-content:center; color:#fff; font-size:1.1rem; font-weight:700; flex-shrink:0;">
+                                <i class="fa-solid fa-mobile-screen-button"></i>
+                            </div>
+                            <div style="flex:1; min-width:0;">
+                                <div style="font-weight:700; font-size:0.92rem; color:var(--text-primary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" id="mesh-my-device-name">This Device</div>
+                                <div style="font-size:0.72rem; color:#3b82f6; font-weight:600;">● You (Encrypted)</div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Search Peers -->
+                    <div style="position:relative;">
+                        <i class="fa-solid fa-magnifying-glass" style="position:absolute; left:0.7rem; top:50%; transform:translateY(-50%); color:var(--text-secondary); font-size:0.85rem; pointer-events:none;"></i>
+                        <input type="text" id="mesh-peer-search" placeholder="Search peers…" oninput="meshFilterPeers(this.value)"
+                            style="width:100%; padding:0.55rem 0.9rem 0.55rem 2.2rem; border-radius:10px; font-size:0.87rem;">
+                    </div>
+                    <!-- Peers List -->
+                    <div class="card-glass" style="flex:1; overflow-y:auto; padding:0.5rem; display:flex; flex-direction:column; gap:0.35rem;" id="mesh-peers-list">
+                        <div style="padding:2rem; text-align:center; color:var(--text-secondary); font-size:0.88rem;">
+                            <i class="fa-solid fa-circle-notch fa-spin" style="font-size:1.5rem; color:#3b82f6; margin-bottom:0.75rem; display:block;"></i>
+                            Scanning for nearby peers…
+                        </div>
+                    </div>
+                    <div style="text-align:center; font-size:0.78rem; color:var(--text-secondary);">
+                        <span id="mesh-peer-count">0 peers detected</span>
+                    </div>
+                </div>
+
+                <!-- RIGHT: Chat Window -->
+                <div style="display:flex; flex-direction:column; gap:0; overflow:hidden; border-radius:16px; border:1px solid var(--border-glass); background:var(--bg-glass); backdrop-filter:blur(16px);">
+                    <!-- Chat Header -->
+                    <div id="mesh-chat-header" style="padding:1rem 1.25rem; border-bottom:1px solid var(--border-glass); display:flex; align-items:center; justify-content:space-between; background:rgba(255,255,255,0.5);">
+                        <div style="display:flex; align-items:center; gap:0.75rem;">
+                            <div id="mesh-chat-avatar" style="width:40px; height:40px; border-radius:12px; background:linear-gradient(135deg,#3b82f6,#8b5cf6); display:flex; align-items:center; justify-content:center; color:#fff; font-size:1rem; font-weight:700;">
+                                <i class="fa-solid fa-tower-broadcast"></i>
+                            </div>
+                            <div>
+                                <div id="mesh-chat-title" style="font-weight:700; font-size:1rem; color:var(--text-primary);">All Peers (Broadcast)</div>
+                                <div id="mesh-chat-subtitle" style="font-size:0.78rem; color:var(--text-secondary);">Messages delivered to all nearby BLE devices</div>
+                            </div>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:0.5rem;">
+                            <span id="mesh-signal-badge" style="font-size:0.75rem; background:rgba(59,130,246,0.1); color:#3b82f6; border:1px solid rgba(59,130,246,0.25); padding:0.2rem 0.6rem; border-radius:20px; font-weight:600;">
+                                <i class="fa-solid fa-wifi"></i> BLE
+                            </span>
+                            <span style="font-size:0.75rem; background:rgba(16,185,129,0.1); color:#10b981; border:1px solid rgba(16,185,129,0.25); padding:0.2rem 0.6rem; border-radius:20px; font-weight:600;">
+                                <i class="fa-solid fa-lock"></i> E2EE
+                            </span>
+                        </div>
+                    </div>
+                    <!-- Messages Area -->
+                    <div id="mesh-messages-area" style="flex:1; overflow-y:auto; padding:1.25rem; display:flex; flex-direction:column; gap:0.85rem;">
+                        <div class="mesh-system-msg" style="text-align:center;">
+                            <span style="background:rgba(59,130,246,0.1); color:#3b82f6; font-size:0.78rem; padding:0.3rem 0.9rem; border-radius:20px; font-weight:600;">
+                                <i class="fa-brands fa-bluetooth-b"></i> B-Messaging BLE Mesh initialized. Range: ~100m
+                            </span>
+                        </div>
+                    </div>
+                    <!-- Urgency Selector + Compose Bar -->
+                    <div style="padding:1rem 1.25rem; border-top:1px solid var(--border-glass); background:rgba(255,255,255,0.6); display:flex; flex-direction:column; gap:0.75rem;">
+                        <!-- Urgency Pills -->
+                        <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
+                            <span style="font-size:0.75rem; font-weight:600; color:var(--text-secondary);">Priority:</span>
+                            <button class="mesh-urgency-btn active" data-urgency="info" onclick="meshSetUrgency('info')"
+                                style="padding:0.25rem 0.7rem; border-radius:20px; font-size:0.75rem; font-weight:600; border:1px solid rgba(59,130,246,0.4); background:rgba(59,130,246,0.15); color:#3b82f6; cursor:pointer; transition:all 0.2s;">
+                                <i class="fa-solid fa-circle-info"></i> Info
+                            </button>
+                            <button class="mesh-urgency-btn" data-urgency="warning" onclick="meshSetUrgency('warning')"
+                                style="padding:0.25rem 0.7rem; border-radius:20px; font-size:0.75rem; font-weight:600; border:1px solid rgba(251,191,36,0.4); background:rgba(251,191,36,0.08); color:var(--color-gold); cursor:pointer; transition:all 0.2s;">
+                                <i class="fa-solid fa-triangle-exclamation"></i> Warning
+                            </button>
+                            <button class="mesh-urgency-btn" data-urgency="emergency" onclick="meshSetUrgency('emergency')"
+                                style="padding:0.25rem 0.7rem; border-radius:20px; font-size:0.75rem; font-weight:600; border:1px solid rgba(220,38,38,0.4); background:rgba(220,38,38,0.08); color:var(--color-danger); cursor:pointer; transition:all 0.2s;">
+                                <i class="fa-solid fa-siren-on"></i> Emergency
+                            </button>
+                        </div>
+                        <!-- Compose Row -->
+                        <div style="display:flex; gap:0.6rem; align-items:flex-end;">
+                            <textarea id="mesh-compose-input" placeholder="Type an encrypted message… (Enter to send, Shift+Enter for newline)"
+                                onkeydown="meshHandleEnter(event)"
+                                style="flex:1; resize:none; height:44px; min-height:44px; max-height:120px; padding:0.6rem 0.9rem; border-radius:12px; font-size:0.92rem; font-family:var(--font-body); line-height:1.4; overflow-y:auto;"
+                                oninput="this.style.height='44px'; this.style.height=Math.min(this.scrollHeight,120)+'px';"></textarea>
+                            <button id="btn-mesh-send" onclick="meshSendMessage()"
+                                style="width:44px; height:44px; border-radius:12px; background:linear-gradient(135deg,#3b82f6,#8b5cf6); color:#fff; border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:1.1rem; transition:all 0.2s; flex-shrink:0; box-shadow:0 4px 12px rgba(59,130,246,0.35);">
+                                <i class="fa-solid fa-paper-plane"></i>
+                            </button>
+                        </div>
+                        <div style="font-size:0.72rem; color:var(--text-secondary); display:flex; align-items:center; gap:0.4rem;">
+                            <i class="fa-solid fa-lock" style="color:#10b981;"></i>
+                            AES-GCM 256-bit encrypted · ECDH P-256 key exchange · No internet required
+                        </div>
+                    </div>
+                </div>
             </div>
         </section>
-
-        <!-- DATA SOURCES LINKS TAB -->
-        <section id="panel-sources" class="tab-panel" aria-labelledby="nav-btn-sources">
-            <h2 class="hero-title" style="font-size: 2rem; margin-bottom: 0.5rem;"><i
-                    class="fa-solid fa-circle-info"></i> Integrated Open Data Sources</h2>
-            <p id="lbl-auto-158" style="color: var(--text-secondary); margin-bottom: 2rem;">GramSetu leverages verified,
-                official Indian and global database repositories to automate its metrics. Below are details and
-                references to the integrated data platforms.</p>
-
-
-
-
-            <div class="source-grid"
-                style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem;">
-                <!-- Source Card 1 -->
-                <div class="card-glass source-card">
-
-
-
-
-                    <h3 class="card-title" style="color: var(--color-accent-light);"><i
-                            class="fa-solid fa-wheat-awn"></i> OGD Platform India Grains Prices</h3>
-                    <p id="lbl-auto-159"
-                        style="color: var(--text-secondary); margin-top: 0.75rem; line-height: 1.6; font-size: 0.9rem;">
-                        Automated sync of agricultural mandi prices for essential foodgrains across states. Daily price
-                        indexing.
-                    </p>
-
-
-
-                    <p style="color: var(--text-secondary); margin-top: 0.5rem; font-size: 0.85rem;"><strong
-                            id="lbl-auto-160">Refresh Rate:</strong> Daily (Automated Sync)</p>
-                    <a id="lbl-auto-161"
-                        href="https://www.data.gov.in/catalog/current-daily-price-various-commodities-various-markets-mandi"
-                        target="_blank" rel="noopener noreferrer" class="source-link">Visit OGD Daily Price Catalog <i
-                            class="fa-solid fa-up-right-from-square"></i></a>
-                </div>
-
-
-
-                <!-- Source Card 2 -->
-                <div class="card-glass source-card">
-
-
-
-
-                    <h3 class="card-title" style="color: var(--color-accent-light);"><i class="fa-solid fa-cow"></i>
-                        DAHD Livestock Health Portal</h3>
-                    <p id="lbl-auto-162"
-                        style="color: var(--text-secondary); margin-top: 0.75rem; line-height: 1.6; font-size: 0.9rem;">
-                        National livestock health database of epidemic outbreaks, cattle disease reports, and mandatory
-                        vaccination guidelines (under the LH&DCP).
-                    </p>
-
-
-
-                    <p style="color: var(--text-secondary); margin-top: 0.5rem; font-size: 0.85rem;"><strong
-                            id="lbl-auto-163">Refresh Rate:</strong> Monthly (Automated Sync)</p>
-                    <a id="lbl-auto-164" href="https://dahd.gov.in/schemes-programmes/lhdcp" target="_blank"
-                        rel="noopener noreferrer" class="source-link">Visit LH&DCP Portal <i
-                            class="fa-solid fa-up-right-from-square"></i></a>
-                </div>
-
-
-
-                <!-- Source Card 3 -->
-                <div class="card-glass source-card">
-                    <h3 class="card-title" style="color: var(--color-accent-light);"><i
-                            class="fa-solid fa-piggy-bank"></i> DAHD Pig Husbandry Guidelines</h3>
-                    <p id="lbl-auto-165"
-                        style="color: var(--text-secondary); margin-top: 0.75rem; line-height: 1.6; font-size: 0.9rem;">
-                        Official guidelines for Good Husbandry Practices in Pig Farming, providing animal biosecurity,
-                        sanitation, and feeding standards.
-                    </p>
-                    <p style="color: var(--text-secondary); margin-top: 0.5rem; font-size: 0.85rem;"><strong
-                            id="lbl-auto-166">Refresh Rate:</strong> Static Catalog Reference</p>
-                    <a id="lbl-auto-167"
-                        href="https://dahd.gov.in/sites/default/files/2026-05/GoodHusbandryPracticesinPigFarming.pdf"
-                        target="_blank" rel="noopener noreferrer" class="source-link">View Pig Husbandry PDF <i
-                            class="fa-solid fa-up-right-from-square"></i></a>
-                </div>
-
-
-
-                <!-- Source Card 4 -->
-                <div class="card-glass source-card">
-                    <h3 class="card-title" style="color: var(--color-accent-light);"><i class="fa-solid fa-ship"></i>
-                        ICAR - CMFRI Fisheries Census</h3>
-                    <p id="lbl-auto-168"
-                        style="color: var(--text-secondary); margin-top: 0.75rem; line-height: 1.6; font-size: 0.9rem;">
-                        National catch census and coastal biomass metrics. Used as a baseline to plot the decadal marine
-                        stock trend (2016-2026).
-                    </p>
-                    <p style="color: var(--text-secondary); margin-top: 0.5rem; font-size: 0.85rem;"><strong
-                            id="lbl-auto-169">Refresh Rate:</strong> Static Reference Database</p>
-                    <a id="lbl-auto-170" href="https://www.cmfri.org.in" target="_blank" rel="noopener noreferrer"
-                        class="source-link">Visit ICAR-CMFRI India <i class="fa-solid fa-up-right-from-square"></i></a>
-                </div>
-
-
-
-                <!-- Source Card 5 -->
-                <div class="card-glass source-card">
-                    <h3 class="card-title" style="color: var(--color-accent-light);"><i class="fa-solid fa-anchor"></i>
-                        Coastal State Fisheries Departments</h3>
-                    <p id="lbl-auto-171"
-                        style="color: var(--text-secondary); margin-top: 0.75rem; line-height: 1.6; font-size: 0.9rem;">
-                        Welfare schemes for fishermen (PMMSY, boat subsidies, savings schemes) adapted from fisheries
-                        departments of Kerala, Tamil Nadu, Andhra Pradesh, Maharashtra, and West Bengal.
-                    </p>
-                    <p style="color: var(--text-secondary); margin-top: 0.5rem; font-size: 0.85rem;"><strong
-                            id="lbl-auto-172">Refresh Rate:</strong> Regular Update</p>
-                    <a id="lbl-auto-173" href="https://pmmsy.dof.gov.in/" target="_blank" rel="noopener noreferrer"
-                        class="source-link">Visit PMMSY Scheme Portal <i
-                            class="fa-solid fa-up-right-from-square"></i></a>
-                </div>
-
-
-
-                <!-- Source Card 6 -->
-                <div class="card-glass source-card">
-                    <h3 class="card-title" style="color: var(--color-accent-light);"><i
-                            class="fa-solid fa-fish-fins"></i> Marine Breeding & Monsoons Ban</h3>
-                    <p id="lbl-auto-174"
-                        style="color: var(--text-secondary); margin-top: 0.75rem; line-height: 1.6; font-size: 0.9rem;">
-                        Coastal reproduction cycle calendars and local language conservation bans adapted from the
-                        Department of Fisheries monsoon fishing ban guidelines.
-                    </p>
-                    <p style="color: var(--text-secondary); margin-top: 0.5rem; font-size: 0.85rem;"><strong
-                            id="lbl-auto-175">Refresh Rate:</strong> Annual Directive Update</p>
-                    <a id="lbl-auto-176" href="https://dof.gov.in" target="_blank" rel="noopener noreferrer"
-                        class="source-link">Visit Dept of Fisheries India <i
-                            class="fa-solid fa-up-right-from-square"></i></a>
-                </div>
-
-
-
-                <!-- Source Card 7 -->
-                <div class="card-glass source-card">
-                    <h3 class="card-title" style="color: var(--color-accent-light);"><i
-                            class="fa-solid fa-heart-pulse"></i> Cetacean flora & fauna log</h3>
-                    <p id="lbl-auto-177"
-                        style="color: var(--text-secondary); margin-top: 0.75rem; line-height: 1.6; font-size: 0.9rem;">
-                        Citizen-science uploads mapping whale and dolphin sightings to help track marine mammal
-                        distributions, referenced with local cetacean network databases.
-                    </p>
-                    <p style="color: var(--text-secondary); margin-top: 0.5rem; font-size: 0.85rem;"><strong
-                            id="lbl-auto-178">Refresh Rate:</strong> Live (User Contributions)</p>
-                    <a id="lbl-auto-179" href="http://www.marinemammals.in" target="_blank" rel="noopener noreferrer"
-                        class="source-link">Visit MMCN India <i class="fa-solid fa-up-right-from-square"></i></a>
-                </div>
-
-
-
-                <!-- Source Card 8 -->
-                <div class="card-glass source-card">
-                    <h3 class="card-title" style="color: var(--color-accent-light);"><i class="fa-solid fa-feather"></i>
-                        IUCN Red List of Threatened Species</h3>
-
-
-                    <p id="lbl-auto-180"
-                        style="color: var(--text-secondary); margin-top: 0.75rem; line-height: 1.6; font-size: 0.9rem;">
-                        Used to determine the global threat level and extinction status of avian wildlife species
-                        identified via microphone recordings.
-                    </p>
-
-
-                    <p style="color: var(--text-secondary); margin-top: 0.5rem; font-size: 0.85rem;"><strong
-                            id="lbl-auto-181">Refresh Rate:</strong> Permanent static catalog reference</p>
-                    <a id="lbl-auto-182" href="https://www.iucnredlist.org" target="_blank" rel="noopener noreferrer"
-                        class="source-link">Visit IUCN Red List <i class="fa-solid fa-up-right-from-square"></i></a>
-                </div>
-
-
-
-
-                <!-- Source Card 9 -->
-                <div class="card-glass source-card">
-
-
-
-
-                    <h3 class="card-title" style="color: var(--color-accent-light);"><i class="fa-solid fa-rss"></i>
-                        Global RSS Feeds & Outlets</h3>
-                    <p id="lbl-auto-183"
-                        style="color: var(--text-secondary); margin-top: 0.75rem; line-height: 1.6; font-size: 0.9rem;">
-                        Aggregates news on modern farming, bio farming, new fishing ways, oil spills, and climate change
-                        from outlets like The Hindu, DownToEarth, FAO, and NOAA.
-                    </p>
-
-
-
-                    <p style="color: var(--text-secondary); margin-top: 0.5rem; font-size: 0.85rem;"><strong
-                            id="lbl-auto-184">Refresh Rate:</strong> Daily Scraper Update</p>
-                    <a id="lbl-auto-185" href="https://www.fao.org/newsroom/rss/en/" target="_blank"
-                        rel="noopener noreferrer" class="source-link">Visit FAO RSS Feed <i
-                            class="fa-solid fa-up-right-from-square"></i></a>
-                </div>
-
-
-
-                <!-- Source Card 10 -->
-                <div class="card-glass source-card">
-                    <h3 class="card-title" style="color: var(--color-accent-light);"><i
-                            class="fa-solid fa-temperature-high"></i> IMD - India Meteorological Department</h3>
-                    <p id="lbl-auto-186"
-                        style="color: var(--text-secondary); margin-top: 0.75rem; line-height: 1.6; font-size: 0.9rem;">
-                        Real-time monsoonal monitoring, weather warning bulletins, and regional precipitation tracker
-                        across meteorological sub-divisions of India.
-                    </p>
-                    <p style="color: var(--text-secondary); margin-top: 0.5rem; font-size: 0.85rem;"><strong
-                            id="lbl-auto-187">Refresh Rate:</strong> Daily (Proxy Link)</p>
-                    <a id="lbl-auto-188" href="https://mausam.imd.gov.in" target="_blank" rel="noopener noreferrer"
-                        class="source-link">Visit IMD Mausam <i class="fa-solid fa-up-right-from-square"></i></a>
-                </div>
-
-
-
-                <!-- Source Card 11 -->
-                <div class="card-glass source-card">
-                    <h3 class="card-title" style="color: var(--color-accent-light);"><i
-                            class="fa-solid fa-globe-oceania"></i> NOAA Climate Prediction Center</h3>
-                    <p id="lbl-auto-189"
-                        style="color: var(--text-secondary); margin-top: 0.75rem; line-height: 1.6; font-size: 0.9rem;">
-                        Global El Ni├▒o Southern Oscillation (ENSO) diagnostic advisories, sea surface temperature
-                        anomaly datasets, and long-term macroclimate models.
-                    </p>
-                    <p style="color: var(--text-secondary); margin-top: 0.5rem; font-size: 0.85rem;"><strong
-                            id="lbl-auto-190">Refresh Rate:</strong> Weekly (Scraper Sync)</p>
-                    <a id="lbl-auto-191" href="https://www.cpc.ncep.noaa.gov" target="_blank" rel="noopener noreferrer"
-                        class="source-link">Visit NOAA CPC <i class="fa-solid fa-up-right-from-square"></i></a>
-                </div>
-
-
-
-                <!-- Source Card 12 -->
-                <div class="card-glass source-card">
-                    <h3 class="card-title" style="color: var(--color-accent-light);"><i class="fa-solid fa-droplet"></i>
-                        CGWB Central Ground Water Board</h3>
-                    <p id="lbl-auto-192"
-                        style="color: var(--text-secondary); margin-top: 0.75rem; line-height: 1.6; font-size: 0.9rem;">
-                        National groundwater depth statistics, decadal depletion metrics (mbgl), and regional aquifer
-                        monitoring logs across Indian districts.
-                    </p>
-                    <p style="color: var(--text-secondary); margin-top: 0.5rem; font-size: 0.85rem;"><strong
-                            id="lbl-auto-193">Refresh Rate:</strong> Annual / Live Sync proxy</p>
-                    <a id="lbl-auto-194" href="http://cgwb.gov.in" target="_blank" rel="noopener noreferrer"
-                        class="source-link">Visit CGWB India <i class="fa-solid fa-up-right-from-square"></i></a>
-                </div>
-
-
-
-                <!-- Source Card 13 -->
-                <div class="card-glass source-card">
-                    <h3 class="card-title" style="color: var(--color-accent-light);"><i class="fa-solid fa-feather"></i>
-                        Xeno-Canto Avian Acoustics Database</h3>
-                    <p id="lbl-auto-195"
-                        style="color: var(--text-secondary); margin-top: 0.75rem; line-height: 1.6; font-size: 0.9rem;">
-                        Used as the primary open acoustic reference database for matching bird song spectral signatures,
-                        wave centroids, and frequency templates.
-                    </p>
-                    <p style="color: var(--text-secondary); margin-top: 0.5rem; font-size: 0.85rem;"><strong
-                            id="lbl-auto-196">Refresh Rate:</strong> Static Reference Database</p>
-                    <a id="lbl-auto-197" href="https://xeno-canto.org" target="_blank" rel="noopener noreferrer"
-                        class="source-link">Visit Xeno-Canto Database <i
-                            class="fa-solid fa-up-right-from-square"></i></a>
-                </div>
-
-
-
-
-            </div>
-        </section>
-
+        <!-- ======================== END B-MESSAGING PANEL ======================== -->
 
     </main>
+
     <!-- Footer -->
     <footer>
         <div class="footer-content">

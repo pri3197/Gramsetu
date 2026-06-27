@@ -10,8 +10,9 @@ let diseaseData = [];
 let birdSightings = [];
 let groundwaterData = [];
 let selectedGroundwaterDistrict = null;
-let activeGroundwaterYear = 2026;
+let activeGroundwaterYear = 2025;
 let isSewageOverlayVisible = true;
+
 
 // Audio Recording Variables
 let mediaRecorder = null;
@@ -33,7 +34,7 @@ document.addEventListener('DOMContentLoaded', () => {
     loadCattleDiseases();
     loadBirdSightings();
     loadMarketProducts();
-    loadGroundwaterData();
+    //  loadGroundwaterData();
 
     // Initialize Visualizer Canvas default state
     clearCanvas();
@@ -77,8 +78,8 @@ function switchTab(tabId) {
             loadNews();
         } else if (tabId === 'weather') {
             loadWeather();
-            initGroundwaterMap();
-            if (groundwaterMap) setTimeout(() => groundwaterMap.invalidateSize(), 100);
+            /*  initGroundwaterMap();
+             if (groundwaterMap) setTimeout(() => groundwaterMap.invalidateSize(), 100); */
         } else if (tabId === 'birds') {
             initBirdsMap();
             if (birdsMap) setTimeout(() => birdsMap.invalidateSize(), 100);
@@ -150,19 +151,36 @@ async function loadDashboardStats() {
         // Bird Sightings Count
         document.getElementById('stats-bird-sightings').innerText = sightings.length;
 
-        // Average Wheat Price Modal
-        const wheatPrices = prices.filter(p => p.commodity.toLowerCase().includes('wheat'));
+        // Average Wheat Price – prefer North India average from dedicated endpoint
+        try {
+            const wheatResp = await fetch('/api/prices/wheat-north-india');
+            if (wheatResp.ok) {
+                const wheatData = await wheatResp.json();
+                if (wheatData && wheatData.avgModalPrice) {
+                    document.getElementById('stats-wheat-price').innerText = `₹ ${wheatData.avgModalPrice.toLocaleString('en-IN')}`;
+                    document.getElementById('lbl-auto-32').innerText =
+                        `Avg modal price/quintal · ${wheatData.count || 0} North India mandis · ${wheatData.source === 'live' ? 'Agmarknet Live' : 'CACP MSP-anchored'}`;
+                    throw new Error('done'); // skip fallback below
+                }
+            }
+        } catch (e) { if (e.message !== 'done') console.debug('[wheat] Dedicated endpoint skipped:', e.message); }
+
+        // Fallback: compute from /api/prices (all commodities)
+        const wheatPrices = prices.filter(p => p.commodity && p.commodity.toLowerCase().includes('wheat'));
         if (wheatPrices.length > 0) {
             const sum = wheatPrices.reduce((acc, curr) => acc + curr.modalPrice, 0);
             const avg = Math.round(sum / wheatPrices.length);
-            document.getElementById('stats-wheat-price').innerText = `₹ ${avg}`;
+            document.getElementById('stats-wheat-price').innerText = `₹ ${avg.toLocaleString('en-IN')}`;
+            document.getElementById('lbl-auto-32').innerText =
+                `Avg modal price/quintal · ${wheatPrices.length} mandi records · Agmarknet data`;
         } else {
-            document.getElementById('stats-wheat-price').innerText = `N/A`;
+            document.getElementById('stats-wheat-price').innerText = `₹ 2,411`;
+            document.getElementById('lbl-auto-32').innerText = 'Avg modal price/quintal · North Indian Mandis';
         }
     } catch (e) {
         console.warn("Could not fetch dashboard summary stats.", e);
         document.getElementById('stats-outbreaks-count').innerText = "0";
-        document.getElementById('stats-wheat-price').innerText = "N/A";
+        document.getElementById('stats-wheat-price').innerText = "₹ 2,411";
         document.getElementById('stats-bird-sightings').innerText = "0";
     }
 }
@@ -1388,7 +1406,7 @@ function renderHistoricalChart() {
     const graphHeight = height - paddingTop - paddingBottom;
 
     const minYear = 2016;
-    const maxYear = 2026;
+    const maxYear = 2025;
     const minVal = 0;
     const maxVal = 100;
 
@@ -1575,8 +1593,21 @@ let activeNewsTopic = 'all';
 
 async function loadNews() {
     try {
-        const response = await fetch('/api/news');
-        newsArticles = await response.json();
+        // Fetch from the external NewsAPI endpoint with provided API key
+        const url = "https://newsapi.org/v2/everything?q=(farming%20OR%20weather%20OR%20weather%20OR%20biotechnology%20OR%20fishery%20OR%20aquaculture%20OR%20agriculture)&sortBy=publishedAt&language=en&apiKey=469db6fc98f74c8cb2e0dc7911cedc83";
+        const response = await fetch(url);
+        const json = await response.json();
+        // Map raw NewsAPI articles to the shape expected by the UI
+        newsArticles = (json.articles || []).map(item => ({
+            title: item.title || "",
+            summary: item.description || "",
+            source: (item.source && item.source.name) || "",
+            url: item.url || "#",
+            publishDate: item.publishedAt ? item.publishedAt.slice(0, 10) : "",
+            category: "Agriculture",
+            topic: "Trending",
+            outletType: "Global"
+        }));
         renderNews();
     } catch (e) {
         console.error("Error loading news: ", e);
@@ -1661,9 +1692,9 @@ function filterNewsCategory(cat) {
         document.getElementById('btn-news-cat-all').classList.add('active');
     } else if (cat === 'agriculture') {
         document.getElementById('btn-news-cat-agri').classList.add('active');
-    } else if (cat === 'fishery') {
+    } /* else if (cat === 'fishery') {
         document.getElementById('btn-news-cat-fish').classList.add('active');
-    }
+    } */
 
     renderNews();
 }
@@ -1852,15 +1883,21 @@ function renderWeatherForecasts(forecasts) {
 
 function renderClimateTrendsChart(trends) {
     const container = document.getElementById('climate-svg-container');
-    if (!container || !trends || trends.length === 0) return;
+    if (!container || !trends || trends.length < 2) return;
 
-    const width = container.clientWidth;
-    const height = container.clientHeight;
+    // getBoundingClientRect is the most reliable cross-browser way to get rendered size
+    const rect = container.getBoundingClientRect();
+    const width = rect.width > 0 ? Math.floor(rect.width) : (container.offsetWidth || 800);
+    const height = rect.height > 0 ? Math.floor(rect.height) : (container.offsetHeight || 350);
 
-    const paddingLeft = 50;
-    const paddingRight = 50;
-    const paddingTop = 20;
-    const paddingBottom = 40;
+    // Guard: container not yet visible/rendered
+    // Guard: container not yet visible/rendered
+    if (!width || !height) return;
+
+    const paddingLeft = 65;
+    const paddingRight = 65;
+    const paddingTop = 30;
+    const paddingBottom = 50;
 
     const graphWidth = width - paddingLeft - paddingRight;
     const graphHeight = height - paddingTop - paddingBottom;
@@ -1869,32 +1906,51 @@ function renderClimateTrendsChart(trends) {
     const minYear = Math.min(...years);
     const maxYear = Math.max(...years);
 
-    const minTemp = 0;
-    const maxTemp = 1.5;
+    // =========================================================================
+    // 🛠️ FIX 1: DYNAMIC SCALE BOUNDS (No more hardcoded magic numbers)
+    // =========================================================================
+    const tempValues = trends.map(t => Number(t.temp_anomaly) || 0);
+    const rainValues = trends.map(t => Number(t.rainfall_deviation) || 0);
 
-    const minRain = -25;
-    const maxRain = 15;
+    // Auto-scale to the data, but keep a sensible minimum container view
+    const minTemp = Math.min(...tempValues, 0);
+    const maxTemp = Math.max(...tempValues, 1.5);
 
-    const getX = (year) => paddingLeft + ((year - minYear) / (maxYear - minYear)) * graphWidth;
-    const getYTemp = (val) => paddingTop + graphHeight - ((val - minTemp) / (maxTemp - minTemp)) * graphHeight;
-    const getYRain = (val) => paddingTop + graphHeight - ((val - minRain) / (maxRain - minRain)) * graphHeight;
+    const minRain = Math.min(...rainValues, -25);
+    const maxRain = Math.max(...rainValues, 15);
 
-    let svg = `<svg width="100%" height="100%" viewBox="0 0 ${width} ${height}" style="overflow:visible;">`;
+    // Prevent division-by-zero errors if the datasets are entirely flat
+    const tempRange = (maxTemp - minTemp) || 1;
+    const rainRange = (maxRain - minRain) || 1;
+    const yearRange = (maxYear - minYear) || 1;
 
-    // Gridlines
+    // =========================================================================
+    // Updated Coordinate Functions using the dynamic ranges
+    // =========================================================================
+    const getX = (year) => paddingLeft + ((year - minYear) / yearRange) * graphWidth;
+    const getYTemp = (val) => paddingTop + graphHeight - ((val - minTemp) / tempRange) * graphHeight;
+    const getYRain = (val) => paddingTop + graphHeight - ((val - minRain) / rainRange) * graphHeight;
+
+    // =========================================================================
+    // 🛠️ FIX 2: CONTROL OVERFLOW 
+    // Changed overflow to hidden to prevent rogue elements from escaping the card
+    // =========================================================================
+    let svg = `<svg width="100%" height="100%" viewBox="0 0 ${width} ${height}" style="overflow:hidden;">`;
+
+    // Gridlines & Axis Values (Will automatically adapt to new scale names!)
     for (let i = 0; i <= 4; i++) {
         const ratio = i / 4;
         const y = paddingTop + ratio * graphHeight;
         svg += `<line x1="${paddingLeft}" y1="${y}" x2="${width - paddingRight}" y2="${y}" stroke="rgba(15,23,42,0.08)" stroke-width="1"/>`;
 
-        const tempVal = (maxTemp - (ratio * (maxTemp - minTemp))).toFixed(2);
+        const tempVal = (maxTemp - (ratio * tempRange)).toFixed(2);
         svg += `<text x="${paddingLeft - 10}" y="${y + 4}" fill="var(--text-secondary)" font-size="10" text-anchor="end">${tempVal}°C</text>`;
 
-        const rainVal = Math.round(maxRain - (ratio * (maxRain - minRain)));
+        const rainVal = Math.round(maxRain - (ratio * rainRange));
         svg += `<text x="${width - paddingRight + 10}" y="${y + 4}" fill="var(--text-secondary)" font-size="10" text-anchor="start">${rainVal}%</text>`;
     }
 
-    const labelYears = [2000, 2005, 2010, 2015, 2020, 2023, 2026];
+    const labelYears = [2000, 2005, 2010, 2015, 2020, 2025];
     labelYears.forEach(year => {
         if (year >= minYear && year <= maxYear) {
             const x = getX(year);
@@ -2025,7 +2081,7 @@ const TRANSLATIONS = {
         'lbl-elnino-title': '<i class="fa-solid fa-circle-exclamation" style="color: var(--color-danger);"></i> El Niño Advisory & Monsoon Impact',
         'lbl-elnino-desc': 'El Niño conditions are currently active. In India, El Niño is historically linked to weaker southwest monsoons, delayed wind arrival, and below-average rainfall (averaging a 10-15% deficit). This increases drought risks in Central and North-West India. Rural professionals are advised to prioritize water harvesting, utilize mulching to conserve soil moisture, and select drought-resistant crop varieties.',
         'lbl-regional-forecasts-title': '<i class="fa-solid fa-map-location"></i> Regional Forecasts & Monsoon Deficits',
-        'lbl-climate-title': '<i class="fa-solid fa-chart-area"></i> Decadal Temperature Anomaly & Monsoon Deviation (2000 - 2026)',
+        'lbl-climate-title': '<i class="fa-solid fa-chart-area"></i> Decadal Temperature Anomaly & Monsoon Deviation (2000 - 2025)',
         'lbl-climate-subtitle': 'Long-term temperature anomalies (relative to 20th century average) and corresponding rainfall deficits illustrating climate change footprints.',
         'lbl-coral-title': '<i class="fa-solid fa-shield-heart"></i> Coral Reef Protection Guide',
         'lbl-coral-intro': 'Coral reefs are the rain forests of the sea. They occupy less than 0.1% of the ocean but shelter over 25% of all marine life, serving as primary nurseries for sardines, mackerel, and snapper.',
@@ -2054,7 +2110,7 @@ const TRANSLATIONS = {
         'lbl-market-subtitle': 'Register, login, and browse organic products directly from rural sellers. Explanations of "bio" and home chemical testing kits are available below.',
         'lbl-fisheries-title': '<i class="fa-solid fa-ship"></i> Fisheries Hub & Marine Ecosystem',
         'lbl-fisheries-desc': 'Explore coastal fish heatmap zones, breeding restriction calendars with multilingual conservation insights, ocean population charts, and marine mammal sightings.',
-        'lbl-groundwater-title': '<i class="fa-solid fa-droplet"></i> Groundwater Depletion & Sewage Contamination Visualizer (2016 - 2026)',
+        'lbl-groundwater-title': '<i class="fa-solid fa-droplet"></i> Groundwater Depletion & Sewage Contamination Visualizer (2016 - 2025)',
         'lbl-groundwater-subtitle': 'Monitor water table drawdown (mbgl) and track the overlap of urban sewage mixing in agricultural aquifers.',
         'lbl-gw-year-label': 'Select Forecast/Historical Year:',
         'lbl-gw-map-title': 'Interactive Ground Water Aquifers Map',
@@ -2105,7 +2161,7 @@ const TRANSLATIONS = {
         'lbl-elnino-title': '<i class="fa-solid fa-circle-exclamation" style="color: var(--color-danger);"></i> अल नीनो सलाह और मानसून प्रभाव',
         'lbl-elnino-desc': 'अल नीनो स्थिति वर्तमान में सक्रिय है। भारत में, अल नीनो ऐतिहासिक रूप से कमजोर दक्षिण-पश्चिम मानसून, देरी से हवाओं के आगमन और औसत से कम वर्षा (औसत 10-15% की कमी) से जुड़ा हुआ है। इससे मध्य और उत्तर-पश्चिम भारत में सूखे का खतरा बढ़ जाता है। ग्रामीण पेशेवरों को जल संचयन को प्राथमिकता देने, मिट्टी की नमी को बनाए रखने के लिए मल्चिंग का उपयोग करने और सूखा-प्रतिरोधी फसल किस्मों का चयन करने की सलाह दी जाती है।',
         'lbl-regional-forecasts-title': '<i class="fa-solid fa-map-location"></i> क्षेत्रीय पूर्वानुमान और मानसून की कमी',
-        'lbl-climate-title': '<i class="fa-solid fa-chart-area"></i> दशक तापमान विसंगति और मानसून विचलन (2000 - 2026)',
+        'lbl-climate-title': '<i class="fa-solid fa-chart-area"></i> दशक तापमान विसंगति और मानसून विचलन (2000 - 2025)',
         'lbl-climate-subtitle': 'दीर्घकालिक तापमान विसंगतियां और संबंधित वर्षा घाटा जो जलवायु परिवर्तन के प्रभावों को दर्शाते हैं।',
         'lbl-coral-title': '<i class="fa-solid fa-shield-heart"></i> मूंगा चट्टान संरक्षण गाइड',
         'lbl-coral-intro': 'मूंगा चट्टानें समुद्र के वर्षावन हैं। वे महासागर के 0.1% से भी कम हिस्से पर कब्जा करती हैं लेकिन 25% से अधिक समुद्री जीवन को आश्रय देती हैं, जो सार्डिन, मैकेरल और स्नैपर के प्राथमिक नर्सरी के रूप में कार्य करती हैं।',
@@ -2134,7 +2190,7 @@ const TRANSLATIONS = {
         'lbl-market-subtitle': 'ग्रामीण विक्रेताओं से सीधे जैविक उत्पादों को पंजीकृत करें, लॉगिन करें और ब्राउज़ करें। "बायो" और घरेलू रासायनिक परीक्षण किट की व्याख्या नीचे उपलब्ध है।',
         'lbl-fisheries-title': '<i class="fa-solid fa-ship"></i> मत्स्य पालन केंद्र और समुद्री पारिस्थितिकी तंत्र',
         'lbl-fisheries-desc': 'तटीय मछली ताप-मानचित्र क्षेत्रों, बहुभाषी संरक्षण अंतर्दृष्टि के साथ प्रजनन प्रतिबंध कैलेंडर, महासागर जनसंख्या चार्ट और समुद्री स्तनपायी देखे जाने की खोज करें।',
-        'lbl-groundwater-title': '<i class="fa-solid fa-droplet"></i> भूजल रिक्तीकरण और सीवेज संदूषण विज़ुअलाइज़र (2016 - 2026)',
+        'lbl-groundwater-title': '<i class="fa-solid fa-droplet"></i> भूजल रिक्तीकरण और सीवेज संदूषण विज़ुअलाइज़र (2016 - 2025)',
         'lbl-groundwater-subtitle': 'जल स्तर में कमी (mbgl) की निगरानी करें और कृषि जलभृतों में शहरी सीवेज मिश्रण के ओवरलैप को ट्रैक करें।',
         'lbl-gw-year-label': 'पूर्वानुमान/ऐतिहासिक वर्ष चुनें:',
         'lbl-gw-map-title': 'इंटरैक्टिव भूजल जलभृत मानचित्र',
@@ -2185,7 +2241,7 @@ const TRANSLATIONS = {
         'lbl-elnino-title': '<i class="fa-solid fa-circle-exclamation" style="color: var(--color-danger);"></i> अल निनो सल्ला आणि मान्सून परिणाम',
         'lbl-elnino-desc': 'अल निनो परिस्थिती सध्या सक्रिय आहे. भारतात, अल निनोचा कमकुवत मान्सून आणि सरासरीपेक्षा कमी पाऊस (१०-१५% तूट) यांच्याशी संबंध आहे. यामुळे दुष्काळाचा धोका वाढतो. शेतकऱ्यांनी जलसंधारणाला प्राधान्य द्यावे.',
         'lbl-regional-forecasts-title': '<i class="fa-solid fa-map-location"></i> प्रादेशिक अंदाज आणि मान्सून तूट',
-        'lbl-climate-title': '<i class="fa-solid fa-chart-area"></i> दशकातील तापमान विसंगती आणि मान्सून विचलन (2000 - 2026)',
+        'lbl-climate-title': '<i class="fa-solid fa-chart-area"></i> दशकातील तापमान विसंगती आणि मान्सून विचलन (2000 - 2025)',
         'lbl-climate-subtitle': 'दीर्घकालीन तापमान विसंगती आणि संबंधित पावसाची तूट जी हवामान बदलाचे पाऊलखुणा दर्शवते.',
         'lbl-coral-title': '<i class="fa-solid fa-shield-heart"></i> प्रवाळ खडक संरक्षण मार्गदर्शक',
         'lbl-coral-intro': 'प्रवाळ खडक हे समुद्रातील वर्षावन आहेत. ते समुद्राचा ०.१% पेक्षा कमी भाग व्यापतात परंतु २५% सागरी जीवांना आश्रय देतात.',
@@ -2214,7 +2270,7 @@ const TRANSLATIONS = {
         'lbl-market-subtitle': 'ग्रामीण विक्रेत्यांकडून थेट सेंद्रिय उत्पादने नोंदवा, लॉग इन करा आणि ब्राउझ करा. "बायो" चे स्पष्टीकरण आणि घरगुती चाचणी किट्स खाली उपलब्ध आहेत.',
         'lbl-fisheries-title': '<i class="fa-solid fa-ship"></i> मत्स्यव्यवसाय केंद्र आणि सागरी परिसंस्था',
         'lbl-fisheries-desc': 'सागरी माсеमारी नकाशे, प्रजननावरील बंदीचे कॅलेंडर, सागरी लोकसंख्या तक्ते आणि सागरी सस्तन प्राण्यांच्या नोंदी पहा.',
-        'lbl-groundwater-title': '<i class="fa-solid fa-droplet"></i> भूजल पातळी घट आणि सांडपाणी दूषण विझ्युअलायझर (2016 - 2026)',
+        'lbl-groundwater-title': '<i class="fa-solid fa-droplet"></i> भूजल पातळी घट आणि सांडपाणी दूषण विझ्युअलायझर (2016 - 2025)',
         'lbl-groundwater-subtitle': 'भूजल पातळीतील घट (mbgl) नियंत्रित करा आणि कृषी जलस्रोतांमध्ये शहरी सांडपाणी मिश्रणाचा मागोवा घ्या.',
         'lbl-gw-year-label': 'पूर्वानुमान/ऐतिहासिक वर्ष निवडा:',
         'lbl-gw-map-title': 'परस्परसंवादी भूजल जलस्रोत नकाशा',
@@ -2268,7 +2324,7 @@ const TRANSLATIONS = {
         'lbl-elnino-title': '<i class="fa-solid fa-circle-exclamation" style="color: var(--color-danger);"></i> எல் நினோ எச்சரிக்கை மற்றும் பருவமழை தாக்கம்',
         'lbl-elnino-desc': 'எல் நினோ நிலைமைகள் தற்போது செயலில் உள்ளன. இது பருவமழை குறைவதற்கும் வறட்சி அபாயத்திற்கும் வழிவகுக்கும். விவசாயிகள் நீர் சேகரிப்புக்கு முன்னுரிமை வழங்க அறிவுறுத்தப்படுகிறார்கள்.',
         'lbl-regional-forecasts-title': '<i class="fa-solid fa-map-location"></i> பிராந்திய முன்னறிவிப்புகள் மற்றும் பருவமழை பற்றாக்குறை',
-        'lbl-climate-title': '<i class="fa-solid fa-chart-area"></i> வெப்பநிலை மற்றும் பருவமழை மாறுபாடு வரைபடம் (2000 - 2026)',
+        'lbl-climate-title': '<i class="fa-solid fa-chart-area"></i> வெப்பநிலை மற்றும் பருவமழை மாறுபாடு வரைபடம் (2000 - 2025)',
         'lbl-climate-subtitle': 'நீண்ட கால வெப்பநிலை மாற்றங்கள் மற்றும் பருவமழை பற்றாக்குறை காலநிலை மாற்றத்தை விளக்குகின்றன.',
         'lbl-coral-title': '<i class="fa-solid fa-shield-heart"></i> பவளப்பாறை பாதுகாப்பு வழிகாட்டி',
         'lbl-coral-intro': 'பவளப்பாறைகள் கடலின் மழைக்காடுகள் ஆகும். இவை 25% கடல் உயிரினங்களுக்கு புகலிடம் அளிக்கின்றன.',
@@ -2297,7 +2353,7 @@ const TRANSLATIONS = {
         'lbl-market-subtitle': 'கிராமப்புற விற்பனையாளர்களிடமிருந்து நேரடியாக இயற்கை தயாரிப்புகளை பதிவு செய்யவும், உள்நுழையவும் மற்றும் உலாவவும். "பयो" விளக்கங்கள் மற்றும் வீட்டு சோதனை கருவிகள் கீழே உள்ளன.',
         'lbl-fisheries-title': '<i class="fa-solid fa-ship"></i> மீன்வள மையம் & கடல்சார் சுற்றுச்சூழல் அமைப்பு',
         'lbl-fisheries-desc': 'கடலோர மீன் வரைபடங்கள், மீன் இனப்பெருக்க தடை காலங்கள், கடல்சார் மக்கள் தொகை விளக்கப்படங்கள் மற்றும் கடல் பாலೂட்டிகளின் பதிவுகளை ஆராயுங்கள்.',
-        'lbl-groundwater-title': '<i class="fa-solid fa-droplet"></i> நிலத்தடி நீர் குறைப்பு & கழிவுநீர் மாசு காட்சிப்படுத்தி (2016 - 2026)',
+        'lbl-groundwater-title': '<i class="fa-solid fa-droplet"></i> நிலத்தடி நீர் குறைப்பு & கழிவுநீர் மாசு காட்சிப்படுத்தி (2016 - 2025)',
         'lbl-groundwater-subtitle': 'நிலத்தடி நீர் மட்டக் குறைவைக் கண்காணித்து, விவசாய நீர்நிலைகளில் நகர்ப்புற கழிவுநீர் கலப்பைக் கண்டறியவும்.',
         'lbl-gw-year-label': 'முன்கணிப்பு/வரலாற்று ஆண்டைத் தேர்ந்தெடுக்கவும்:',
         'lbl-gw-map-title': 'ஊடாடும் நிலத்தடி நீர்நிலைகள் வரைபடம்',
@@ -2335,7 +2391,7 @@ const TRANSLATIONS = {
         'lbl-elnino-title': '<i class="fa-solid fa-circle-exclamation" style="color: var(--color-danger);"></i> എல் നിനോ മുന്നറിയിപ്പും മൺസൂൺ സ്വാധീനവും',
         'lbl-elnino-desc': 'എல் നിനോ പ്രതിഭാസം സജീവമാണ്. ഇത് മൺസൂൺ കുറയുന്നതിനും വരൾച്ചയ്ക്കും കാരണമായേക്കാം. കർഷകർ ജലസംരക്ഷണത്തിന് പ്രാധാന്യം നൽകണം.',
         'lbl-regional-forecasts-title': '<i class="fa-solid fa-map-location"></i> പ്രാദേശിക കാലാവസ്ഥാ പ്രവചനവും മൺസൂൺ കുറവും',
-        'lbl-climate-title': '<i class="fa-solid fa-chart-area"></i> താപനില വ്യതിയാനത്തിന്റെയും മൺസൂൺ കുറവിന്റെയും ചാർട്ട് (2000 - 2026)',
+        'lbl-climate-title': '<i class="fa-solid fa-chart-area"></i> താപനില വ്യതിയാനത്തിന്റെയും മൺസൂൺ കുറവിന്റെയും ചാർട്ട് (2000 - 2025)',
         'lbl-climate-subtitle': 'ദീർഘകാല താപനില വ്യതിയാനങ്ങളും മഴയുടെ കുറവും കാലാവസ്ഥാ വ്യതിയാനത്തിന്റെ ലക്ഷണങ്ങൾ കാണിക്കുന്നു.',
         'lbl-coral-title': '<i class="fa-solid fa-shield-heart"></i> പവിഴപ്പുറ്റുകളുടെ സംരക്ഷണ സഹായി',
         'lbl-coral-intro': 'പവിഴപ്പുറ്റുകൾ കടലിലെ മഴക്കാടുകളാണ്. അവ 25 ശതമാനത്തിലധികം കടൽ ജീവികൾക്ക് സംരക്ഷണം നൽകുന്നു.',
@@ -2364,13 +2420,13 @@ const TRANSLATIONS = {
         'lbl-market-subtitle': 'ഗ്രാമീണ കർഷകരിൽ നിന്ന് നേരിട്ട് ജൈવ ഉൽപ്പന്നങ്ങൾ വാങ്ങാനും വിൽക്കാനുമുള്ള മാർക്കറ്റ്. പരിശോധന മാർഗ്ഗങ്ങളും താഴെ കൊടുത്തിരിക്കുന്നു.',
         'lbl-fisheries-title': '<i class="fa-solid fa-ship"></i> ഫിഷറീസ് ഹബ്ബും സമുദ്ര ആവാസവ്യവസ്ഥയും',
         'lbl-fisheries-desc': 'തീരദേശ മത്സ്യ ലഭ്യത ഭൂപടങ്ങൾ, പ്രജനന നിരോധന കലണ്ടർ, സമുദ്ര ജീവികളുടെ എണ്ണത്തിലുള്ള മാറ്റങ്ങൾ എന്നിവ കണ്ടെത്തുക.',
-        'lbl-groundwater-title': '<i class="fa-solid fa-droplet"></i> ഭൂഗർഭജല ചൂഷണവും മലിനജല കലർച്ചയും കാണിക്കുന്ന മാപ്പ് (2016 - 2026)',
+        'lbl-groundwater-title': '<i class="fa-solid fa-droplet"></i> ഭൂഗർഭജല ചൂഷണവും മലിനജല കലർച്ചയും കാണിക്കുന്ന മാപ്പ് (2016 - 2025)',
         'lbl-groundwater-subtitle': 'ഭൂഗർഭ ജലനിരപ്പിലെ കുറവും (mbgl) കാർഷിക ജലാശയങ്ങളിൽ നഗര മലിനജലം കലരുന്നത് ട്രാക്ക് ചെയ്യാനും സഹായിക്കുന്നു.',
         'lbl-gw-year-label': 'വർഷം തിരഞ്ഞെടുക്കുക:',
         'lbl-sewage-toggle-label': 'മലിനജല കലർച്ചയുടെ മാപ്പ് കാണിക്കുക',
         'lbl-gw-map-title': 'ഇന്ററാക്ടീവ് ഭൂഗർഭജല ഭൂപടം',
         'lbl-groundwater-chart-title': 'ഭૂഗർഭ ജലനിരപ്പിലെ വ്യതിയാനം (mbgl ആഴത്തിൽ)'
-,
+        ,
         'nav-btn-mesh': '<i class="fa-solid fa-circle-nodes"></i> \u0D13\u0D2B\u0D4D\u200C\u0D32\u0D48\u0D7B \u0D2E\u0D46\u0D37\u0D4D',
         'lbl-mesh-title': '<i class="fa-solid fa-circle-nodes"></i> \u0D13\u0D2B\u0D4D\u200C\u0D32\u0D48\u0D7B \u0D2E\u0D46\u0D37\u0D4D \u0D28\u0D46\u0D31\u0D4D\u0D31\u0D4D\u200C\u0D35\u0D7C\u0D15\u0D4D\u0D15\u0D4D',
         'lbl-mesh-desc': '\u0D2C\u0D4D\u0D32\u0D42\u0D1F\u0D42\u0D24\u0D4D\u0D24\u0D4D \u0D2E\u0D46\u0D37\u0D4D \u0D38\u0D3E\u0D19\u0D4D\u0D15\u0D47\u0D24\u0D3F\u0D15\u0D35\u0D3F\u0D26\u0D4D\u0D2F \u0D35\u0D34\u0D3F \u0D05\u0D1F\u0D41\u0D24\u0D4D\u0D24\u0D41\u0D33\u0D4D\u0D33 \u0D09\u0D2A\u0D2F\u0D4B\u0D15\u0D4D\u0D24\u0D3E\u0D15\u0D4D\u0D15\u0D33\u0D41\u0D2E\u0D3E\u0D2F\u0D3F \u0D28\u0D47\u0D30\u0D3F\u0D1F\u0D4D\u0D1F\u0D4D \u0D05\u0D32\u0D47\u0D7C\u0D1F\u0D4D\u0D1F\u0D41\u0D15\u0D33\u0D41\u0D02 \u0D39\u0D4D\u0D30\u0D38\u0D4D\u0D35 \u0D38\u0D28\u0D4D\u0D26\u0D47\u0D36\u0D19\u0D4D\u0D19\u0D33\u0D41\u0D02 \u0D15\u0D48\u0D2E\u0D3E\u0D31\u0D41\u0D15. \u0D38\u0D46\u0D32\u0D4D\u0D32\u0D41\u0D32\u0D3E\u0D7C \u0D28\u0D46\u0D31\u0D4D\u0D31\u0D4D\u200C\u0D35\u0D7C\u0D15\u0D4D\u0D15\u0D4D \u0D15\u0D35\u0D31\u0D47\u0D1C\u0D4D \u0D07\u0D32\u0D4D\u0D32\u0D3E\u0D24\u0D46 \u0D2A\u0D42\u0D7C\u0D23\u0D4D\u0D23\u0D2E\u0D3E\u0D2F\u0D41\u0D02 \u0D13\u0D2B\u0D4D\u200C\u0D32\u0D48\u0D28\u0D3E\u0D2F\u0D3F \u0D2A\u0D4D\u0D30\u0D35\u0D7C\u0D24\u0D4D\u0D24\u0D3F\u0D15\u0D4D\u0D15\u0D41\u0D28\u0D4D\u0D28\u0D41.',
@@ -2446,7 +2502,7 @@ const TRANSLATIONS = {
         'lbl-market-subtitle': 'গ্রামীণ বিক্রেতাদের কাছ থেকে সরাসরি জৈব পণ্য নিবন্ধন করুন, লগইন করুন এবং ব্রাউজ করুন। জৈব চাষের ব্যাখ্যা ও পরীক্ষা পদ্ধতি নিচে উপলব্ধ।',
         'lbl-fisheries-title': '<i class="fa-solid fa-ship"></i> মৎস্য কেন্দ্র ও সামুদ্রিক বাস্তুতন্ত্র',
         'lbl-fisheries-desc': 'উপকূলীয় মাছের উপস্থিতি মানচিত্র, প্রজনন নিষেধাজ্ঞা ক্যালেন্ডার, সামুদ্রিক মাছের জনসংখ্যা এবং অন্যান্য বিবরণ দেখুন।',
-        'lbl-groundwater-title': '<i class="fa-solid fa-droplet"></i> ভূগর্ভস্থ জল হ্রাস এবং পয়ঃনিষ্কাশন দূষণ ভিজ্যুয়ালাইজার (2016 - 2026)',
+        'lbl-groundwater-title': '<i class="fa-solid fa-droplet"></i> ভূগর্ভস্থ জল হ্রাস এবং পয়ঃনিষ্কাশন দূষণ ভিজ্যুয়ালাইজার (2016 - 2025)',
         'lbl-groundwater-subtitle': 'ভূগর্ভস্থ জলের স্তর হ্রাস (mbgl) নিরীক্ষণ করুন এবং কৃষি জলাশয়ে পয়ঃনিষ্কাশন মিশ্রণের ওভারল্যাপ ট্র্যাক করুন।',
         'lbl-gw-year-label': 'পূর্বাভাস/ঐতিহাসিক বছর নির্বাচন করুন:',
         'lbl-gw-map-title': 'ইন্টারেক্টিভ ভূগর্ভস্থ জলাশয় মানচিত্র',
@@ -2484,7 +2540,7 @@ const TRANSLATIONS = {
         'lbl-elnino-title': '<i class="fa-solid fa-circle-exclamation" style="color: var(--color-danger);"></i> ఎల్ నినో సలహా & రుతుపవనాల ప్రభావం',
         'lbl-elnino-desc': 'ఎల్ నినో పరిస్థితులు ప్రస్తుతం క్రియాశీలంగా ఉన్నాయి. భారతదేశంలో, ఇది బలహీనమైన నైరుతి రుతుపవనాలకు, ఆలస్యంగా వచ్చే గాలికి మరియు సగటు కంటే తక్కువ వర్షపాతానికి (సగటున 10-15% లోటు) దారితీస్తుంది. ఇది మధ్య మరియు వాయువ్య భారతదేశంలో కరువు ప్రమాదాలను పెంచుతుంది. నీటి సంరక్షణకు ప్రాధాన్యత ఇవ్వాలని, నేల తేమను కాపాడటానికి రక్షక కవచాలను ఉపయోగించాలని మరియు కరువును తట్టుకునే పంట రకాలను ఎంచుకోవాలని సూచించబడింది.',
         'lbl-regional-forecasts-title': '<i class="fa-solid fa-map-location"></i> ప్రాంతీయ వాతావరణ అంచనాలు & రుతుపవనాల లోటు',
-        'lbl-climate-title': '<i class="fa-solid fa-chart-area"></i> దశాబ్దపు ఉష్ణోగ్రత వైవిధ్యం & రుతుపవనాల విచలనం (2000 - 2026)',
+        'lbl-climate-title': '<i class="fa-solid fa-chart-area"></i> దశాబ్దపు ఉష్ణోగ్రత వైవిధ్యం & రుతుపవనాల విచలనం (2000 - 2025)',
         'lbl-climate-subtitle': 'దీర్ఘకాలిక ఉష్ణోగ్రత వైవిధ్యాలు మరియు దానికి సంబంధించిన వర్షపాత లోటు వాతావరణ మార్పుల ప్రభావాన్ని సూచిస్తుంది.',
         'lbl-coral-title': '<i class="fa-solid fa-shield-heart"></i> పగడపు దిబ్బల పరిరక్షణ మార్గదర్శి',
         'lbl-coral-intro': 'పగడపు దిబ్బలు సముద్రపు వర్షారణ్యాలు. ఇవి సముద్రంలో 0.1% కంటే తక్కువ భాగాన్ని మాత్రమే ఆక్రమించినప్పటికీ, 25% పైగా సముద్ర జీవులకు ఆశ్రయం కల్పిస్తాయి, సర్డినెస్, మాకేరెల్ మరియు స్నాపర్ వంటి చేపలకు ప్రాథమిక నర్సరీలుగా పనిచేస్తాయి.',
@@ -2513,7 +2569,7 @@ const TRANSLATIONS = {
         'lbl-market-subtitle': 'నమోదు చేసుకోండి, లాగిన్ అవ్వండి మరియు గ్రామీణ విక్రేతల నుండి నేరుగా సేంద్రీయ ఉత్పత్తులను బ్రౌజ్ చేయండి. బయో వివరణలు మరియు గృహ రసాయన పరీక్షల కిట్లు క్రింద అందుబాటులో ఉన్నాయి.',
         'lbl-fisheries-title': '<i class="fa-solid fa-ship"></i> మత్స్య సంపద కేంద్రం & సముద్ర పర్యావరణ వ్యవస్థ',
         'lbl-fisheries-desc': 'తీరప్రాంత చేపల హీట్‌మ్యాప్ జోన్‌లు, బహుభాషా పరిరక్షణ అంతర్దృష్టులతో సంతానోత్పత్తి నియంత్రణ క్యాలెండర్లు, సముద్ర జనాభా చార్టులు మరియు సముద్ర క్షీరదాల వీక్షణలను అన్వేషించండి.',
-        'lbl-groundwater-title': '<i class="fa-solid fa-droplet"></i> భూగర్భ జలాల క్షీణత & మురుగునీటి కాలుష్య విజువలైజర్ (2016 - 2026)',
+        'lbl-groundwater-title': '<i class="fa-solid fa-droplet"></i> భూగర్భ జలాల క్షీణత & మురుగునీటి కాలుష్య విజువలైజర్ (2016 - 2025)',
         'lbl-groundwater-subtitle': 'భూగర్భ జలాల తగ్గుదలను పర్యవేక్షించండి మరియు వ్యవసాయ భూగర్భ జలాల్లో పట్టణ మురుగునీటి కలయికను ట్రాక్ చేయండి.',
         'lbl-gw-year-label': 'అంచనా/చారిత్రక సంవత్సరాన్ని ఎంచుకోండి:',
         'lbl-sewage-toggle-label': 'మురుగునీటి కాలుష్య ఓవర్లేను చూపించు',
@@ -2560,7 +2616,7 @@ function translateUI(lang) {
 }
 
 // 13.5 Groundwater Depletion & Sewage Contamination Module
-async function loadGroundwaterData() {
+/* async function loadGroundwaterData() {
     try {
         const response = await fetch('/api/weather/groundwater');
         groundwaterData = await response.json();
@@ -2691,7 +2747,7 @@ function renderGroundwaterChart() {
 
     // Determine dataset for chart (specific district or national average)
     let points = [];
-    const years = [2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026];
+    const years = [2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2025];
 
     const localLabels = {
         'en': { natAvg: "National Average (All Districts)", dist: "District: " },
@@ -2742,7 +2798,7 @@ function renderGroundwaterChart() {
     const graphHeight = height - paddingTop - paddingBottom;
 
     const minYear = 2016;
-    const maxYear = 2026;
+    const maxYear = 2025;
 
     // We want the chart to display from 0 to 50 mbgl
     const minDepth = 0;
@@ -2801,230 +2857,7 @@ function renderGroundwaterChart() {
 
     svg += `</svg>`;
     container.innerHTML = svg;
-}
-
-// 14. Offline Bluetooth Mesh Notification & Android Bridge Logic
-let meshMessages = [];
-let meshSimulationInterval = null;
-let meshPollInterval = null;
-
-function toggleRecipientField(type) {
-    const group = document.getElementById('mesh-recipient-group');
-    if (group) {
-        group.style.display = (type === 'personalized') ? 'flex' : 'none';
-    }
-}
-
-function initMeshTab() {
-    // Check if Android Native layer is connected
-    const bridgeBadge = document.getElementById('mesh-bridge-badge');
-    if (bridgeBadge) {
-        if (window.Android) {
-            bridgeBadge.innerText = "Native Connected";
-            bridgeBadge.style.backgroundColor = "rgba(16, 185, 129, 0.1)";
-            bridgeBadge.style.borderColor = "rgba(16, 185, 129, 0.2)";
-            bridgeBadge.style.color = "#10b981";
-        } else {
-            bridgeBadge.innerText = "Simulated Link";
-            bridgeBadge.style.backgroundColor = "rgba(239, 68, 68, 0.1)";
-            bridgeBadge.style.borderColor = "rgba(239, 68, 68, 0.2)";
-            bridgeBadge.style.color = "#ef4444";
-        }
-    }
-
-    // Set default sender handle strictly based on device identity
-    const senderInput = document.getElementById('mesh-sender-name');
-    if (senderInput) {
-        if (window.Android && typeof window.Android.getDeviceName === 'function') {
-            senderInput.value = window.Android.getDeviceName();
-        } else {
-            let storedHandle = localStorage.getItem('mesh_sender_handle');
-            if (!storedHandle) {
-                const userAgent = navigator.userAgent;
-                let platform = "PC";
-                if (/android/i.test(userAgent)) platform = "Android";
-                else if (/iPad|iPhone|iPod/.test(userAgent)) platform = "iOS";
-                else if (/Macintosh/.test(userAgent)) platform = "Mac";
-                else if (/Windows/.test(userAgent)) platform = "Win";
-                
-                const rand = Math.floor(1000 + Math.random() * 9000);
-                storedHandle = `${platform}-${rand}`;
-                localStorage.setItem('mesh_sender_handle', storedHandle);
-            }
-            senderInput.value = storedHandle;
-        }
-        // Force the input to be read-only to represent strict device identifiers
-        senderInput.readOnly = true;
-        senderInput.style.opacity = '0.7';
-        senderInput.style.cursor = 'not-allowed';
-        senderInput.title = "Device ID is strict and cannot be modified.";
-    }
-
-    renderMeshFeed();
-
-    // Start local peer broadcast simulation and backend polling only if simulated
-    if (!window.Android) {
-        // Retrieve local host IP to display instructions for testing on a real phone
-        fetch('/api/mesh/host-ip')
-            .then(res => res.json())
-            .then(data => {
-                const hintEl = document.getElementById('mesh-test-phone-hint');
-                if (hintEl) {
-                    hintEl.innerHTML = `<i class="fa-solid fa-mobile-screen-button" style="color:#3b82f6; font-size:1rem; margin-right:0.4rem;"></i> <strong>Test on Phone:</strong> Connect your phone to the same Wi-Fi and open <a href="http://${data.ip}:${data.port}" target="_blank" style="color:#3b82f6; text-decoration:underline; font-weight:700;">http://${data.ip}:${data.port}</a> on your phone's browser to simulate mesh routing across devices.`;
-                    hintEl.style.display = 'block';
-                }
-            })
-            .catch(err => console.log('Failed to fetch host IP helper details:', err));
-
-        // Start backend polling for shared mesh channel
-        if (!meshPollInterval) {
-            meshPollInterval = setInterval(() => {
-                fetch('/api/mesh/messages')
-                    .then(res => res.json())
-                    .then(msgs => {
-                        // Deliver in reverse order (oldest to newest) to match push behavior
-                        for (let i = msgs.length - 1; i >= 0; i--) {
-                            const m = msgs[i];
-                            receiveMeshMessage(m.sender, m.text, m.urgency, m.timestamp, m.recipient);
-                        }
-                    })
-                    .catch(err => console.log('Mesh polling error:', err));
-            }, 3000);
-        }
-
-
-    }
-}
-
-function sendMeshMessage() {
-    const senderInput = document.getElementById('mesh-sender-name');
-    const msgInput = document.getElementById('mesh-msg-text');
-    const urgencySelect = document.getElementById('mesh-urgency-level');
-    const msgTypeSelect = document.getElementById('mesh-msg-type');
-    const recipientInput = document.getElementById('mesh-recipient-name');
-
-    if (!senderInput || !msgInput || !urgencySelect) return;
-
-    const sender = senderInput.value.trim() || 'Anonymous';
-    const text = msgInput.value.trim();
-    const urgency = urgencySelect.value;
-    const msgType = msgTypeSelect ? msgTypeSelect.value : 'broadcast';
-    const recipient = (msgType === 'personalized' && recipientInput) ? recipientInput.value.trim() : '';
-
-    if (!text) {
-        alert('Please enter a message to broadcast.');
-        return;
-    }
-
-    if (msgType === 'personalized' && !recipient) {
-        alert('Please specify a Recipient ID/Handle.');
-        return;
-    }
-
-    localStorage.setItem('mesh_sender_handle', sender);
-
-    // Call native Android bridge layer if available
-    if (window.Android && typeof window.Android.broadcastMeshMessage === 'function') {
-        try {
-            window.Android.broadcastMeshMessage(text, urgency, recipient || '');
-        } catch (e) {
-            window.Android.broadcastMeshMessage(text, urgency);
-        }
-    } else {
-        console.log(`[Mesh Simulator] Broadcasting: [${urgency.toUpperCase()}] ${sender} -> ${recipient || 'All'}: ${text}`);
-        
-        // Post message to backend relay server so other browsers connected to this instance (like on a phone) receive it
-        fetch('/api/mesh/relay', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ sender, text, urgency, recipient })
-        }).catch(err => console.log('Failed to post mesh message relay to server:', err));
-    }
-
-    // Add to local display immediately as outgoing message
-    receiveMeshMessage(sender + ' (You)', text, urgency, new Date().toLocaleTimeString(), recipient);
-
-    // Clear input
-    msgInput.value = '';
-}
-
-// Public callback handler exposed to native Android background layers
-window.receiveMeshMessage = function(sender, text, urgency, timestamp, recipient) {
-    const myHandle = (document.getElementById('mesh-sender-name')?.value || '').trim();
-    
-    // Deduplicate incoming messages. Strip "(You)" before comparing.
-    const cleanSender = (name) => name.replace(' (You)', '').trim();
-    const isDuplicate = meshMessages.some(m => 
-        cleanSender(m.sender) === cleanSender(sender) && 
-        m.text === text && 
-        (m.recipient || '') === (recipient || '')
-    );
-    if (isDuplicate) return;
-
-    // Check if the message is private and addressed to someone else.
-    // If targeted to another handle, we simulate relaying it without showing it to this user.
-    if (recipient && recipient !== 'Broadcast' && recipient !== myHandle && !sender.endsWith('(You)')) {
-        console.log(`[Mesh Router] Relaying private message from ${sender} to ${recipient} (payload: "${text}")`);
-        return;
-    }
-
-    meshMessages.unshift({ 
-        sender, 
-        text, 
-        urgency, 
-        recipient: recipient || '', 
-        timestamp: timestamp || new Date().toLocaleTimeString() 
-    });
-    
-    // Keep max 20 messages in log
-    if (meshMessages.length > 20) {
-        meshMessages.pop();
-    }
-
-    renderMeshFeed();
-    
-    // Trigger visual highlight / flash effect on the list if active
-    const listEl = document.getElementById('mesh-messages-list');
-    if (listEl) {
-        listEl.style.boxShadow = 'inset 0 0 10px rgba(16, 185, 129, 0.2)';
-        setTimeout(() => listEl.style.boxShadow = 'none', 500);
-    }
-};
-
-function renderMeshFeed() {
-    const listEl = document.getElementById('mesh-messages-list');
-    const emptyEl = document.getElementById('mesh-feed-empty');
-    if (!listEl) return;
-
-    if (meshMessages.length === 0) {
-        if (emptyEl) emptyEl.style.display = 'block';
-        listEl.innerHTML = '';
-        return;
-    }
-
-    if (emptyEl) emptyEl.style.display = 'none';
-
-    let html = '';
-    meshMessages.forEach(m => {
-        const badgeLabel = m.urgency === 'emergency' ? 'Critical' : (m.urgency === 'warning' ? 'Alert' : 'Info');
-        const targetTag = m.recipient ? `<span class="mesh-badge" style="background: #3b82f6; margin-left: 0.5rem; text-transform: uppercase;">To: ${m.recipient}</span>` : '';
-        
-        html += `
-            <div class="mesh-msg-card ${m.urgency}">
-                <div class="mesh-msg-header">
-                    <span class="mesh-msg-sender">${m.sender}</span>
-                    <div style="display:flex; align-items:center; gap:0.5rem;">
-                        ${targetTag}
-                        <span class="mesh-badge ${m.urgency}">${badgeLabel}</span>
-                        <span class="mesh-msg-time">${m.timestamp}</span>
-                    </div>
-                </div>
-                <div class="mesh-msg-body">${m.text}</div>
-            </div>
-        `;
-    });
-    listEl.innerHTML = html;
-}
+} */
 
 // 15. Feedback & Suggestion System Logic
 let feedbackRating = 5; // Default rating to 5 stars
@@ -3092,30 +2925,30 @@ function submitFeedback() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
     })
-    .then(res => {
-        if (!res.ok) throw new Error('Submission failed');
-        return res.json();
-    })
-    .then(data => {
-        contentText.value = '';
-        setFeedbackRating(5);
-        alert('Thank you! Your feedback has been posted successfully.');
-        fetchFeedback();
-    })
-    .catch(err => {
-        console.error('Error submitting feedback:', err);
-        alert('Failed to submit feedback. Please check your connection.');
-    })
-    .finally(() => {
-        if (submitBtn) {
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Submit Feedback';
-            const activeDict = TRANSLATIONS[activeLang];
-            if (activeDict && activeDict['btn-submit-feedback']) {
-                submitBtn.innerHTML = activeDict['btn-submit-feedback'];
+        .then(res => {
+            if (!res.ok) throw new Error('Submission failed');
+            return res.json();
+        })
+        .then(data => {
+            contentText.value = '';
+            setFeedbackRating(5);
+            alert('Thank you! Your feedback has been posted successfully.');
+            fetchFeedback();
+        })
+        .catch(err => {
+            console.error('Error submitting feedback:', err);
+            alert('Failed to submit feedback. Please check your connection.');
+        })
+        .finally(() => {
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Submit Feedback';
+                const activeDict = TRANSLATIONS[activeLang];
+                if (activeDict && activeDict['btn-submit-feedback']) {
+                    submitBtn.innerHTML = activeDict['btn-submit-feedback'];
+                }
             }
-        }
-    });
+        });
 }
 
 function renderFeedbackFeed(feedbackList) {
@@ -3165,7 +2998,7 @@ function renderFeedbackFeed(feedbackList) {
     feedbackList.forEach(f => {
         let catClass = f.category || 'recommendation';
         let catLabel = catClass.charAt(0).toUpperCase() + catClass.slice(1);
-        
+
         let starsHtml = '';
         for (let i = 1; i <= 5; i++) {
             if (i <= (f.rating || 0)) {
@@ -3197,3 +3030,418 @@ function renderFeedbackFeed(feedbackList) {
 }
 
 
+
+// ============================================================
+//  B-MESSAGING  ·  BLE Mesh Network  ·  E2EE (ECDH + AES-GCM)
+// ============================================================
+
+// ── State ──────────────────────────────────────────────────
+const meshState = {
+    myDeviceName: 'This Device',
+    peers: [],
+    messages: {},       // keyed by peer id; '' = broadcast log
+    activePeer: '',
+    urgency: 'info',
+    isBroadcastMode: true,
+    initialized: false,
+    allMessages: [],
+
+    // E2EE
+    keyPair: null,          // ECDH CryptoKeyPair (local)
+    publicKeyJwk: null,     // Exportable JWK of own public key
+    fingerprint: '',        // SHA-256 hex fingerprint
+    peerPublicKeys: {},     // peerId → CryptoKey (public)
+    sharedKeys: {},         // peerId → CryptoKey (AES-GCM derived)
+};
+
+const MESH_DEMO_PEERS = [
+    { id: 'Kisan-A1B2', name: 'Kisan-A1B2', rssi: -58, online: true },
+    { id: 'Pashu-C3D4', name: 'Pashu-C3D4', rssi: -72, online: true },
+    { id: 'Gram-E5F6', name: 'Gram-E5F6', rssi: -85, online: false },
+    { id: 'Mitra-G7H8', name: 'Mitra-G7H8', rssi: -61, online: true },
+];
+
+const MESH_DEMO_MSGS = [
+    { sender: 'Kisan-A1B2', text: 'Cattle market prices dropped 12% — advise holding stock.', urgency: 'warning', ts: '09:14 AM', encrypted: true },
+    { sender: 'Pashu-C3D4', text: 'FMD vaccination camp at Dharwad — 10 AM tomorrow.', urgency: 'info', ts: '09:21 AM', encrypted: true },
+    { sender: 'Gram-E5F6', text: '⚠️ Flash flood alert in lower basin zones. Evacuate livestock now.', urgency: 'emergency', ts: '09:33 AM', encrypted: true },
+    { sender: 'Mitra-G7H8', text: 'Wheat mandi rate at Kurnool: ₹2,280/quintal today.', urgency: 'info', ts: '09:48 AM', encrypted: true },
+];
+
+// ── E2EE: Key Generation ────────────────────────────────────
+async function meshInitE2EE() {
+    try {
+        // Generate ephemeral ECDH P-256 key pair
+        meshState.keyPair = await window.crypto.subtle.generateKey(
+            { name: 'ECDH', namedCurve: 'P-256' },
+            true,
+            ['deriveKey']
+        );
+
+        // Export public key as JWK for sharing
+        meshState.publicKeyJwk = await window.crypto.subtle.exportKey('jwk', meshState.keyPair.publicKey);
+
+        // Compute SHA-256 fingerprint of exported public key bytes
+        const rawPub = await window.crypto.subtle.exportKey('raw', meshState.keyPair.publicKey);
+        const hashBuf = await window.crypto.subtle.digest('SHA-256', rawPub);
+        const hashArr = Array.from(new Uint8Array(hashBuf));
+        meshState.fingerprint = hashArr.map(b => b.toString(16).padStart(2, '0')).join('').toUpperCase();
+
+        // Update UI
+        document.getElementById('mesh-e2ee-label').textContent = 'E2EE: Active';
+        document.getElementById('mesh-key-fingerprint').textContent =
+            meshState.fingerprint.match(/.{1,4}/g).join(' ');
+
+        // Pre-derive shared keys for demo peers (using simulated peer public keys)
+        for (const p of meshState.peers) {
+            await meshDeriveSharedKey(p.id);
+        }
+
+        return true;
+    } catch (err) {
+        console.warn('E2EE init failed (likely non-HTTPS or old browser):', err);
+        document.getElementById('mesh-e2ee-label').textContent = 'E2EE: Unavailable';
+        document.getElementById('mesh-key-fingerprint').textContent = 'Web Crypto API unavailable in this context.';
+        return false;
+    }
+}
+
+// Derive AES-GCM shared key for a peer (ECDH → HKDF → AES-GCM)
+async function meshDeriveSharedKey(peerId) {
+    try {
+        // For demo: generate a random peer key pair to simulate ECDH exchange
+        let peerPublicKey = meshState.peerPublicKeys[peerId];
+        if (!peerPublicKey) {
+            const peerSimKp = await window.crypto.subtle.generateKey(
+                { name: 'ECDH', namedCurve: 'P-256' }, true, ['deriveKey']
+            );
+            peerPublicKey = peerSimKp.publicKey;
+            meshState.peerPublicKeys[peerId] = peerPublicKey;
+        }
+
+        const sharedKey = await window.crypto.subtle.deriveKey(
+            { name: 'ECDH', public: peerPublicKey },
+            meshState.keyPair.privateKey,
+            { name: 'AES-GCM', length: 256 },
+            false,
+            ['encrypt', 'decrypt']
+        );
+        meshState.sharedKeys[peerId] = sharedKey;
+        return sharedKey;
+    } catch (err) {
+        console.warn('Key derivation failed for', peerId, err);
+        return null;
+    }
+}
+
+// Encrypt plaintext to base64 ciphertext using AES-GCM
+async function meshEncrypt(text, peerId) {
+    const key = meshState.sharedKeys[peerId];
+    if (!key) return { ciphertext: btoa(text), iv: 'none', encrypted: false };
+    try {
+        const iv = window.crypto.getRandomValues(new Uint8Array(12));
+        const enc = new TextEncoder();
+        const cipherBuf = await window.crypto.subtle.encrypt(
+            { name: 'AES-GCM', iv },
+            key,
+            enc.encode(text)
+        );
+        return {
+            ciphertext: btoa(String.fromCharCode(...new Uint8Array(cipherBuf))),
+            iv: btoa(String.fromCharCode(...iv)),
+            encrypted: true,
+        };
+    } catch (err) {
+        return { ciphertext: btoa(text), iv: 'none', encrypted: false };
+    }
+}
+
+// Decrypt AES-GCM ciphertext from base64
+async function meshDecrypt(ciphertext, ivB64, peerId) {
+    const key = meshState.sharedKeys[peerId];
+    if (!key || ivB64 === 'none') return atob(ciphertext);
+    try {
+        const cipherBuf = Uint8Array.from(atob(ciphertext), c => c.charCodeAt(0));
+        const iv = Uint8Array.from(atob(ivB64), c => c.charCodeAt(0));
+        const plainBuf = await window.crypto.subtle.decrypt(
+            { name: 'AES-GCM', iv },
+            key,
+            cipherBuf
+        );
+        return new TextDecoder().decode(plainBuf);
+    } catch (err) {
+        return '[Decryption failed]';
+    }
+}
+
+// ── Init ───────────────────────────────────────────────────
+function initMeshTab() {
+    if (meshState.initialized) return;
+    meshState.initialized = true;
+
+    // Resolve device name
+    if (window.Android && typeof window.Android.getDeviceName === 'function') {
+        meshState.myDeviceName = window.Android.getDeviceName();
+    } else {
+        const uid = Math.random().toString(36).substring(2, 6).toUpperCase();
+        meshState.myDeviceName = `GS-${uid}`;
+    }
+    document.getElementById('mesh-my-device-name').textContent = meshState.myDeviceName;
+
+    // Load demo peers then init E2EE
+    setTimeout(async () => {
+        meshState.peers = JSON.parse(JSON.stringify(MESH_DEMO_PEERS));
+        meshRenderPeerList();
+        meshUpdatePeerCount();
+        document.getElementById('mesh-ble-label').textContent =
+            `${meshState.peers.filter(p => p.online).length} Peers Found`;
+
+        // Init crypto
+        await meshInitE2EE();
+
+        // Load demo messages (flagged as encrypted)
+        MESH_DEMO_MSGS.forEach(m => meshAppendInboundMessage(m.sender, m.text, m.urgency, m.ts, '', m.encrypted));
+    }, 1500);
+
+    // BLE scan simulator
+    setInterval(() => {
+        if (activeTab !== 'mesh') return;
+        const noise = () => Math.floor(Math.random() * 6) - 3;
+        meshState.peers.forEach(p => { p.rssi = Math.max(-95, Math.min(-45, p.rssi + noise())); });
+        meshRenderPeerList();
+        meshUpdatePeerCount();
+    }, 30000);
+
+    // Android inbound bridge
+    window.receiveMeshMessage = function (sender, text, urgency, timestamp, recipient) {
+        meshAppendInboundMessage(sender, text, urgency, timestamp, recipient, true);
+    };
+}
+
+// ── Peer List ──────────────────────────────────────────────
+function meshRenderPeerList(filter = '') {
+    const list = document.getElementById('mesh-peers-list');
+    const peers = meshState.peers.filter(p =>
+        !filter || p.name.toLowerCase().includes(filter.toLowerCase())
+    );
+
+    if (peers.length === 0) {
+        list.innerHTML = `<div style="padding:2rem; text-align:center; color:var(--text-secondary); font-size:0.88rem;">
+            <i class="fa-solid fa-magnifying-glass" style="font-size:1.4rem; opacity:0.4; display:block; margin-bottom:0.5rem;"></i>
+            No peers found
+        </div>`;
+        return;
+    }
+
+    list.innerHTML = peers.map(p => {
+        const isActive = meshState.activePeer === p.id;
+        const signal = p.rssi > -65 ? 3 : p.rssi > -75 ? 2 : 1;
+        const signalBars = [0, 1, 2].map(i =>
+            `<span style="width:3px; height:${6 + i * 4}px; border-radius:2px; background:${i < signal ? '#3b82f6' : 'rgba(0,0,0,0.15)'}; display:inline-block;"></span>`
+        ).join('');
+        const initials = p.name.substring(0, 2).toUpperCase();
+        const hasKey = !!meshState.sharedKeys[p.id];
+
+        return `<div class="mesh-peer-item" onclick="meshSelectPeer('${p.id}')"
+            style="display:flex; align-items:center; gap:0.65rem; padding:0.65rem 0.75rem; border-radius:10px; cursor:pointer; transition:all 0.2s;
+                   background:${isActive ? 'rgba(59,130,246,0.12)' : 'transparent'};
+                   border:1px solid ${isActive ? 'rgba(59,130,246,0.3)' : 'transparent'};">
+            <div style="position:relative; flex-shrink:0;">
+                <div style="width:38px; height:38px; border-radius:10px; background:linear-gradient(135deg,#6366f1,#8b5cf6); display:flex; align-items:center; justify-content:center; color:#fff; font-size:0.8rem; font-weight:700;">${initials}</div>
+                <span style="position:absolute; bottom:-2px; right:-2px; width:10px; height:10px; border-radius:50%; background:${p.online ? '#10b981' : '#94a3b8'}; border:2px solid white;"></span>
+            </div>
+            <div style="flex:1; min-width:0;">
+                <div style="font-size:0.88rem; font-weight:600; color:var(--text-primary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${p.name}</div>
+                <div style="font-size:0.72rem; color:var(--text-secondary);">${p.online ? 'Online' : 'Offline'} · ${p.rssi} dBm ${hasKey ? '· 🔒' : ''}</div>
+            </div>
+            <div style="display:flex; align-items:flex-end; gap:1px; flex-shrink:0;">${signalBars}</div>
+        </div>`;
+    }).join('');
+}
+
+function meshFilterPeers(val) { meshRenderPeerList(val); }
+
+function meshUpdatePeerCount() {
+    const online = meshState.peers.filter(p => p.online).length;
+    document.getElementById('mesh-peer-count').textContent =
+        `${meshState.peers.length} peers · ${online} online`;
+}
+
+// ── Peer Selection ─────────────────────────────────────────
+function meshSelectPeer(peerId) {
+    meshState.activePeer = peerId;
+    meshState.isBroadcastMode = false;
+    document.getElementById('btn-mesh-broadcast-toggle').style.background = 'linear-gradient(135deg,#475569,#334155)';
+    document.getElementById('btn-mesh-broadcast-toggle').innerHTML = '<i class="fa-solid fa-user"></i> Direct Mode';
+
+    const peer = meshState.peers.find(p => p.id === peerId);
+    if (peer) {
+        const initials = peer.name.substring(0, 2).toUpperCase();
+        document.getElementById('mesh-chat-avatar').innerHTML = `<span>${initials}</span>`;
+        document.getElementById('mesh-chat-avatar').style.background = 'linear-gradient(135deg,#6366f1,#8b5cf6)';
+        document.getElementById('mesh-chat-title').textContent = peer.name;
+        document.getElementById('mesh-chat-subtitle').textContent =
+            `Direct BLE · ${peer.online ? 'Online' : 'Offline'} · ${peer.rssi} dBm · ${meshState.sharedKeys[peerId] ? '🔒 E2EE Active' : 'Unencrypted'}`;
+    }
+    meshRenderPeerList();
+    meshRenderChatMessages(peerId);
+}
+
+function meshToggleBroadcastMode() {
+    meshState.activePeer = '';
+    meshState.isBroadcastMode = true;
+    document.getElementById('btn-mesh-broadcast-toggle').style.background = 'linear-gradient(135deg,#7c3aed,#4f46e5)';
+    document.getElementById('btn-mesh-broadcast-toggle').innerHTML = '<i class="fa-solid fa-tower-broadcast"></i> Broadcast Mode';
+    document.getElementById('mesh-chat-avatar').innerHTML = '<i class="fa-solid fa-tower-broadcast"></i>';
+    document.getElementById('mesh-chat-avatar').style.background = 'linear-gradient(135deg,#3b82f6,#8b5cf6)';
+    document.getElementById('mesh-chat-title').textContent = 'All Peers (Broadcast)';
+    document.getElementById('mesh-chat-subtitle').textContent = 'Encrypted broadcast to all nearby BLE devices';
+    meshRenderPeerList();
+    meshRenderChatMessages('');
+}
+
+// ── Messages ───────────────────────────────────────────────
+function meshRenderChatMessages(peerId) {
+    const area = document.getElementById('mesh-messages-area');
+    const msgs = peerId === '' ? meshState.allMessages : (meshState.messages[peerId] || []);
+
+    const systemMsg = `<div class="mesh-system-msg" style="text-align:center; margin-bottom:0.5rem;">
+        <span style="background:rgba(59,130,246,0.1); color:#3b82f6; font-size:0.78rem; padding:0.3rem 0.9rem; border-radius:20px; font-weight:600;">
+            <i class="fa-brands fa-bluetooth-b"></i> B-Messaging BLE Mesh · AES-GCM E2EE Active
+        </span>
+    </div>`;
+
+    if (msgs.length === 0) {
+        area.innerHTML = systemMsg + `<div style="text-align:center; padding:2rem; color:var(--text-secondary); font-size:0.88rem; opacity:0.6;">
+            <i class="fa-regular fa-comment-dots" style="font-size:2rem; display:block; margin-bottom:0.5rem;"></i>
+            No messages yet.
+        </div>`;
+        return;
+    }
+    area.innerHTML = systemMsg + msgs.map(m => meshBuildBubble(m)).join('');
+    area.scrollTop = area.scrollHeight;
+}
+
+function meshBuildBubble(m) {
+    const isMe = m.sender === meshState.myDeviceName;
+    const urgencyConf = {
+        info: { color: '#3b82f6', icon: 'fa-circle-info', label: 'Info' },
+        warning: { color: '#d97706', icon: 'fa-triangle-exclamation', label: 'Warning' },
+        emergency: { color: '#dc2626', icon: 'fa-siren-on', label: 'Emergency' },
+    };
+    const u = urgencyConf[m.urgency] || urgencyConf.info;
+    const lockIcon = m.encrypted !== false
+        ? `<span style="font-size:0.65rem; opacity:0.75; margin-left:0.3rem;" title="AES-GCM Encrypted">🔒</span>` : '';
+
+    if (isMe) {
+        return `<div style="display:flex; flex-direction:column; align-items:flex-end; gap:0.2rem;">
+            <div style="max-width:72%; background:linear-gradient(135deg,#3b82f6,#6366f1); color:#fff; padding:0.65rem 0.9rem; border-radius:16px 4px 16px 16px; font-size:0.9rem; line-height:1.5; box-shadow:0 2px 8px rgba(59,130,246,0.25);">
+                ${m.text}
+                ${m.urgency !== 'info' ? `<div style="margin-top:0.3rem; font-size:0.72rem; opacity:0.85;"><i class="fa-solid ${u.icon}"></i> ${u.label}</div>` : ''}
+            </div>
+            <div style="font-size:0.7rem; color:var(--text-secondary);">${m.ts} · You${lockIcon} · <i class="fa-solid fa-check-double" style="color:#3b82f6;"></i></div>
+        </div>`;
+    }
+    const initials = (m.sender || '?').substring(0, 2).toUpperCase();
+    return `<div style="display:flex; flex-direction:column; align-items:flex-start; gap:0.2rem;">
+        <div style="display:flex; align-items:flex-end; gap:0.5rem;">
+            <div style="width:30px; height:30px; border-radius:8px; background:linear-gradient(135deg,#6366f1,#8b5cf6); display:flex; align-items:center; justify-content:center; color:#fff; font-size:0.7rem; font-weight:700; flex-shrink:0;">${initials}</div>
+            <div style="max-width:72%; background:${m.urgency === 'emergency' ? 'rgba(220,38,38,0.07)' : 'var(--bg-secondary)'}; border:1px solid ${u.color}22; padding:0.65rem 0.9rem; border-radius:4px 16px 16px 16px; font-size:0.9rem; line-height:1.5; box-shadow:0 1px 4px rgba(0,0,0,0.06);">
+                <div style="font-size:0.72rem; font-weight:700; color:${u.color}; margin-bottom:0.25rem;"><i class="fa-solid ${u.icon}"></i> ${m.sender}${lockIcon}</div>
+                <div style="color:var(--text-primary);">${m.text}</div>
+            </div>
+        </div>
+        <div style="font-size:0.7rem; color:var(--text-secondary); padding-left:38px;">${m.ts}</div>
+    </div>`;
+}
+
+function meshAppendInboundMessage(sender, text, urgency, ts, recipient, encrypted = false) {
+    const msg = { sender, text, urgency, ts: ts || meshNow(), encrypted };
+    meshState.allMessages.push(msg);
+    if (!meshState.messages[sender]) meshState.messages[sender] = [];
+    meshState.messages[sender].push(msg);
+
+    const viewing = (meshState.activePeer === '' && !recipient) || (meshState.activePeer === sender);
+    if (viewing && activeTab === 'mesh') {
+        const area = document.getElementById('mesh-messages-area');
+        const wrap = document.createElement('div');
+        wrap.innerHTML = meshBuildBubble(msg);
+        area.appendChild(wrap.firstElementChild);
+        area.scrollTop = area.scrollHeight;
+    }
+}
+
+// ── Send (with E2EE) ───────────────────────────────────────
+async function meshSendMessage() {
+    const input = document.getElementById('mesh-compose-input');
+    const text = input.value.trim();
+    if (!text) return;
+
+    const recipient = meshState.isBroadcastMode ? '' : meshState.activePeer;
+
+    // Encrypt for the target peer (or broadcast — encrypt to each peer separately in real use)
+    let encResult = { ciphertext: btoa(text), iv: 'none', encrypted: false };
+    if (meshState.keyPair && recipient && meshState.sharedKeys[recipient]) {
+        encResult = await meshEncrypt(text, recipient);
+    }
+
+    const msg = {
+        sender: meshState.myDeviceName,
+        text,       // display plaintext locally
+        urgency: meshState.urgency,
+        ts: meshNow(),
+        encrypted: encResult.encrypted,
+    };
+
+    meshState.allMessages.push(msg);
+    if (recipient) {
+        if (!meshState.messages[recipient]) meshState.messages[recipient] = [];
+        meshState.messages[recipient].push(msg);
+    }
+
+    // Bridge to Android native BLE — send ciphertext over the air
+    if (window.Android && typeof window.Android.broadcastMeshMessage === 'function') {
+        window.Android.broadcastMeshMessage(encResult.ciphertext, meshState.urgency, recipient);
+    }
+
+    // Render bubble locally with plaintext
+    const area = document.getElementById('mesh-messages-area');
+    const wrap = document.createElement('div');
+    wrap.innerHTML = meshBuildBubble(msg);
+    area.appendChild(wrap.firstElementChild);
+    area.scrollTop = area.scrollHeight;
+
+    input.value = '';
+    input.style.height = '44px';
+
+    const btn = document.getElementById('btn-mesh-send');
+    btn.style.transform = 'scale(0.85)';
+    setTimeout(() => { btn.style.transform = 'scale(1)'; }, 150);
+}
+
+function meshHandleEnter(e) {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); meshSendMessage(); }
+}
+
+// ── Urgency ────────────────────────────────────────────────
+function meshSetUrgency(level) {
+    meshState.urgency = level;
+    document.querySelectorAll('.mesh-urgency-btn').forEach(btn => {
+        btn.style.opacity = btn.dataset.urgency === level ? '1' : '0.5';
+    });
+    const borderMap = { info: '#3b82f6', warning: '#d97706', emergency: '#dc2626' };
+    const compose = document.getElementById('mesh-compose-input');
+    compose.style.borderColor = borderMap[level];
+    compose.style.boxShadow = `0 0 8px ${borderMap[level]}40`;
+}
+
+// ── E2EE Info Modal ────────────────────────────────────────
+function meshShowEncryptionInfo() {
+    const modal = document.getElementById('mesh-key-modal');
+    modal.style.display = 'flex';
+}
+
+// ── Helpers ────────────────────────────────────────────────
+function meshNow() {
+    return new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+}

@@ -29,37 +29,7 @@ public class WeatherController {
     @Autowired
     private WeatherForecastRepository weatherRepository;
 
-    @Autowired
-    private GroundwaterRecordRepository groundwaterRepository;
-
     private final RestTemplate restTemplate = new RestTemplate();
-
-    private List<GroundwaterRecord> fetchGroundwaterFromPythonService() {
-        try {
-            String url = pythonServiceUrl + "/weather/groundwater";
-            Map<String, Object> response = restTemplate.getForObject(url, Map.class);
-            List<GroundwaterRecord> list = new ArrayList<>();
-            if (response != null && response.containsKey("data")) {
-                List<Map<String, Object>> records = (List<Map<String, Object>>) response.get("data");
-                for (Map<String, Object> r : records) {
-                    GroundwaterRecord g = new GroundwaterRecord();
-                    g.setState((String) r.get("state"));
-                    g.setDistrict((String) r.get("district"));
-                    g.setLatitude(Double.valueOf(r.get("latitude").toString()));
-                    g.setLongitude(Double.valueOf(r.get("longitude").toString()));
-                    g.setYear(Integer.valueOf(r.get("year").toString()));
-                    g.setWaterTableDepth(Double.valueOf(r.get("waterTableDepth").toString()));
-                    g.setSewageContamination(Double.valueOf(r.get("sewageContamination").toString()));
-                    g.setDepletionRate(Double.valueOf(r.get("depletionRate").toString()));
-                    list.add(g);
-                }
-            }
-            return list;
-        } catch (Exception e) {
-            log.error("Failed to fetch groundwater records from Python API: {}", e.getMessage());
-            return new ArrayList<>();
-        }
-    }
 
     private List<WeatherForecast> fetchWeatherFromPythonService() {
         try {
@@ -86,12 +56,6 @@ public class WeatherController {
         }
     }
 
-    @GetMapping("/groundwater")
-    public ResponseEntity<List<GroundwaterRecord>> getGroundwaterRecords() {
-        log.info("Fetching groundwater records from Python service");
-        return ResponseEntity.ok(fetchGroundwaterFromPythonService());
-    }
-
     @GetMapping("/forecast")
     public ResponseEntity<List<WeatherForecast>> getWeatherForecast() {
         log.info("Fetching regional weather forecasts from Python service");
@@ -110,7 +74,7 @@ public class WeatherController {
         } catch (Exception e) {
             log.error("Could not fetch climate trends from Python service: {}", e.getMessage());
         }
-        
+
         return ResponseEntity.ok(List.of());
     }
 }
