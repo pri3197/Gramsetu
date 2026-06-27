@@ -10,7 +10,7 @@ services:
     numInstances: 1
     envVars:
       - key: AGMARKNET_BASE_URL
-        value: http://gramsetu-agmarknet:5000
+        value: https://gramsetu-agmarknet.onrender.com
       - key: NADRES_DATASET_ACCESS_KEY
         value: 5489aebddf706f827b4e8cc16a34490b626b71b3d56aa8069c1f3b885eb927f9
       - key: NEWS_API_KEY
@@ -35,7 +35,7 @@ services:
     numInstances: 1
     envVars:
       - key: PYTHON_SERVICE_URL
-        value: http://gramsetu-python:8000
+        value: https://gramsetu-python.onrender.com
       - key: SPRING_DATASOURCE_URL
         value: jdbc:postgresql://aws-0-eu-west-1.pooler.supabase.com:6543/postgres?sslmode=require
       - key: SPRING_DATASOURCE_USERNAME
