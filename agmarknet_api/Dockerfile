@@ -6,8 +6,8 @@ WORKDIR /app
 # Copy application code
 COPY app.py ./
 
-# Install Flask (required dependency)
-RUN pip install --no-cache-dir flask
+# Install Flask and requests (required dependencies)
+RUN pip install --no-cache-dir flask requests
 
 # Expose Flask default port
 EXPOSE 5000
