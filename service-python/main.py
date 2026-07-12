@@ -3,12 +3,13 @@ import shutil
 import tempfile
 import datetime
 # pyrefly: ignore [missing-import]
-
 from fastapi import FastAPI, UploadFile, File, Query, HTTPException
 # pyrefly: ignore [missing-import]
 from fastapi.middleware.cors import CORSMiddleware
 from classifier import BirdAudioClassifier
 from data_fetcher import DataFetcher
+from rag_service import RAGService
+from pydantic import BaseModel
 
 app = FastAPI(
     title="GramSetu AI & Data Service",
@@ -29,6 +30,10 @@ app.add_middleware(
 # Initializing singleton instances at module scope reduces endpoint overhead
 classifier = BirdAudioClassifier()
 default_fetcher = DataFetcher()  # Reusable instance for routes that don't pass custom API keys
+rag_service = RAGService()
+
+class ChatRequest(BaseModel):
+    message: str
 
 @app.get("/")
 def read_root():
@@ -76,6 +81,17 @@ async def classify_bird(file: UploadFile = File(...)):
             except Exception as cleanup_err:
                 print(f"Failed to delete temp file {temp_file_path}: {str(cleanup_err)}")
 
+@app.post("/chat")
+def chat(request: ChatRequest):
+    """
+    RAG-powered chat endpoint.
+    """
+    try:
+        response = rag_service.generate_response(request.message)
+        return {"response": response}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to generate response: {str(e)}")
+
 @app.get("/prices")
 def get_mandi_prices(
     api_key: str = Query(None, description="API Key for data.gov.in (Optional)"),
@@ -99,8 +115,8 @@ def get_mandi_prices(
             end_date=end_date,
         )
         if not prices:
-            return {"count": 0, "data": None}
-        return {"count": len(prices), "data": prices}
+            return None
+        return prices
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to fetch commodity prices: {str(e)}")
 
@@ -150,31 +166,30 @@ def get_wheat_north_india() -> dict:
     if not filtered:
         filtered = [p for p in prices if "wheat" in str(p.get("commodity", "")).lower()]
     avg = round(sum(p["modal_price"] for p in filtered) / len(filtered)) if filtered else None
-    return {"count": len(filtered), "avg_modal_price": avg, "region": "North India", "source": "fallback", "data": filtered}
+    return filtered
 
-@app.get("/diseases/brucellosis-historical")
-def get_brucellosis_historical():
+@app.get("/institutions")
+def get_institutions():
     """
-    Returns data.gov.in state-wise historical Brucellosis vaccination 
-    coverage data (2021 - Aug 2023) mapped with geographic nodes.
+    Returns parsed Veterinary Institutions data mapped with geographic nodes.
     """
     try:
-        data = default_fetcher.fetch_brucellosis_vaccination_data()
-        return {"count": len(data), "resource_id": "30a3be49-601a-44ad-aa36-e568ce8a4707", "data": data}
+        data = default_fetcher.fetch_veterinary_institutions_data()
+        return data
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to compile historical map data: {str(e)}")
     
-    """ @app.get("/diseases")
-    def get_cattle_diseases():
-    
-        Retrieves the latest cattle disease outbreaks and recommended vaccinations.
-        
-        try:
-            outbreaks = default_fetcher.fetch_cattle_disease_outbreaks()
-            return {"count": len(outbreaks), "data": outbreaks}
-        except Exception as e:
-            raise HTTPException(status_code=500, detail=f"Failed to fetch cattle disease outbreaks: {str(e)}")
+@app.get("/diseases")
+def get_cattle_diseases():
     """
+    Retrieves the latest cattle disease outbreaks from PDF.
+    """
+    try:
+        outbreaks = default_fetcher.fetch_cattle_disease_outbreaks()
+        return outbreaks
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to fetch cattle disease outbreaks: {str(e)}")
+
 @app.get("/news")
 def get_news():
     """
@@ -182,7 +197,7 @@ def get_news():
     """
     try:
         articles = default_fetcher.fetch_news_articles()
-        return {"count": len(articles), "data": articles}
+        return articles
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to fetch news articles: {str(e)}")
 
@@ -190,7 +205,7 @@ def get_news():
 def get_weather_forecast():
     try:
         forecasts = default_fetcher.fetch_weather_forecasts()
-        return {"count": len(forecasts), "data": forecasts}
+        return forecasts
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -198,7 +213,7 @@ def get_weather_forecast():
 def get_climate_trends():
     try:
         trends = default_fetcher.fetch_climate_trends()
-        return {"count": len(trends), "data": trends}
+        return trends
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -209,7 +224,7 @@ def get_groundwater_data():
     """
     try:
         data = default_fetcher.fetch_groundwater_data()
-        return {"count": len(data), "data": data}
+        return data
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to fetch groundwater data: {str(e)}")
 
@@ -220,7 +235,7 @@ def get_imd_warnings():
     """
     try:
         warnings = default_fetcher.fetch_imd_fisherman_warnings()
-        return {"count": len(warnings), "data": warnings}
+        return warnings
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to fetch IMD warnings: {str(e)}")
 
@@ -231,7 +246,7 @@ def get_historical_mangroves():
     """
     try:
         data = default_fetcher.fetch_historical_mangroves()
-        return {"count": len(data), "data": data}
+        return data
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to fetch historical mangrove data: {str(e)}")
 
@@ -239,7 +254,7 @@ def get_historical_mangroves():
 def get_fish_map():
     try:
         data = default_fetcher.fetch_fish_map_data()
-        return {"count": len(data), "data": data}
+        return data
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to fetch fish map data: {str(e)}")
 
@@ -247,7 +262,7 @@ def get_fish_map():
 def get_reproduction_bans():
     try:
         data = default_fetcher.fetch_reproduction_bans()
-        return {"count": len(data), "data": data}
+        return data
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to fetch reproduction bans: {str(e)}")
 
@@ -255,7 +270,7 @@ def get_reproduction_bans():
 def get_historical_trends():
     try:
         data = default_fetcher.fetch_historical_trends()
-        return {"count": len(data), "data": data}
+        return data
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to fetch historical trends: {str(e)}")
 
@@ -263,9 +278,17 @@ def get_historical_trends():
 def get_fisheries_schemes():
     try:
         data = default_fetcher.fetch_fisheries_schemes()
-        return {"count": len(data), "data": data}
+        return data
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to fetch fisheries schemes: {str(e)}")
+
+@app.get("/birds/sightings")
+def get_bird_sightings():
+    return []
+
+@app.get("/market/products")
+def get_market_products():
+    return []
 
 if __name__ == "__main__":
     import uvicorn

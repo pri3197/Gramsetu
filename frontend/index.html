@@ -15,7 +15,7 @@
 
     <!-- CSS Dependencies -->
     <link rel="stylesheet" href="css/style.css?v=1.0.9">
-    <link rel="stylesheet" href="css/3dplanner.css">
+
 
 
     <!-- Leaflet Map CSS -->
@@ -45,26 +45,31 @@
 
 
 
-            <nav class="nav-tabs" aria-label="Main Navigation">
-
-
-
-
-
-
-                <button class="tab-btn active" onclick="switchTab('news')" id="nav-btn-news"><img src="/uploads/icon_news.png" alt="" class="nav-tab-icon"> News Portal</button>
-                <button class="tab-btn" onclick="switchTab('weather')" id="nav-btn-weather"><i class="fa-solid fa-cloud-sun-rain"></i> Weather Update</button>
-                <button class="tab-btn" onclick="switchTab('prices')" id="nav-btn-prices"><img src="/uploads/icon_mandi.png" alt="" class="nav-tab-icon"> Current Market Prices</button>
-                <button class="tab-btn" onclick="switchTab('mesh')" id="nav-btn-mesh"><img src="/uploads/icon_mesh.png" alt="" class="nav-tab-icon"> B-Messaging</button>
-                <button class="tab-btn" onclick="switchTab('bio')" id="nav-btn-bio"><img src="/uploads/icon_bio_market.png" alt="" class="nav-tab-icon"> Bio Market</button>
-                <button class="tab-btn" onclick="switchTab('feedback')" id="nav-btn-feedback"><i class="fa-solid fa-comments"></i> Feedback Hub</button>
-                <button class="tab-btn" onclick="switchTab('3dplanner')" id="nav-btn-3dplanner"><i class="fa-solid fa-cube"></i> 3D Planner</button>
+                <div class="nav-brand">
+                    <img src="/uploads/gramsetu_logo.png" alt="GramSetu Logo" class="brand-logo" style="height: 40px; margin-right: 1rem;">
+                    <span style="font-weight: 700; font-size: 1.2rem; color: var(--text-primary);">GramSetu</span>
+                </div>
                 
-                <!-- Hidden legacy tabs for future use -->
-                <button class="tab-btn" onclick="switchTab('farming')" id="nav-btn-farming" style="display:none;">Farming</button>
-                <button class="tab-btn" onclick="switchTab('birds')" id="nav-btn-birds" style="display:none;">Bird Acoustic</button>
-                <button class="tab-btn" onclick="switchTab('sources')" id="nav-btn-sources" style="display:none;">Datasources</button>
-            </nav>
+                <button class="hamburger-btn" onclick="toggleMobileNav()" id="mobile-nav-toggle">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+                
+                <div class="nav-tabs" id="main-nav-tabs">
+                    <button class="tab-btn active" onclick="switchTab('news')" id="nav-btn-news"><i class="fa-solid fa-newspaper"></i> News Portal</button>
+                    <button class="tab-btn" onclick="switchTab('weather')" id="nav-btn-weather"><i class="fa-solid fa-cloud-sun-rain"></i> Weather</button>
+                    <button class="tab-btn" onclick="switchTab('prices')" id="nav-btn-prices"><i class="fa-solid fa-chart-line"></i> Market Prices</button>
+                    <button class="tab-btn" onclick="switchTab('mesh')" id="nav-btn-mesh"><img src="/uploads/icon_mesh.png" alt="" class="nav-tab-icon"> B-Messaging</button>
+                    <button class="tab-btn" onclick="switchTab('bio')" id="nav-btn-bio"><img src="/uploads/icon_bio_market.png" alt="" class="nav-tab-icon"> Bio Market</button>
+                    <button class="tab-btn" onclick="switchTab('feedback')" id="nav-btn-feedback"><i class="fa-solid fa-comments"></i> Feedback Hub</button>
+                    
+                    <!-- Hidden legacy tabs for future use -->
+                    <button class="tab-btn" onclick="switchTab('farming')" id="nav-btn-farming" style="display:none;">Farming</button>
+                    <button class="tab-btn" onclick="switchTab('fisheries')" id="nav-btn-fisheries" style="display:none;">Fisheries</button>
+                    <button class="tab-btn" onclick="switchTab('dashboard')" id="nav-btn-dashboard" style="display:none;">Dashboard</button>
+                    <button class="tab-btn" onclick="switchTab('birds')" id="nav-btn-birds" style="display:none;">Bird Acoustic</button>
+                    <button class="tab-btn" onclick="switchTab('datasources')" id="nav-btn-datasources" style="display:none;">Data</button>
+                </div>
+            </div>
             <div class="header-actions" style="display: flex; align-items: center;">
                 <div
                     style="display: flex; align-items: center; gap: 0.5rem; background: var(--bg-secondary); border: 1px solid var(--border-glass); padding: 0.4rem 0.8rem; border-radius: 12px; box-shadow: var(--shadow-main);">
@@ -2105,185 +2110,7 @@
             </div>
         </section>
 
-        <!-- 3D PLANNER TAB -->
-        <section id="panel-3dplanner" class="tab-panel" aria-labelledby="nav-btn-3dplanner">
-            <h2 class="hero-title" style="font-size: 2rem; margin-bottom: 0.5rem;"><i class="fa-solid fa-cube"></i> 3D Garden Planner</h2>
-            <p style="color: var(--text-secondary); margin-bottom: 1rem;">Design your dream garden, greenhouse, or balcony in 3D. Add structures, plants, and equipment.</p>
 
-            <div class="planner-layout">
-                
-                <!-- Settings Modal (Absolute positioned over main view) -->
-                <div class="settings-modal">
-                    <h3>Profile & Settings</h3>
-                    
-                    <div class="setting-group">
-                        <label>Yard Size (Width x Depth)</label>
-                        <div class="settings-row">
-                            <input type="range" id="planner-width" min="1" max="50" value="10">
-                            <span id="planner-width-val">10m</span>
-                        </div>
-                        <div class="settings-row">
-                            <input type="range" id="planner-depth" min="1" max="50" value="15">
-                            <span id="planner-depth-val">15m</span>
-                        </div>
-                    </div>
-                    
-                    <div class="setting-group">
-                        <label>Map View (Turn Axis)</label>
-                        <div class="settings-row">
-                            <input type="range" id="planner-tilt" min="0" max="85" value="0" title="X-Axis Tilt">
-                            <span id="planner-tilt-val">0°</span>
-                        </div>
-                        <div class="settings-row">
-                            <input type="range" id="planner-rotate" min="-180" max="180" value="0" title="Z-Axis Rotation">
-                            <span id="planner-rotate-val">0°</span>
-                        </div>
-                    </div>
-                    
-                    <div class="setting-group">
-                        <label>Environment</label>
-                        <select id="planner-environment">
-                            <option value="Mountains">Mountains</option>
-                            <option value="Urban">Urban</option>
-                            <option value="Field">Field</option>
-                        </select>
-                    </div>
-
-                    <div class="setting-group">
-                        <label>Weather (Live/Manual)</label>
-                        <select id="planner-weather">
-                            <option value="Clear">Clear</option>
-                            <option value="Cloudy">Cloudy</option>
-                            <option value="Overcast">Overcast</option>
-                            <option value="Rain">Rain</option>
-                        </select>
-                    </div>
-
-                    <button class="btn-generate" onclick="generate3DPlan()"><i class="fa-solid fa-wand-magic-sparkles"></i> Generate Plan</button>
-                    
-                    <div id="added-items-container" style="margin-top: 1.5rem; border-top: 1px solid var(--border-glass); padding-top: 1rem;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                            <h4 style="color: var(--text-primary); margin: 0;">Added Structures</h4>
-                            <button id="btn-undo" class="btn-undo" onclick="undoLastStep()" title="Undo last action"><i class="fa-solid fa-rotate-left"></i> Undo</button>
-                        </div>
-                        <div id="added-structures-list" style="display: flex; flex-direction: column; gap: 0.5rem;">
-                            <div style="font-size: 0.8rem; color: var(--text-secondary);">No structures added.</div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Main Viewport -->
-                <div class="planner-main" id="planner-viewport">
-                    <!-- Placeholder for the 3D Image -->
-                    <div style="text-align: center; color: var(--text-secondary);">
-                        <i class="fa-solid fa-image" style="font-size: 3rem; margin-bottom: 1rem;"></i>
-                        <p>Click "Generate Plan" to render your 3D layout.</p>
-                    </div>
-                </div>
-
-                <!-- Configuration Sidebar -->
-                <div class="planner-sidebar">
-                    <div class="sidebar-tabs">
-                        <button class="sidebar-tab-btn active">Items</button>
-                        <button class="sidebar-tab-btn">Structure</button>
-                        <button class="sidebar-tab-btn">Plants</button>
-                    </div>
-                    <div class="sidebar-content">
-                        
-                        <div class="accordion">
-                            <div class="accordion-header">Structures <i class="fa-solid fa-chevron-down"></i></div>
-                            <div class="item-grid" style="grid-template-columns: repeat(2, 1fr);">
-                                <div class="item-btn add-item-btn"><i class="fa-solid fa-igloo"></i> Quonset / Hoop</div>
-                                <div class="item-btn add-item-btn"><i class="fa-solid fa-archway"></i> Gothic Arch</div>
-                                <div class="item-btn add-item-btn"><i class="fa-solid fa-caret-up"></i> A-Frame</div>
-                                <div class="item-btn add-item-btn"><i class="fa-solid fa-water"></i> Ridge & Furrow</div>
-                                <div class="item-btn add-item-btn"><i class="fa-solid fa-tooth"></i> Sawtooth</div>
-                                <div class="item-btn add-item-btn"><i class="fa-solid fa-globe"></i> Geodesic Dome</div>
-                                <div class="item-btn add-item-btn"><i class="fa-solid fa-building"></i> Freestanding</div>
-                                <div class="item-btn add-item-btn"><i class="fa-solid fa-tents"></i> Lean-to</div>
-                                <div class="item-btn add-item-btn"><i class="fa-solid fa-arrow-down"></i> Walipini (Pit)</div>
-                            </div>
-                        </div>
-
-                        <div class="accordion">
-                            <div class="accordion-header">Items & Equipment <i class="fa-solid fa-chevron-down"></i></div>
-                            <div class="item-grid" style="grid-template-columns: repeat(2, 1fr);">
-                                <div class="item-btn add-item-btn"><i class="fa-solid fa-database"></i> Water Tank</div>
-                                <div class="item-btn add-item-btn"><i class="fa-solid fa-bed"></i> Bed</div>
-                                <div class="item-btn add-item-btn"><i class="fa-solid fa-tower-observation"></i> Plant Tower</div>
-                                <div class="item-btn add-item-btn"><i class="fa-solid fa-fan"></i> Exhaust Fans</div>
-                                <div class="item-btn add-item-btn"><i class="fa-solid fa-droplet"></i> Hygrometer</div>
-                                <div class="item-btn add-item-btn"><i class="fa-solid fa-video"></i> Camera</div>
-                                <div class="item-btn add-item-btn"><i class="fa-solid fa-wind"></i> Vent</div>
-                                <div class="item-btn add-item-btn"><i class="fa-solid fa-seedling"></i> Hydroponics</div>
-                                <div class="item-btn add-item-btn"><i class="fa-solid fa-bucket"></i> Big Pots</div>
-                                <div class="item-btn add-item-btn"><i class="fa-solid fa-glass-water"></i> Small Pots</div>
-                                <div class="item-btn add-item-btn"><i class="fa-solid fa-lines-leaning"></i> Pipes</div>
-                                <div class="item-btn add-item-btn"><i class="fa-solid fa-faucet"></i> Water Pumps</div>
-                                <div class="item-btn add-item-btn"><i class="fa-solid fa-bolt"></i> Electricity Cables</div>
-                                <div class="item-btn add-item-btn"><i class="fa-solid fa-water"></i> Water Gutters</div>
-                                <div class="item-btn add-item-btn"><i class="fa-solid fa-road"></i> Path</div>
-                                <div class="item-btn add-item-btn"><i class="fa-solid fa-door-open"></i> Door</div>
-                            </div>
-                        </div>
-                        
-                        <div class="accordion">
-                            <div class="accordion-header">Spring Growing Season <i class="fa-solid fa-chevron-down"></i></div>
-                            <div class="item-grid" style="grid-template-columns: repeat(2, 1fr);">
-                                <div class="item-btn add-item-btn"><i class="fa-solid fa-leaf"></i> Lettuces</div>
-                                <div class="item-btn add-item-btn"><i class="fa-solid fa-seedling"></i> Peas</div>
-                                <div class="item-btn add-item-btn"><i class="fa-solid fa-carrot"></i> Leeks</div>
-                                <div class="item-btn add-item-btn"><i class="fa-solid fa-carrot"></i> Onions</div>
-                                <div class="item-btn add-item-btn"><i class="fa-solid fa-seedling"></i> Shallots</div>
-                            </div>
-                        </div>
-
-                        <div class="accordion">
-                            <div class="accordion-header">Mid-Spring Planting <i class="fa-solid fa-chevron-down"></i></div>
-                            <div class="item-grid" style="grid-template-columns: repeat(2, 1fr);">
-                                <div class="item-btn add-item-btn"><i class="fa-solid fa-carrot"></i> Cucumbers</div>
-                                <div class="item-btn add-item-btn"><i class="fa-solid fa-apple-whole"></i> Squash</div>
-                                <div class="item-btn add-item-btn"><i class="fa-solid fa-pepper-hot"></i> Peppers</div>
-                                <div class="item-btn add-item-btn"><i class="fa-solid fa-apple-whole"></i> Tomatoes</div>
-                                <div class="item-btn add-item-btn"><i class="fa-solid fa-leaf"></i> Basil</div>
-                            </div>
-                        </div>
-
-                        <div class="accordion">
-                            <div class="accordion-header">Summer Growing Season <i class="fa-solid fa-chevron-down"></i></div>
-                            <div class="item-grid" style="grid-template-columns: repeat(2, 1fr);">
-                                <div class="item-btn add-item-btn"><i class="fa-solid fa-seedling"></i> Beans</div>
-                                <div class="item-btn add-item-btn"><i class="fa-solid fa-apple-whole"></i> Squash</div>
-                                <div class="item-btn add-item-btn"><i class="fa-solid fa-apple-whole"></i> Tomatoes</div>
-                                <div class="item-btn add-item-btn"><i class="fa-solid fa-pepper-hot"></i> Peppers</div>
-                                <div class="item-btn add-item-btn"><i class="fa-solid fa-carrot"></i> Carrots</div>
-                                <div class="item-btn add-item-btn"><i class="fa-solid fa-carrot"></i> Potatoes</div>
-                            </div>
-                        </div>
-
-                        <div class="accordion">
-                            <div class="accordion-header">Winter Growing Season <i class="fa-solid fa-chevron-down"></i></div>
-                            <div class="item-grid" style="grid-template-columns: repeat(2, 1fr);">
-                                <div class="item-btn add-item-btn"><i class="fa-solid fa-leaf"></i> Endive</div>
-                                <div class="item-btn add-item-btn"><i class="fa-solid fa-leaf"></i> Kale</div>
-                                <div class="item-btn add-item-btn"><i class="fa-solid fa-leaf"></i> Swiss chard</div>
-                                <div class="item-btn add-item-btn"><i class="fa-solid fa-carrot"></i> Parsnips</div>
-                                <div class="item-btn add-item-btn"><i class="fa-solid fa-carrot"></i> Rutabagas</div>
-                                <div class="item-btn add-item-btn"><i class="fa-solid fa-carrot"></i> Beets</div>
-                                <div class="item-btn add-item-btn"><i class="fa-solid fa-carrot"></i> Carrots</div>
-                                <div class="item-btn add-item-btn"><i class="fa-solid fa-seedling"></i> Brussels sprouts</div>
-                                <div class="item-btn add-item-btn"><i class="fa-solid fa-seedling"></i> Chives</div>
-                                <div class="item-btn add-item-btn"><i class="fa-solid fa-leaf"></i> Mint</div>
-                                <div class="item-btn add-item-btn"><i class="fa-solid fa-seedling"></i> Parsley</div>
-                                <div class="item-btn add-item-btn"><i class="fa-solid fa-leaf"></i> Chervil</div>
-                            </div>
-                        </div>
-
-                    </div>
-                </div>
-
-            </div>
-        </section>
 
 
         <!-- ======================== B-MESSAGING (MESH) PANEL ======================== -->
@@ -2600,7 +2427,7 @@
 
     <!-- Custom Web Core Script -->
     <script src="js/app.js?v=1.0.9"></script>
-    <script src="js/3dplanner.js"></script>
+
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
