@@ -53,20 +53,23 @@ function switchTab(tabId) {
         document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
 
-        // Special handling for new top-level tabs mapped to farming sub-views
-        if (tabId === 'prices' || tabId === 'bio') {
-            const farmingPanel = document.getElementById('panel-farming');
-            if (farmingPanel) farmingPanel.classList.add('active');
-            
-            if (tabId === 'prices') switchFarmingSubView('mandi');
-            if (tabId === 'bio') switchFarmingSubView('market');
+        // Resolve target panel and sub-view
+        let targetTabId = tabId;
+        let subViewId = null;
+
+        if (tabId === 'prices') {
+            targetTabId = 'farming';
+            subViewId = 'mandi';
+        } else if (tabId === 'bio') {
+            targetTabId = 'farming';
+            subViewId = 'market';
+        }
+
+        const panel = document.getElementById(`panel-${targetTabId}`);
+        if (panel) {
+            panel.classList.add('active');
         } else {
-            const panel = document.getElementById(`panel-${tabId}`);
-            if (panel) {
-                panel.classList.add('active');
-            } else {
-                console.warn(`Panel not found for tabId: ${tabId}`);
-            }
+            console.warn(`Panel not found for tabId: ${targetTabId}`);
         }
 
         const btn = document.getElementById(`nav-btn-${tabId}`);
@@ -74,12 +77,14 @@ function switchTab(tabId) {
             btn.classList.add('active');
         }
 
-        activeTab = tabId;
+        // Extremely important: Set activeTab to the underlying physical panel (farming) 
+        // so that data loaders and map initializers inside app.js continue to work normally.
+        activeTab = targetTabId;
 
         // Lazy initialize and resize maps when they become visible
-        if (tabId === 'farming') {
-            switchFarmingSubView(activeFarmingSubView || 'mandi');
-        } else if (tabId === 'fisheries') {
+        if (targetTabId === 'farming') {
+            switchFarmingSubView(subViewId || activeFarmingSubView || 'mandi');
+        } else if (targetTabId === 'fisheries') {
             initFisheriesMap();
             loadFisheriesData();
             if (fisheriesMap) setTimeout(() => fisheriesMap.invalidateSize(), 100);
