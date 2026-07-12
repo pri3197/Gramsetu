@@ -1417,33 +1417,32 @@ textarea:focus {
 
 
 /* MOBILE RESPONSIVENESS */
-@media (max-width: 768px) {
+@media (max-width: 900px) {
     .nav-container {
-        flex-direction: column;
-        align-items: stretch;
-        position: relative;
-        padding: 0.5rem;
-    }
-    .nav-brand {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        width: 100%;
+        flex-wrap: wrap;
+        padding: 1rem;
     }
     .hamburger-btn {
         display: block;
         background: none;
         border: none;
         color: var(--text-primary);
-        font-size: 1.5rem;
+        font-size: 1.8rem;
         cursor: pointer;
         padding: 0.5rem;
+        margin-left: auto;
+        margin-right: 1rem;
     }
     #main-nav-tabs {
         display: none;
         flex-direction: column;
+        flex-basis: 100%;
         width: 100%;
         margin-top: 1rem;
+        background: var(--bg-primary);
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        padding: 0.5rem;
     }
     #main-nav-tabs.show {
         display: flex;
@@ -1453,6 +1452,19 @@ textarea:focus {
         text-align: left;
         padding: 1rem;
         margin-bottom: 0.25rem;
+        border-radius: 6px;
+    }
+    .header-actions {
+        order: 2;
+    }
+    .hamburger-btn {
+        order: 3;
+    }
+    #main-nav-tabs {
+        order: 4;
+    }
+    .logo-section {
+        order: 1;
     }
     .mesh-header {
         flex-direction: column;
@@ -1461,28 +1473,27 @@ textarea:focus {
     .mesh-layout {
         flex-direction: column;
         height: auto;
+        min-height: 80vh;
     }
     .mesh-sidebar {
         width: 100%;
-        max-height: 200px;
+        height: auto;
+        max-height: 250px;
+        flex: none;
     }
     .mesh-chat-area {
-        height: 60vh;
+        flex: 1;
+        min-height: 400px;
+        height: auto;
     }
 }
 
-@media (min-width: 769px) {
+@media (min-width: 901px) {
     .hamburger-btn {
         display: none;
-    }
-    .nav-container {
-        display: flex;
-        align-items: center;
-        width: 100%;
     }
     #main-nav-tabs {
         display: flex;
         flex-direction: row;
-        flex-wrap: wrap;
     }
 }

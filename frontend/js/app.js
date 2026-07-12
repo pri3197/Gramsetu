@@ -161,9 +161,9 @@ function switchFarmingSubView(viewId) {
 async function loadDashboardStats() {
     try {
         // Fetch stats from endpoints
-        const resDiseases = await fetch('https://gramsetu-backend-o5r1.onrender.com/diseases');
-        const resSightings = await fetch('https://gramsetu-backend-o5r1.onrender.com/birds/sightings');
-        const resPrices = await fetch('https://gramsetu-backend-o5r1.onrender.com/prices');
+        const resDiseases = await fetch('http://localhost:8000/diseases');
+        const resSightings = await fetch('http://localhost:8000/birds/sightings');
+        const resPrices = await fetch('http://localhost:8000/prices');
 
         const diseasesRes = await resDiseases.json();
         const sightingsRes = await resSightings.json();
@@ -220,8 +220,8 @@ function initCattleMap() {
 async function loadCattleDiseases() {
     try {
         const [instRes, disRes] = await Promise.all([
-            fetch('https://gramsetu-backend-o5r1.onrender.com/institutions'),
-            fetch('https://gramsetu-backend-o5r1.onrender.com/diseases')
+            fetch('http://localhost:8000/institutions'),
+            fetch('http://localhost:8000/diseases')
         ]);
         institutionsData = await instRes.json();
         diseaseData = await disRes.json();
@@ -365,7 +365,7 @@ const DISTRICT_COORDINATES = {
 // 4. Mandi prices filter, table, and data fetching
 async function loadMandiPrices() {
     try {
-        const response = await fetch('https://gramsetu-backend-o5r1.onrender.com/prices');
+        const response = await fetch('http://localhost:8000/prices');
         const json = await response.json();
         priceData = Array.isArray(json) ? json : (json.data || []);
 
@@ -662,7 +662,7 @@ async function uploadAudioForClassification(audioBlob) {
     formData.append('file', audioBlob, 'capture.wav');
 
     try {
-        const response = await fetch('https://gramsetu-backend-o5r1.onrender.com/birds/classify', {
+        const response = await fetch('http://localhost:8000/birds/classify', {
             method: 'POST',
             body: formData
         });
@@ -748,7 +748,7 @@ function initBirdsMap() {
 
 async function loadBirdSightings() {
     try {
-        const response = await fetch('https://gramsetu-backend-o5r1.onrender.com/birds/sightings');
+        const response = await fetch('http://localhost:8000/birds/sightings');
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         const data = await response.json();
         birdSightings = Array.isArray(data) ? data : [];
@@ -797,7 +797,7 @@ function renderBirdMarkers() {
 
 async function loadBirdStatsTable() {
     try {
-        const response = await fetch('https://gramsetu-backend-o5r1.onrender.com/birds/stats');
+        const response = await fetch('http://localhost:8000/birds/stats');
         const stats = await response.json();
 
         const body = document.getElementById('bird-stats-table-body');
@@ -877,7 +877,7 @@ async function submitSightingPayload(lat, lng) {
     };
 
     try {
-        const response = await fetch('https://gramsetu-backend-o5r1.onrender.com/birds/sightings', {
+        const response = await fetch('http://localhost:8000/birds/sightings', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
@@ -907,7 +907,7 @@ async function triggerManualSync() {
     btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Synchronizing...';
 
     try {
-        const response = await fetch('https://gramsetu-backend-o5r1.onrender.com/sync/trigger', { method: 'POST' });
+        const response = await fetch('http://localhost:8000/sync/trigger', { method: 'POST' });
         const result = await response.json();
 
         if (response.ok) {
@@ -1009,7 +1009,7 @@ async function handleSellerRegister() {
     }
 
     try {
-        const response = await fetch('https://gramsetu-backend-o5r1.onrender.com/market/register', {
+        const response = await fetch('http://localhost:8000/market/register', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ username: u, password: p, name: n, contact: c, role: 'SELLER' })
@@ -1040,7 +1040,7 @@ async function handleSellerLogin() {
     }
 
     try {
-        const response = await fetch('https://gramsetu-backend-o5r1.onrender.com/market/login', {
+        const response = await fetch('http://localhost:8000/market/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ username: u, password: p })
@@ -1097,7 +1097,7 @@ async function submitBioProduct() {
     };
 
     try {
-        const response = await fetch('https://gramsetu-backend-o5r1.onrender.com/market/products', {
+        const response = await fetch('http://localhost:8000/market/products', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
@@ -1125,7 +1125,7 @@ async function submitBioProduct() {
 
 async function loadMarketProducts() {
     try {
-        const response = await fetch('https://gramsetu-backend-o5r1.onrender.com/market/products');
+        const response = await fetch('http://localhost:8000/market/products');
         marketProducts = await response.json();
         renderMarketProducts(marketProducts);
     } catch (e) {
@@ -1196,7 +1196,7 @@ async function deleteBioProduct(id) {
     if (!confirm("Are you sure you want to remove this advertisement?")) return;
 
     try {
-        const response = await fetch(`https://gramsetu-backend-o5r1.onrender.com/market/products/${id}`, {
+        const response = await fetch(`http://localhost:8000/market/products/${id}`, {
             method: 'DELETE'
         });
         if (response.ok) {
@@ -1343,11 +1343,11 @@ function initFisheriesMap() {
 async function loadFisheriesData() {
     try {
         const [resMap, resBans, resTrends, resSchemes, resSightings] = await Promise.all([
-            fetch('https://gramsetu-backend-o5r1.onrender.com/fisheries/fish-map').then(r => r.json()),
-            fetch('https://gramsetu-backend-o5r1.onrender.com/fisheries/reproduction').then(r => r.json()),
-            fetch('https://gramsetu-backend-o5r1.onrender.com/fisheries/historical-trends').then(r => r.json()),
-            fetch('https://gramsetu-backend-o5r1.onrender.com/fisheries/schemes').then(r => r.json()),
-            fetch('https://gramsetu-backend-o5r1.onrender.com/fisheries/sightings').then(r => r.json())
+            fetch('http://localhost:8000/fisheries/fish-map').then(r => r.json()),
+            fetch('http://localhost:8000/fisheries/reproduction').then(r => r.json()),
+            fetch('http://localhost:8000/fisheries/historical-trends').then(r => r.json()),
+            fetch('http://localhost:8000/fisheries/schemes').then(r => r.json()),
+            fetch('http://localhost:8000/fisheries/sightings').then(r => r.json())
         ]);
 
         fishSchools = resMap;
@@ -1552,7 +1552,7 @@ async function submitMarineSighting() {
     formData.append('notes', notes);
 
     try {
-        const response = await fetch('https://gramsetu-backend-o5r1.onrender.com/fisheries/sightings', {
+        const response = await fetch('http://localhost:8000/fisheries/sightings', {
             method: 'POST',
             body: formData
         });
@@ -1570,7 +1570,7 @@ async function submitMarineSighting() {
             document.getElementById('dropzone-icon').style.color = '';
 
             // Refresh sightings list
-            const sightings = await fetch('https://gramsetu-backend-o5r1.onrender.com/fisheries/sightings').then(r => r.json());
+            const sightings = await fetch('http://localhost:8000/fisheries/sightings').then(r => r.json());
             renderMarineSightings(sightings);
         } else {
             alert("Failed to submit sighting. Please try again.");
@@ -1629,7 +1629,7 @@ let activeNewsTopic = 'all';
 
 async function loadNews() {
     try {
-        const response = await fetch('https://gramsetu-backend-o5r1.onrender.com/news');
+        const response = await fetch('http://localhost:8000/news');
         newsArticles = await response.json();
         renderNews();
     } catch (e) {
@@ -1733,7 +1733,7 @@ async function triggerManualNewsSync() {
     btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Syncing...';
 
     try {
-        const response = await fetch('https://gramsetu-backend-o5r1.onrender.com/news/sync', { method: 'POST' });
+        const response = await fetch('http://localhost:8000/news/sync', { method: 'POST' });
         const result = await response.json();
 
         if (response.ok) {
@@ -1864,8 +1864,8 @@ let climateTrendsData = null;
 
 async function loadWeather() {
     try {
-        const resForecast = await fetch('https://gramsetu-backend-o5r1.onrender.com/weather/forecast');
-        const resTrends = await fetch('https://gramsetu-backend-o5r1.onrender.com/weather/climate-trends');
+        const resForecast = await fetch('http://localhost:8000/weather/forecast');
+        const resTrends = await fetch('http://localhost:8000/weather/climate-trends');
 
         const forecasts = await resForecast.json();
         const trends = await resTrends.json();
@@ -2626,7 +2626,7 @@ function translateUI(lang) {
 // 13.5 Groundwater Depletion & Sewage Contamination Module
 async function loadGroundwaterData() {
     try {
-        const response = await fetch('https://gramsetu-backend-o5r1.onrender.com/weather/groundwater');
+        const response = await fetch('http://localhost:8000/weather/groundwater');
         groundwaterData = await response.json();
     } catch (e) {
         console.warn("Could not fetch groundwater data from API.", e);
@@ -2890,7 +2890,7 @@ function initFeedbackTab() {
 }
 
 function fetchFeedback() {
-    fetch('https://gramsetu-backend-o5r1.onrender.com/feedback')
+    fetch('http://localhost:8000/feedback')
         .then(res => res.json())
         .then(data => {
             renderFeedbackFeed(data);
@@ -2928,7 +2928,7 @@ function submitFeedback() {
         submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Submitting...';
     }
 
-    fetch('https://gramsetu-backend-o5r1.onrender.com/feedback', {
+    fetch('http://localhost:8000/feedback', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -3311,7 +3311,7 @@ function meshSendMessage() {
     }
 
     if (recipient === 'GramSetu-AI') {
-        fetch('https://gramsetu-backend-o5r1.onrender.com/chat', {
+        fetch('http://localhost:8000/chat', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ message: text })

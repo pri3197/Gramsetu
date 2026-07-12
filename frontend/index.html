@@ -29,60 +29,47 @@
 
 
     <!-- Header Navigation -->
-    <header>
+    <header class="app-header">
         <div class="nav-container">
-
-
             <div class="logo-section" id="brand-logo" style="cursor: pointer;" onclick="switchTab('dashboard')">
                 <div class="logo-icon">GS</div>
                 <div class="logo-text">
                     <h1 id="lbl-auto-1">GramSetu</h1>
-
-
                     <span id="lbl-auto-2" class="logo-tagline">Rural Professionals Data Bridge</span>
                 </div>
             </div>
-
-
-
-                <div class="nav-brand">
-                    <img src="/uploads/gramsetu_logo.png" alt="GramSetu Logo" class="brand-logo" style="height: 40px; margin-right: 1rem;">
-                    <span style="font-weight: 700; font-size: 1.2rem; color: var(--text-primary);">GramSetu</span>
-                </div>
+            
+            <button class="hamburger-btn" onclick="toggleMobileNav()" id="mobile-nav-toggle">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+            
+            <nav class="nav-tabs" id="main-nav-tabs" aria-label="Main Navigation">
+                <button class="tab-btn active" onclick="switchTab('news')" id="nav-btn-news"><i class="fa-solid fa-newspaper"></i> News Portal</button>
+                <button class="tab-btn" onclick="switchTab('weather')" id="nav-btn-weather"><i class="fa-solid fa-cloud-sun-rain"></i> Weather</button>
+                <button class="tab-btn" onclick="switchTab('prices')" id="nav-btn-prices"><i class="fa-solid fa-chart-line"></i> Market Prices</button>
+                <button class="tab-btn" onclick="switchTab('mesh')" id="nav-btn-mesh"><img src="/uploads/icon_mesh.png" alt="" class="nav-tab-icon"> B-Messaging</button>
+                <button class="tab-btn" onclick="switchTab('bio')" id="nav-btn-bio"><img src="/uploads/icon_bio_market.png" alt="" class="nav-tab-icon"> Bio Market</button>
+                <button class="tab-btn" onclick="switchTab('feedback')" id="nav-btn-feedback"><i class="fa-solid fa-comments"></i> Feedback Hub</button>
                 
-                <button class="hamburger-btn" onclick="toggleMobileNav()" id="mobile-nav-toggle">
-                    <i class="fa-solid fa-bars"></i>
-                </button>
-                
-                <div class="nav-tabs" id="main-nav-tabs">
-                    <button class="tab-btn active" onclick="switchTab('news')" id="nav-btn-news"><i class="fa-solid fa-newspaper"></i> News Portal</button>
-                    <button class="tab-btn" onclick="switchTab('weather')" id="nav-btn-weather"><i class="fa-solid fa-cloud-sun-rain"></i> Weather</button>
-                    <button class="tab-btn" onclick="switchTab('prices')" id="nav-btn-prices"><i class="fa-solid fa-chart-line"></i> Market Prices</button>
-                    <button class="tab-btn" onclick="switchTab('mesh')" id="nav-btn-mesh"><img src="/uploads/icon_mesh.png" alt="" class="nav-tab-icon"> B-Messaging</button>
-                    <button class="tab-btn" onclick="switchTab('bio')" id="nav-btn-bio"><img src="/uploads/icon_bio_market.png" alt="" class="nav-tab-icon"> Bio Market</button>
-                    <button class="tab-btn" onclick="switchTab('feedback')" id="nav-btn-feedback"><i class="fa-solid fa-comments"></i> Feedback Hub</button>
-                    
-                    <!-- Hidden legacy tabs for future use -->
-                    <button class="tab-btn" onclick="switchTab('farming')" id="nav-btn-farming" style="display:none;">Farming</button>
-                    <button class="tab-btn" onclick="switchTab('fisheries')" id="nav-btn-fisheries" style="display:none;">Fisheries</button>
-                    <button class="tab-btn" onclick="switchTab('dashboard')" id="nav-btn-dashboard" style="display:none;">Dashboard</button>
-                    <button class="tab-btn" onclick="switchTab('birds')" id="nav-btn-birds" style="display:none;">Bird Acoustic</button>
-                    <button class="tab-btn" onclick="switchTab('datasources')" id="nav-btn-datasources" style="display:none;">Data</button>
-                </div>
-            </div>
+                <!-- Hidden legacy tabs for future use -->
+                <button class="tab-btn" onclick="switchTab('farming')" id="nav-btn-farming" style="display:none;">Farming</button>
+                <button class="tab-btn" onclick="switchTab('fisheries')" id="nav-btn-fisheries" style="display:none;">Fisheries</button>
+                <button class="tab-btn" onclick="switchTab('dashboard')" id="nav-btn-dashboard" style="display:none;">Dashboard</button>
+                <button class="tab-btn" onclick="switchTab('birds')" id="nav-btn-birds" style="display:none;">Bird Acoustic</button>
+                <button class="tab-btn" onclick="switchTab('datasources')" id="nav-btn-datasources" style="display:none;">Data</button>
+            </nav>
+            
             <div class="header-actions" style="display: flex; align-items: center;">
-                <div
-                    style="display: flex; align-items: center; gap: 0.5rem; background: var(--bg-secondary); border: 1px solid var(--border-glass); padding: 0.4rem 0.8rem; border-radius: 12px; box-shadow: var(--shadow-main);">
+                <div style="display: flex; align-items: center; gap: 0.5rem; background: var(--bg-secondary); border: 1px solid var(--border-glass); padding: 0.4rem 0.8rem; border-radius: 12px; box-shadow: var(--shadow-main);">
                     <i class="fa-solid fa-language" style="color: var(--color-accent); font-size: 1.1rem;"></i>
-                    <select id="header-language-select" onchange="translateUI(this.value)"
-                        style="background: transparent; border: none; color: var(--text-primary); font-family: var(--font-body); font-size: 0.88rem; font-weight: 600; outline: none; cursor: pointer;">
+                    <select id="header-language-select" onchange="translateUI(this.value)" style="background: transparent; border: none; color: var(--text-primary); font-family: var(--font-body); font-size: 0.88rem; font-weight: 600; outline: none; cursor: pointer;">
                         <option value="en">English</option>
-                        <option value="hi">à¤¹à¤¿à¤¨à¥à¤¦à¥€</option>
-                        <option value="mr">à¤®à¤°à¤¾à¤ à¥€</option>
-                        <option value="ta">à®¤à®®à®¿à®´à¯</option>
-                        <option value="bn">à¦¬à¦¾à¦‚à¦²à¦¾</option>
-                        <option value="ml">à´®à´²à´¯à´¾à´³à´‚</option>
-                        <option value="te">à°¤à±†à°²à±à°—à±</option>
+                        <option value="hi">हिंदी</option>
+                        <option value="mr">मराठी</option>
+                        <option value="ta">தமிழ்</option>
+                        <option value="bn">বাংলা</option>
+                        <option value="ml">മലയാളം</option>
+                        <option value="te">తెలుగు</option>
                     </select>
                 </div>
             </div>
