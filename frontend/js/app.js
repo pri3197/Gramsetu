@@ -1,7 +1,7 @@
 // GramSetu Core Application JavaScript
 
 // Application State
-let activeTab = 'dashboard';
+let activeTab = 'news';
 let cattleMap = null;
 let birdsMap = null;
 let groundwaterMap = null;
@@ -9,6 +9,7 @@ let priceData = [];
 let diseaseData = [];
 let birdSightings = [];
 let groundwaterData = [];
+let institutionsData = [];
 let selectedGroundwaterDistrict = null;
 let activeGroundwaterYear = 2026;
 let isSewageOverlayVisible = true;
@@ -52,11 +53,20 @@ function switchTab(tabId) {
         document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
 
-        const panel = document.getElementById(`panel-${tabId}`);
-        if (panel) {
-            panel.classList.add('active');
+        // Special handling for new top-level tabs mapped to farming sub-views
+        if (tabId === 'prices' || tabId === 'bio') {
+            const farmingPanel = document.getElementById('panel-farming');
+            if (farmingPanel) farmingPanel.classList.add('active');
+            
+            if (tabId === 'prices') switchFarmingSubView('mandi');
+            if (tabId === 'bio') switchFarmingSubView('market');
         } else {
-            console.warn(`Panel not found for tabId: ${tabId}`);
+            const panel = document.getElementById(`panel-${tabId}`);
+            if (panel) {
+                panel.classList.add('active');
+            } else {
+                console.warn(`Panel not found for tabId: ${tabId}`);
+            }
         }
 
         const btn = document.getElementById(`nav-btn-${tabId}`);
@@ -138,13 +148,17 @@ function switchFarmingSubView(viewId) {
 async function loadDashboardStats() {
     try {
         // Fetch stats from endpoints
-        const resDiseases = await fetch('/api/diseases');
-        const resSightings = await fetch('/api/birds/sightings');
-        const resPrices = await fetch('/api/prices');
+        const resDiseases = await fetch('http://localhost:8000/diseases');
+        const resSightings = await fetch('http://localhost:8000/birds/sightings');
+        const resPrices = await fetch('http://localhost:8000/prices');
 
-        const diseases = await resDiseases.json();
-        const sightings = await resSightings.json();
-        const prices = await resPrices.json();
+        const diseasesRes = await resDiseases.json();
+        const sightingsRes = await resSightings.json();
+        const pricesRes = await resPrices.json();
+
+        const diseases = Array.isArray(diseasesRes) ? diseasesRes : (diseasesRes.data || []);
+        const sightings = Array.isArray(sightingsRes) ? sightingsRes : (sightingsRes.data || []);
+        const prices = Array.isArray(pricesRes) ? pricesRes : (pricesRes.data || []);
 
         // Outbreaks Count
         let totalOutbreaks = 0;
@@ -192,30 +206,53 @@ function initCattleMap() {
 
 async function loadCattleDiseases() {
     try {
-        const response = await fetch('/api/diseases');
-        diseaseData = await response.json();
+        const [instRes, disRes] = await Promise.all([
+            fetch('http://localhost:8000/institutions'),
+            fetch('http://localhost:8000/diseases')
+        ]);
+        institutionsData = await instRes.json();
+        diseaseData = await disRes.json();
         if (activeTab === 'cattle') renderCattleMarkers();
+        
+        // Render Disease Table
+        const tbody = document.getElementById('disease-outbreaks-tbody');
+        if (tbody) {
+            tbody.innerHTML = '';
+            if (diseaseData.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">No data found</td></tr>';
+            } else {
+                diseaseData.forEach(d => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${d.disease}</td>
+                        <td>${d.species}</td>
+                        <td>${d.outbreaks}</td>
+                        <td>${d.attacks}</td>
+                        <td>${d.deaths}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            }
+        }
     } catch (e) {
-        console.error("Error loading cattle disease data:", e);
+        console.error("Error loading cattle/institutions data:", e);
     }
 }
 
 function renderCattleMarkers() {
-    if (!cattleMap || !diseaseData.length) return;
+    if (!cattleMap || !institutionsData.length) return;
 
     // Clear old markers (just re-creating is simple for demo)
-    // Create circle overlay markers based on disease parameters
-    diseaseData.forEach(d => {
-        let color = '#3b82f6'; // Medium - Blue
-        let radius = 18000;
-
-        if (d.severity === 'Critical') {
-            color = '#ef4444'; // Red
-            radius = 35000;
-        } else if (d.severity === 'High') {
-            color = '#fbbf24'; // Orange/Gold
-            radius = 26000;
+    cattleMap.eachLayer((layer) => {
+        if (layer instanceof L.Circle) {
+            cattleMap.removeLayer(layer);
         }
+    });
+
+    // Create circle overlay markers based on institutions parameters
+    institutionsData.forEach(d => {
+        let color = '#3b82f6'; // Medium - Blue
+        let radius = Math.max(10000, Math.min(50000, d.total_institutions * 10)); // Scale radius by count
 
         const circle = L.circle([d.latitude, d.longitude], {
             color: color,
@@ -227,10 +264,8 @@ function renderCattleMarkers() {
         // Binding a popup message details
         const popupContent = `
             <div style="font-family: var(--font-body); padding: 5px;">
-                <h4 style="margin-bottom: 5px; color:var(--text-primary);">${d.disease}</h4>
-                <p><strong>District:</strong> ${d.district}, ${d.state}</p>
-                <p><strong>Active Cases:</strong> ${d.activeCases} cows</p>
-                <p><strong>Severity:</strong> <span class="status-badge ${d.severity.toLowerCase()}">${d.severity}</span></p>
+                <h4 style="margin-bottom: 5px; color:var(--text-primary);">${d.state}</h4>
+                <p><strong>Total Institutions:</strong> ${d.total_institutions}</p>
             </div>
         `;
         circle.bindPopup(popupContent);
@@ -243,22 +278,17 @@ function renderCattleMarkers() {
 }
 
 function showAdvisory(outbreak) {
-    document.getElementById('cattle-advisory-prompt').style.display = 'none';
+    const prompt = document.getElementById('cattle-advisory-prompt');
+    if (prompt) prompt.style.display = 'none';
+    
     const content = document.getElementById('cattle-advisory-content');
-    content.style.display = 'block';
+    if (content) content.style.display = 'block';
 
-    document.getElementById('adv-district-title').innerText = `District: ${outbreak.district} (${outbreak.state})`;
+    const dName = document.getElementById('adv-district-title');
+    if (dName) dName.innerText = `State: ${outbreak.state}`;
 
-    const dName = document.getElementById('adv-disease-name');
-    dName.className = `status-badge ${outbreak.severity.toLowerCase()}`;
-    dName.innerText = outbreak.disease;
-
-    document.getElementById('adv-cases-count').innerText = outbreak.activeCases;
-    document.getElementById('adv-severity-label').innerText = outbreak.severity;
-    document.getElementById('adv-transmission-desc').innerText = outbreak.transmission;
-
-    // Display list of vaccines needed
-    document.getElementById('adv-vaccines-list').innerText = outbreak.recommendedVaccines;
+    const cases = document.getElementById('adv-cases-count');
+    if (cases) cases.innerText = outbreak.total_institutions;
 }
 
 // Coordinates mapping for major agricultural districts in India
@@ -322,8 +352,9 @@ const DISTRICT_COORDINATES = {
 // 4. Mandi prices filter, table, and data fetching
 async function loadMandiPrices() {
     try {
-        const response = await fetch('/api/prices');
-        priceData = await response.json();
+        const response = await fetch('http://localhost:8000/prices');
+        const json = await response.json();
+        priceData = Array.isArray(json) ? json : (json.data || []);
 
         populateFilterDropdowns();
         renderPricesTable(priceData);
@@ -618,7 +649,7 @@ async function uploadAudioForClassification(audioBlob) {
     formData.append('file', audioBlob, 'capture.wav');
 
     try {
-        const response = await fetch('/api/birds/classify', {
+        const response = await fetch('http://localhost:8000/birds/classify', {
             method: 'POST',
             body: formData
         });
@@ -704,19 +735,22 @@ function initBirdsMap() {
 
 async function loadBirdSightings() {
     try {
-        const response = await fetch('/api/birds/sightings');
-        birdSightings = await response.json();
+        const response = await fetch('http://localhost:8000/birds/sightings');
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        const data = await response.json();
+        birdSightings = Array.isArray(data) ? data : [];
 
         if (activeTab === 'birds') renderBirdMarkers();
         loadBirdStatsTable();
         loadDashboardStats();
     } catch (e) {
         console.error("Error loading bird sightings: ", e);
+        birdSightings = [];
     }
 }
 
 function renderBirdMarkers() {
-    if (!birdsMap) return;
+    if (!birdsMap || !Array.isArray(birdSightings)) return;
 
     // In a real environment, we'd clear previous markers first.
     // For simplicity, we just rebuild.
@@ -750,7 +784,7 @@ function renderBirdMarkers() {
 
 async function loadBirdStatsTable() {
     try {
-        const response = await fetch('/api/birds/stats');
+        const response = await fetch('http://localhost:8000/birds/stats');
         const stats = await response.json();
 
         const body = document.getElementById('bird-stats-table-body');
@@ -830,7 +864,7 @@ async function submitSightingPayload(lat, lng) {
     };
 
     try {
-        const response = await fetch('/api/birds/sightings', {
+        const response = await fetch('http://localhost:8000/birds/sightings', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
@@ -860,7 +894,7 @@ async function triggerManualSync() {
     btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Synchronizing...';
 
     try {
-        const response = await fetch('/api/sync/trigger', { method: 'POST' });
+        const response = await fetch('http://localhost:8000/sync/trigger', { method: 'POST' });
         const result = await response.json();
 
         if (response.ok) {
@@ -962,7 +996,7 @@ async function handleSellerRegister() {
     }
 
     try {
-        const response = await fetch('/api/market/register', {
+        const response = await fetch('http://localhost:8000/market/register', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ username: u, password: p, name: n, contact: c, role: 'SELLER' })
@@ -993,7 +1027,7 @@ async function handleSellerLogin() {
     }
 
     try {
-        const response = await fetch('/api/market/login', {
+        const response = await fetch('http://localhost:8000/market/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ username: u, password: p })
@@ -1050,7 +1084,7 @@ async function submitBioProduct() {
     };
 
     try {
-        const response = await fetch('/api/market/products', {
+        const response = await fetch('http://localhost:8000/market/products', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
@@ -1078,7 +1112,7 @@ async function submitBioProduct() {
 
 async function loadMarketProducts() {
     try {
-        const response = await fetch('/api/market/products');
+        const response = await fetch('http://localhost:8000/market/products');
         marketProducts = await response.json();
         renderMarketProducts(marketProducts);
     } catch (e) {
@@ -1149,7 +1183,7 @@ async function deleteBioProduct(id) {
     if (!confirm("Are you sure you want to remove this advertisement?")) return;
 
     try {
-        const response = await fetch(`/api/market/products/${id}`, {
+        const response = await fetch(`http://localhost:8000/market/products/${id}`, {
             method: 'DELETE'
         });
         if (response.ok) {
@@ -1296,11 +1330,11 @@ function initFisheriesMap() {
 async function loadFisheriesData() {
     try {
         const [resMap, resBans, resTrends, resSchemes, resSightings] = await Promise.all([
-            fetch('/api/fisheries/fish-map').then(r => r.json()),
-            fetch('/api/fisheries/reproduction').then(r => r.json()),
-            fetch('/api/fisheries/historical-trends').then(r => r.json()),
-            fetch('/api/fisheries/schemes').then(r => r.json()),
-            fetch('/api/fisheries/sightings').then(r => r.json())
+            fetch('http://localhost:8000/fisheries/fish-map').then(r => r.json()),
+            fetch('http://localhost:8000/fisheries/reproduction').then(r => r.json()),
+            fetch('http://localhost:8000/fisheries/historical-trends').then(r => r.json()),
+            fetch('http://localhost:8000/fisheries/schemes').then(r => r.json()),
+            fetch('http://localhost:8000/fisheries/sightings').then(r => r.json())
         ]);
 
         fishSchools = resMap;
@@ -1505,7 +1539,7 @@ async function submitMarineSighting() {
     formData.append('notes', notes);
 
     try {
-        const response = await fetch('/api/fisheries/sightings', {
+        const response = await fetch('http://localhost:8000/fisheries/sightings', {
             method: 'POST',
             body: formData
         });
@@ -1523,7 +1557,7 @@ async function submitMarineSighting() {
             document.getElementById('dropzone-icon').style.color = '';
 
             // Refresh sightings list
-            const sightings = await fetch('/api/fisheries/sightings').then(r => r.json());
+            const sightings = await fetch('http://localhost:8000/fisheries/sightings').then(r => r.json());
             renderMarineSightings(sightings);
         } else {
             alert("Failed to submit sighting. Please try again.");
@@ -1582,7 +1616,7 @@ let activeNewsTopic = 'all';
 
 async function loadNews() {
     try {
-        const response = await fetch('/api/news');
+        const response = await fetch('http://localhost:8000/news');
         newsArticles = await response.json();
         renderNews();
     } catch (e) {
@@ -1686,7 +1720,7 @@ async function triggerManualNewsSync() {
     btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Syncing...';
 
     try {
-        const response = await fetch('/api/news/sync', { method: 'POST' });
+        const response = await fetch('http://localhost:8000/news/sync', { method: 'POST' });
         const result = await response.json();
 
         if (response.ok) {
@@ -1817,8 +1851,8 @@ let climateTrendsData = null;
 
 async function loadWeather() {
     try {
-        const resForecast = await fetch('/api/weather/forecast');
-        const resTrends = await fetch('/api/weather/climate-trends');
+        const resForecast = await fetch('http://localhost:8000/weather/forecast');
+        const resTrends = await fetch('http://localhost:8000/weather/climate-trends');
 
         const forecasts = await resForecast.json();
         const trends = await resTrends.json();
@@ -2579,7 +2613,7 @@ function translateUI(lang) {
 // 13.5 Groundwater Depletion & Sewage Contamination Module
 async function loadGroundwaterData() {
     try {
-        const response = await fetch('/api/weather/groundwater');
+        const response = await fetch('http://localhost:8000/weather/groundwater');
         groundwaterData = await response.json();
     } catch (e) {
         console.warn("Could not fetch groundwater data from API.", e);
@@ -2843,7 +2877,7 @@ function initFeedbackTab() {
 }
 
 function fetchFeedback() {
-    fetch('/api/feedback')
+    fetch('http://localhost:8000/feedback')
         .then(res => res.json())
         .then(data => {
             renderFeedbackFeed(data);
@@ -2881,7 +2915,7 @@ function submitFeedback() {
         submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Submitting...';
     }
 
-    fetch('/api/feedback', {
+    fetch('http://localhost:8000/feedback', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -3010,18 +3044,27 @@ const meshState = {
 };
 
 const MESH_DEMO_PEERS = [
-    { id: 'Kisan-A1B2', name: 'Kisan-A1B2', rssi: -58, online: true },
-    { id: 'Pashu-C3D4', name: 'Pashu-C3D4', rssi: -72, online: true },
-    { id: 'Gram-E5F6',  name: 'Gram-E5F6',  rssi: -85, online: false },
-    { id: 'Mitra-G7H8', name: 'Mitra-G7H8', rssi: -61, online: true },
+    { id: 'GramSetu-AI', name: 'GramSetu AI', rssi: -10, online: true }
 ];
 
-const MESH_DEMO_MSGS = [
-    { sender: 'Kisan-A1B2', text: 'Cattle market prices have dropped 12% — advise holding stock.', urgency: 'warning', ts: '09:14 AM' },
-    { sender: 'Pashu-C3D4', text: 'FMD vaccination camp at Dharwad — 10 AM tomorrow.', urgency: 'info', ts: '09:21 AM' },
-    { sender: 'Gram-E5F6',  text: '⚠️ Flash flood alert in lower basin zones. Evacuate livestock now.', urgency: 'emergency', ts: '09:33 AM' },
-    { sender: 'Mitra-G7H8', text: 'Wheat mandi rate at Kurnool: ₹2,280/quintal today.', urgency: 'info', ts: '09:48 AM' },
-];
+const MESH_DEMO_MSGS = [];
+
+function meshAddPeer() {
+    const input = document.getElementById('mesh-peer-search');
+    const val = input.value.trim();
+    if (!val) return;
+    
+    // Check if peer exists
+    let peer = meshState.peers.find(p => p.name.toLowerCase() === val.toLowerCase());
+    if (!peer) {
+        // Create new peer
+        peer = { id: val, name: val, rssi: -50, online: true };
+        meshState.peers.unshift(peer);
+    }
+    
+    input.value = '';
+    meshSelectPeer(peer.id);
+}
 
 // ── Init ───────────────────────────────────────────────────
 function initMeshTab() {
@@ -3105,9 +3148,7 @@ function meshRenderPeerList(filter = '') {
     }).join('');
 }
 
-function meshFilterPeers(val) {
-    meshRenderPeerList(val);
-}
+// Removed meshFilterPeers as it is no longer used
 
 function meshUpdatePeerCount() {
     const online = meshState.peers.filter(p => p.online).length;
@@ -3211,6 +3252,12 @@ function meshAppendInboundMessage(sender, text, urgency, ts, recipient) {
     if (!meshState.messages[sender]) meshState.messages[sender] = [];
     meshState.messages[sender].push(msg);
 
+    // Auto-add sender to peers list if not exists
+    if (sender !== meshState.myDeviceName && !meshState.peers.find(p => p.id === sender)) {
+        meshState.peers.unshift({ id: sender, name: sender, rssi: -50, online: true });
+        meshRenderPeerList();
+    }
+
     // If we're viewing this conversation, render live
     const viewingThis = (meshState.activePeer === '' && !recipient) ||
                         (meshState.activePeer === sender);
@@ -3248,6 +3295,18 @@ function meshSendMessage() {
     // Bridge to native Android BLE layer
     if (window.Android && typeof window.Android.broadcastMeshMessage === 'function') {
         window.Android.broadcastMeshMessage(text, meshState.urgency, recipient);
+    }
+
+    if (recipient === 'GramSetu-AI') {
+        fetch('http://localhost:8000/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: text })
+        }).then(res => res.json()).then(data => {
+            meshAppendInboundMessage('GramSetu-AI', data.response || data.error || 'Unknown error', 'info', meshNow(), meshState.myDeviceName);
+        }).catch(err => {
+            meshAppendInboundMessage('GramSetu-AI', 'Error connecting to AI service.', 'warning', meshNow(), meshState.myDeviceName);
+        });
     }
 
     // Render bubble
