@@ -2,6 +2,19 @@ import os
 import shutil
 import tempfile
 import datetime
+
+# Load local environment variables if present
+for env_file in ["../.env.local", "../.env", ".env.local", ".env"]:
+    if os.path.exists(env_file):
+        with open(env_file, "r", encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if line and not line.startswith("#") and "=" in line:
+                    k, v = line.split("=", 1)
+                    # Remove surrounding quotes if any
+                    val = v.strip().strip("'\"")
+                    os.environ[k.strip()] = val
+
 # pyrefly: ignore [missing-import]
 from fastapi import FastAPI, UploadFile, File, Query, HTTPException
 # pyrefly: ignore [missing-import]
