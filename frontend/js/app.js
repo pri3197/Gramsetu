@@ -3101,7 +3101,12 @@ function renderFeedbackFeed(feedbackList) {
 
 
 // 14. Offline Bluetooth Mesh Notification & Android Bridge Logic
-let meshMessages = [];
+let meshMessages = [
+    { sender: 'System', text: 'Offline Mesh network initialized. Ready to transmit.', urgency: 'info', recipient: '', timestamp: '12:00:00 PM' },
+    { sender: 'IMD Alert (Tuticorin)', text: 'Warning: High storm surge wave height of 3.4m predicted off coast. Fishermen advised not to venture.', urgency: 'emergency', recipient: '', timestamp: '12:05:00 PM' },
+    { sender: 'Farmer Suresh', text: 'Mandi pricing update: Premium Basmati selling at ₹6,200/qtl in local mandi market.', urgency: 'info', recipient: '', timestamp: '12:10:00 PM' },
+    { sender: 'Vet-Officer', text: 'Precautionary FMD vaccination drive starting at Panchayat sub-center tomorrow 8 AM.', urgency: 'warning', recipient: '', timestamp: '12:15:00 PM' }
+];
 let meshSimulationInterval = null;
 let meshPollInterval = null;
 
