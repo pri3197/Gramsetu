@@ -2101,229 +2101,117 @@
 
 
         <!-- ======================== B-MESSAGING (MESH) PANEL ======================== -->
+<!-- OFFLINE BLUETOOTH MESH NETWORK TAB -->
         <section id="panel-mesh" class="tab-panel" aria-labelledby="nav-btn-mesh">
+            <h2 class="hero-title" style="font-size: 2rem; margin-bottom: 0.5rem;" id="lbl-mesh-title">
+                <i class="fa-solid fa-circle-nodes"></i> Offline Mesh Network
+            </h2>
+            <p id="lbl-mesh-desc" style="color: var(--text-secondary); margin-bottom: 2rem;">
+                Exchange alerts and short messages directly with nearby users via Bluetooth mesh technology. Operating entirely offline without cellular network coverage.
+            </p>
 
-            <!-- Header Bar -->
-            <div class="mesh-header"
-                style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1.5rem; flex-wrap:wrap; gap:1rem;">
-                <div>
-                    <h2
-                        style="font-family:var(--font-heading); font-size:1.8rem; font-weight:800; color:var(--text-primary); display:flex; align-items:center; gap:0.6rem;">
-                        <i class="fa-brands fa-bluetooth-b" style="color:#3b82f6;"></i>
-                        B-Messaging Network
-                    </h2>
-                    <p style="color:var(--text-secondary); font-size:0.9rem; margin-top:0.25rem;">
-                        Peer-to-peer BLE mesh communication â€” works without internet
-                    </p>
-                </div>
-                <div style="display:flex; align-items:center; gap:0.75rem; flex-wrap:wrap;">
-                    <!-- E2EE Badge -->
-                    <div id="mesh-e2ee-badge"
-                        style="display:flex; align-items:center; gap:0.5rem; background:rgba(16,185,129,0.1); border:1px solid rgba(16,185,129,0.3); padding:0.4rem 0.9rem; border-radius:20px; cursor:pointer;"
-                        onclick="meshShowEncryptionInfo()" title="View encryption details">
-                        <i class="fa-solid fa-lock" style="color:#10b981; font-size:0.82rem;"></i>
-                        <span style="font-size:0.82rem; font-weight:600; color:#10b981;" id="mesh-e2ee-label">E2EE:
-                            Initialisingâ€¦</span>
-                    </div>
-                    <div id="mesh-ble-status"
-                        style="display:flex; align-items:center; gap:0.5rem; background:rgba(59,130,246,0.1); border:1px solid rgba(59,130,246,0.25); padding:0.4rem 0.9rem; border-radius:20px;">
-                        <span
-                            style="width:8px; height:8px; background:#3b82f6; border-radius:50%; display:inline-block; animation:blePulse 2s infinite;"></span>
-                        <span style="font-size:0.82rem; font-weight:600; color:#3b82f6;" id="mesh-ble-label">BLE
-                            Scanningâ€¦</span>
-                    </div>
-                    <button class="btn-primary" id="btn-mesh-broadcast-toggle" onclick="meshToggleBroadcastMode()"
-                        style="background:linear-gradient(135deg,#7c3aed,#4f46e5); font-size:0.85rem; display:flex; align-items:center; gap:0.5rem; padding:0.55rem 1.1rem;">
-                        <i class="fa-solid fa-tower-broadcast"></i> Broadcast Mode
-                    </button>
-                </div>
-            </div>
+            <div class="grid-cols-2">
+                <!-- Outbound Broadcaster Form -->
+                <div class="card-glass" style="display: flex; flex-direction: column; justify-content: space-between;">
+                    <div>
+                        <h3 class="card-title" id="lbl-mesh-send-title">
+                            <i class="fa-solid fa-paper-plane"></i> Broadcast Message
+                        </h3>
+                        <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 1.5rem;" id="lbl-mesh-send-desc">
+                            Compose a short notification to broadcast over the local Bluetooth mesh network.
+                        </p>
 
-            <!-- E2EE Key Info Modal (hidden) -->
-            <div id="mesh-key-modal"
-                style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:9999; align-items:center; justify-content:center; backdrop-filter:blur(4px);">
-                <div class="card-glass"
-                    style="max-width:480px; width:90%; padding:1.75rem; border-radius:20px; position:relative;">
-                    <button onclick="document.getElementById('mesh-key-modal').style.display='none'"
-                        style="position:absolute; top:1rem; right:1rem; background:none; border:none; cursor:pointer; font-size:1.2rem; color:var(--text-secondary);">âœ•</button>
-                    <h3
-                        style="font-family:var(--font-heading); color:var(--color-accent); margin-bottom:1rem; display:flex; align-items:center; gap:0.5rem;">
-                        <i class="fa-solid fa-shield-halved"></i> End-to-End Encryption
-                    </h3>
-                    <p style="color:var(--text-secondary); font-size:0.88rem; line-height:1.6; margin-bottom:1rem;">
-                        B-Messaging uses <strong>ECDH P-256 key exchange</strong> + <strong>AES-GCM 256-bit</strong>
-                        symmetric encryption.
-                        Each session generates a fresh ephemeral key pair. Messages are encrypted locally before
-                        transmission.
-                    </p>
-                    <div
-                        style="background:rgba(16,185,129,0.06); border:1px solid rgba(16,185,129,0.2); border-radius:12px; padding:1rem; margin-bottom:1rem;">
-                        <div
-                            style="font-size:0.75rem; font-weight:700; color:var(--color-accent); margin-bottom:0.4rem; text-transform:uppercase; letter-spacing:0.5px;">
-                            Your Public Key Fingerprint</div>
-                        <div id="mesh-key-fingerprint"
-                            style="font-family:monospace; font-size:0.82rem; color:var(--text-primary); word-break:break-all; line-height:1.6;">
-                            Generatingâ€¦</div>
-                    </div>
-                    <div style="display:flex; gap:0.75rem; flex-wrap:wrap;">
-                        <div
-                            style="flex:1; background:rgba(59,130,246,0.06); border:1px solid rgba(59,130,246,0.2); border-radius:10px; padding:0.75rem; text-align:center;">
-                            <div style="font-size:0.72rem; color:var(--text-secondary); font-weight:600;">Algorithm
+                        <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+                            <!-- Sender Name -->
+                            <div class="filter-group" style="min-width: 100%;">
+                                <label for="mesh-sender-name" id="lbl-mesh-sender-label">Your Sender ID / Handle</label>
+                                <input type="text" id="mesh-sender-name" placeholder="E.g. Fisherman-Raju" style="background: rgba(11, 15, 25, 0.6); border: 1px solid var(--border-glass); color: var(--text-primary); padding: 0.6rem 0.9rem; border-radius: 8px; font-family: var(--font-body); outline: none;">
                             </div>
-                            <div style="font-size:0.88rem; font-weight:700; color:#3b82f6; margin-top:0.2rem;">AES-GCM
-                                256</div>
-                        </div>
-                        <div
-                            style="flex:1; background:rgba(139,92,246,0.06); border:1px solid rgba(139,92,246,0.2); border-radius:10px; padding:0.75rem; text-align:center;">
-                            <div style="font-size:0.72rem; color:var(--text-secondary); font-weight:600;">Key Exchange
-                            </div>
-                            <div style="font-size:0.88rem; font-weight:700; color:#8b5cf6; margin-top:0.2rem;">ECDH
-                                P-256</div>
-                        </div>
-                        <div
-                            style="flex:1; background:rgba(16,185,129,0.06); border:1px solid rgba(16,185,129,0.2); border-radius:10px; padding:0.75rem; text-align:center;">
-                            <div style="font-size:0.72rem; color:var(--text-secondary); font-weight:600;">IV Length
-                            </div>
-                            <div style="font-size:0.88rem; font-weight:700; color:#10b981; margin-top:0.2rem;">96-bit
-                                random</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
 
-            <!-- Main Layout: Peers Sidebar + Chat Window -->
-            <div
-                style="display:grid; grid-template-columns:280px 1fr; gap:1.25rem; height:calc(100vh - 280px); min-height:520px;">
+                            <!-- Alert Level / Urgency -->
+                            <div class="filter-group" style="min-width: 100%;">
+                                <label for="mesh-urgency-level" id="lbl-mesh-urgency-label">Alert Urgency Level</label>
+                                <select id="mesh-urgency-level" style="background: rgba(11, 15, 25, 0.6); border: 1px solid var(--border-glass); color: var(--text-primary); padding: 0.6rem 0.9rem; border-radius: 8px; font-family: var(--font-body); outline: none;">
+                                    <option value="info">Informational (Green)</option>
+                                    <option value="warning">Advisory / Warning (Orange)</option>
+                                    <option value="emergency">Emergency / Critical (Red)</option>
+                                </select>
+                            </div>
 
-                <!-- LEFT: Peers List -->
-                <div style="display:flex; flex-direction:column; gap:0.75rem; overflow:hidden;">
-                    <!-- My Device Card -->
-                    <div class="card-glass" style="padding:1rem; border-left:3px solid #3b82f6;">
-                        <div style="display:flex; align-items:center; gap:0.75rem;">
-                            <div
-                                style="width:42px; height:42px; border-radius:12px; background:linear-gradient(135deg,#3b82f6,#8b5cf6); display:flex; align-items:center; justify-content:center; color:#fff; font-size:1.1rem; font-weight:700; flex-shrink:0;">
-                                <i class="fa-solid fa-mobile-screen-button"></i>
+                            <!-- Message Type -->
+                            <div class="filter-group" style="min-width: 100%;">
+                                <label for="mesh-msg-type" id="lbl-mesh-type-label">Message Type</label>
+                                <select id="mesh-msg-type" onchange="toggleRecipientField(this.value)" style="background: rgba(11, 15, 25, 0.6); border: 1px solid var(--border-glass); color: var(--text-primary); padding: 0.6rem 0.9rem; border-radius: 8px; font-family: var(--font-body); outline: none;">
+                                    <option value="broadcast">Broadcast (All Peers)</option>
+                                    <option value="personalized">Personalized (Targeted)</option>
+                                </select>
                             </div>
-                            <div style="flex:1; min-width:0;">
-                                <div style="font-weight:700; font-size:0.92rem; color:var(--text-primary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"
-                                    id="mesh-my-device-name">Your Global ID</div>
-                                <div style="font-size:0.72rem; color:#3b82f6; font-weight:600;">â— Active Session ID
-                                </div>
+
+                            <!-- Recipient ID -->
+                            <div class="filter-group" id="mesh-recipient-group" style="min-width: 100%; display: none;">
+                                <label for="mesh-recipient-name" id="lbl-mesh-recipient-label">Recipient ID / Handle</label>
+                                <input type="text" id="mesh-recipient-name" placeholder="E.g. Fisherman-Raju" style="background: rgba(11, 15, 25, 0.6); border: 1px solid var(--border-glass); color: var(--text-primary); padding: 0.6rem 0.9rem; border-radius: 8px; font-family: var(--font-body); outline: none;">
                             </div>
-                        </div>
-                    </div>
-                    <!-- GramSetu AI Bot -->
-                    <div class="card-glass" style="padding:1rem; border-left:3px solid #10b981; cursor:pointer;" onclick="meshSelectPeer('GramSetu-AI')">
-                        <div style="display:flex; align-items:center; gap:0.75rem;">
-                            <div style="width:42px; height:42px; border-radius:12px; background:linear-gradient(135deg,#10b981,#34d399); display:flex; align-items:center; justify-content:center; color:#fff; font-size:1.1rem; font-weight:700; flex-shrink:0;">
-                                <i class="fa-solid fa-robot"></i>
-                            </div>
-                            <div style="flex:1; min-width:0;">
-                                <div style="font-weight:700; font-size:0.92rem; color:var(--text-primary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">GramSetu AI</div>
-                                <div style="font-size:0.72rem; color:#10b981; font-weight:600;">â—  Online (AI Assistant)</div>
+
+                            <!-- Message Content -->
+                            <div class="filter-group" style="min-width: 100%;">
+                                <label for="mesh-msg-text" id="lbl-mesh-message-label">Broadcast Text (Max 140 Characters)</label>
+                                <textarea id="mesh-msg-text" rows="3" maxlength="140" placeholder="Type alert or message here..." style="background: rgba(11, 15, 25, 0.6); border: 1px solid var(--border-glass); color: var(--text-primary); padding: 0.6rem 0.9rem; border-radius: 8px; font-family: var(--font-body); outline: none; resize: none;"></textarea>
                             </div>
                         </div>
                     </div>
-                    <div style="position:relative; display:flex; gap:0.5rem; align-items:center;">
-                        <input type="text" id="mesh-peer-search" placeholder="Enter Global ID (e.g. GS-ABCD)..."
-                            onkeydown="if(event.key==='Enter') meshAddPeer()"
-                            style="flex:1; padding:0.55rem 0.9rem; border-radius:10px; font-size:0.87rem; border:1px solid var(--border-glass); background:rgba(255,255,255,0.1); color:var(--text-primary); outline:none;">
-                        <button class="btn-primary" onclick="meshAddPeer()" style="padding:0.55rem 0.9rem; border-radius:10px;">
-                            Connect
+
+                    <div style="margin-top: 1.5rem;">
+                        <button class="btn-primary" style="width: 100%;" onclick="sendMeshMessage()" id="lbl-mesh-broadcast-btn">
+                            <i class="fa-solid fa-rss"></i> Broadcast Offline (Bluetooth)
                         </button>
                     </div>
-                    <!-- Peers List -->
-                    <div class="card-glass"
-                        style="flex:1; overflow-y:auto; padding:0.5rem; display:flex; flex-direction:column; gap:0.35rem;"
-                        id="mesh-peers-list">
-                        <div style="padding:2rem; text-align:center; color:var(--text-secondary); font-size:0.88rem;">
-                            <i class="fa-solid fa-globe" style="font-size:1.5rem; color:#3b82f6; margin-bottom:0.75rem; display:block;"></i>
-                            No active chats. Enter a Global ID above to connect.
-                        </div>
-                    </div>
-                    <div style="text-align:center; font-size:0.78rem; color:var(--text-secondary);">
-                        <span id="mesh-peer-count">Address Book</span>
-                    </div>
                 </div>
 
-                <!-- RIGHT: Chat Window -->
-                <div
-                    style="display:flex; flex-direction:column; gap:0; overflow:hidden; border-radius:16px; border:1px solid var(--border-glass); background:var(--bg-glass); backdrop-filter:blur(16px);">
-                    <!-- Chat Header -->
-                    <div id="mesh-chat-header"
-                        style="padding:1rem 1.25rem; border-bottom:1px solid var(--border-glass); display:flex; align-items:center; justify-content:space-between; background:rgba(255,255,255,0.5);">
-                        <div style="display:flex; align-items:center; gap:0.75rem;">
-                            <div id="mesh-chat-avatar"
-                                style="width:40px; height:40px; border-radius:12px; background:linear-gradient(135deg,#3b82f6,#8b5cf6); display:flex; align-items:center; justify-content:center; color:#fff; font-size:1rem; font-weight:700;">
-                                <i class="fa-solid fa-tower-broadcast"></i>
-                            </div>
-                            <div>
-                                <div id="mesh-chat-title"
-                                    style="font-weight:700; font-size:1rem; color:var(--text-primary);">All Peers
-                                    (Broadcast)</div>
-                                <div id="mesh-chat-subtitle" style="font-size:0.78rem; color:var(--text-secondary);">
-                                    Messages delivered to all nearby BLE devices</div>
+                <!-- Live Stream Feed & Radar -->
+                <div class="card-glass" style="display: flex; flex-direction: column; justify-content: space-between; height: 100%;">
+                    <div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                            <h3 class="card-title" style="margin-bottom: 0;" id="lbl-mesh-stream-title">
+                                <i class="fa-solid fa-list-check"></i> Live Mesh Feed
+                            </h3>
+                            <div style="display: flex; align-items: center; gap: 0.5rem; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2); padding: 0.25rem 0.6rem; border-radius: 20px; font-size: 0.75rem; color: #10b981; font-weight: 700;">
+                                <span class="status-dot" style="background: #10b981; width: 8px; height: 8px; margin: 0; box-shadow: 0 0 8px #10b981; animation: pulseRadar 1.5s infinite;"></span>
+                                <span id="mesh-peer-count-text">3 Peers Connected</span>
                             </div>
                         </div>
-                        <div style="display:flex; align-items:center; gap:0.5rem;">
-                            <span id="mesh-signal-badge"
-                                style="font-size:0.75rem; background:rgba(59,130,246,0.1); color:#3b82f6; border:1px solid rgba(59,130,246,0.25); padding:0.2rem 0.6rem; border-radius:20px; font-weight:600;">
-                                <i class="fa-solid fa-wifi"></i> BLE
-                            </span>
-                            <span
-                                style="font-size:0.75rem; background:rgba(16,185,129,0.1); color:#10b981; border:1px solid rgba(16,185,129,0.25); padding:0.2rem 0.6rem; border-radius:20px; font-weight:600;">
-                                <i class="fa-solid fa-lock"></i> E2EE
-                            </span>
+
+                        <!-- Radar Visualizer -->
+                        <div style="display: flex; justify-content: center; align-items: center; margin: 1.5rem 0; height: 160px; position: relative;">
+                            <div class="radar-container" style="display: flex; flex-direction: column; align-items: center; position: relative;">
+                                <div class="radar-circle">
+                                    <div class="radar-wave"></div>
+                                    <div class="radar-wave" style="animation-delay: 1s;"></div>
+                                    <div class="radar-wave" style="animation-delay: 2s;"></div>
+                                    <i class="fa-solid fa-bluetooth" style="font-size: 2.2rem; color: #10b981; filter: drop-shadow(0 0 10px rgba(16, 185, 129, 0.4)); z-index: 10;"></i>
+                                </div>
+                                <span style="font-size: 0.75rem; color: var(--text-secondary); font-weight: 600; margin-top: 0.75rem; text-transform: uppercase; letter-spacing: 1px;" id="lbl-mesh-radar-title">Bluetooth Transceiver Active</span>
+                            </div>
+                        </div>
+
+                        <!-- Messages Feed -->
+                        <div id="mesh-messages-list" style="display: flex; flex-direction: column; gap: 0.75rem; max-height: 250px; overflow-y: auto; padding-right: 5px;">
+                            <!-- Placeholder -->
+                            <div style="text-align: center; color: var(--text-secondary); padding: 2rem 0;" id="mesh-feed-empty">
+                                <i class="fa-solid fa-satellite-dish" style="font-size: 1.8rem; margin-bottom: 0.5rem; color: var(--text-secondary);"></i>
+                                <p style="font-size: 0.85rem;" id="lbl-mesh-empty-text">No active mesh transmissions detected yet.</p>
+                            </div>
                         </div>
                     </div>
-                    <!-- Messages Area -->
-                    <div id="mesh-messages-area"
-                        style="flex:1; overflow-y:auto; padding:1.25rem; display:flex; flex-direction:column; gap:0.85rem;">
-                        <div class="mesh-system-msg" style="text-align:center;">
-                            <span
-                                style="background:rgba(59,130,246,0.1); color:#3b82f6; font-size:0.78rem; padding:0.3rem 0.9rem; border-radius:20px; font-weight:600;">
-                                <i class="fa-brands fa-bluetooth-b"></i> B-Messaging BLE Mesh initialized. Range: ~100m
-                            </span>
-                        </div>
+
+                    <!-- Integration Info -->
+                    <div style="margin-top: 1.5rem; padding-top: 0.75rem; border-top: 1px solid var(--border-glass); display: flex; justify-content: space-between; align-items: center; font-size: 0.72rem; color: var(--text-secondary);" id="mesh-integration-card">
+                        <span><i class="fa-solid fa-circle-info"></i> <span id="lbl-mesh-bridge-status">Native Bridge Connection Status:</span></span>
+                        <span id="mesh-bridge-badge" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); padding: 0.15rem 0.4rem; border-radius: 6px; color: #ef4444; font-weight: 700;">Simulated Link</span>
                     </div>
-                    <!-- Urgency Selector + Compose Bar -->
-                    <div
-                        style="padding:1rem 1.25rem; border-top:1px solid var(--border-glass); background:rgba(255,255,255,0.6); display:flex; flex-direction:column; gap:0.75rem;">
-                        <!-- Urgency Pills -->
-                        <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
-                            <span
-                                style="font-size:0.75rem; font-weight:600; color:var(--text-secondary);">Priority:</span>
-                            <button class="mesh-urgency-btn active" data-urgency="info" onclick="meshSetUrgency('info')"
-                                style="padding:0.25rem 0.7rem; border-radius:20px; font-size:0.75rem; font-weight:600; border:1px solid rgba(59,130,246,0.4); background:rgba(59,130,246,0.15); color:#3b82f6; cursor:pointer; transition:all 0.2s;">
-                                <i class="fa-solid fa-circle-info"></i> Info
-                            </button>
-                            <button class="mesh-urgency-btn" data-urgency="warning" onclick="meshSetUrgency('warning')"
-                                style="padding:0.25rem 0.7rem; border-radius:20px; font-size:0.75rem; font-weight:600; border:1px solid rgba(251,191,36,0.4); background:rgba(251,191,36,0.08); color:var(--color-gold); cursor:pointer; transition:all 0.2s;">
-                                <i class="fa-solid fa-triangle-exclamation"></i> Warning
-                            </button>
-                            <button class="mesh-urgency-btn" data-urgency="emergency"
-                                onclick="meshSetUrgency('emergency')"
-                                style="padding:0.25rem 0.7rem; border-radius:20px; font-size:0.75rem; font-weight:600; border:1px solid rgba(220,38,38,0.4); background:rgba(220,38,38,0.08); color:var(--color-danger); cursor:pointer; transition:all 0.2s;">
-                                <i class="fa-solid fa-siren-on"></i> Emergency
-                            </button>
-                        </div>
-                        <!-- Compose Row -->
-                        <div style="display:flex; gap:0.6rem; align-items:flex-end;">
-                            <textarea id="mesh-compose-input"
-                                placeholder="Type an encrypted messageâ€¦ (Enter to send, Shift+Enter for newline)"
-                                onkeydown="meshHandleEnter(event)"
-                                style="flex:1; resize:none; height:44px; min-height:44px; max-height:120px; padding:0.6rem 0.9rem; border-radius:12px; font-size:0.92rem; font-family:var(--font-body); line-height:1.4; overflow-y:auto;"
-                                oninput="this.style.height='44px'; this.style.height=Math.min(this.scrollHeight,120)+'px';"></textarea>
-                            <button id="btn-mesh-send" onclick="meshSendMessage()"
-                                style="width:44px; height:44px; border-radius:12px; background:linear-gradient(135deg,#3b82f6,#8b5cf6); color:#fff; border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:1.1rem; transition:all 0.2s; flex-shrink:0; box-shadow:0 4px 12px rgba(59,130,246,0.35);">
-                                <i class="fa-solid fa-paper-plane"></i>
-                            </button>
-                        </div>
-                        <div
-                            style="font-size:0.72rem; color:var(--text-secondary); display:flex; align-items:center; gap:0.4rem;">
-                            <i class="fa-solid fa-lock" style="color:#10b981;"></i>
-                            AES-GCM 256-bit encrypted Â· ECDH P-256 key exchange Â· No internet required
-                        </div>
+
+                    <!-- Phone Testing Link Hint -->
+                    <div id="mesh-test-phone-hint" style="margin-top: 1rem; padding: 0.75rem; border-radius: 8px; background: rgba(59, 130, 246, 0.08); border: 1px solid rgba(59, 130, 246, 0.15); font-size: 0.75rem; line-height: 1.4; color: var(--text-secondary); display: none;">
                     </div>
                 </div>
             </div>

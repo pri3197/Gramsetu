@@ -3100,342 +3100,246 @@ function renderFeedbackFeed(feedbackList) {
 
 
 
-// ============================================================
-//  B-MESSAGING  (BLE Mesh Network)
-// ============================================================
+// 14. Offline Bluetooth Mesh Notification & Android Bridge Logic
+let meshMessages = [];
+let meshSimulationInterval = null;
+let meshPollInterval = null;
 
-// ── State ──────────────────────────────────────────────────
-const meshState = {
-    myDeviceName: 'This Device',
-    peers: [],           // { id, name, rssi, lastSeen, online }
-    messages: {},        // keyed by peer id ('' = broadcast)
-    activePeer: '',      // '' means broadcast
-    urgency: 'info',
-    isBroadcastMode: true,
-    initialized: false,
-    simulatorInterval: null,
-    allMessages: [],     // flat log for broadcast view
-};
-
-const MESH_DEMO_PEERS = [
-    { id: 'GramSetu-AI', name: 'GramSetu AI', rssi: -10, online: true }
-];
-
-const MESH_DEMO_MSGS = [];
-
-function meshAddPeer() {
-    const input = document.getElementById('mesh-peer-search');
-    const val = input.value.trim();
-    if (!val) return;
-    
-    // Check if peer exists
-    let peer = meshState.peers.find(p => p.name.toLowerCase() === val.toLowerCase());
-    if (!peer) {
-        // Create new peer
-        peer = { id: val, name: val, rssi: -50, online: true };
-        meshState.peers.unshift(peer);
+function toggleRecipientField(type) {
+    const group = document.getElementById('mesh-recipient-group');
+    if (group) {
+        group.style.display = (type === 'personalized') ? 'flex' : 'none';
     }
-    
-    input.value = '';
-    meshSelectPeer(peer.id);
 }
 
-// ── Init ───────────────────────────────────────────────────
 function initMeshTab() {
-    if (meshState.initialized) return;
-    meshState.initialized = true;
-
-    // Resolve device name from Android bridge or generate one
-    if (window.Android && typeof window.Android.getDeviceName === 'function') {
-        meshState.myDeviceName = window.Android.getDeviceName();
-    } else {
-        const uid = Math.random().toString(36).substring(2, 6).toUpperCase();
-        meshState.myDeviceName = `GS-${uid}`;
+    // Check if Android Native layer is connected
+    const bridgeBadge = document.getElementById('mesh-bridge-badge');
+    if (bridgeBadge) {
+        if (window.Android) {
+            bridgeBadge.innerText = "Native Connected";
+            bridgeBadge.style.backgroundColor = "rgba(16, 185, 129, 0.1)";
+            bridgeBadge.style.borderColor = "rgba(16, 185, 129, 0.2)";
+            bridgeBadge.style.color = "#10b981";
+        } else {
+            bridgeBadge.innerText = "Simulated Link";
+            bridgeBadge.style.backgroundColor = "rgba(239, 68, 68, 0.1)";
+            bridgeBadge.style.borderColor = "rgba(239, 68, 68, 0.2)";
+            bridgeBadge.style.color = "#ef4444";
+        }
     }
-    document.getElementById('mesh-my-device-name').textContent = meshState.myDeviceName;
 
-    // Populate demo peers immediately
-    meshState.peers = JSON.parse(JSON.stringify(MESH_DEMO_PEERS));
-    meshRenderPeerList();
-    meshUpdatePeerCount();
+    // Set default sender handle strictly based on device identity
+    const senderInput = document.getElementById('mesh-sender-name');
+    if (senderInput) {
+        if (window.Android && typeof window.Android.getDeviceName === 'function') {
+            senderInput.value = window.Android.getDeviceName();
+        } else {
+            let storedHandle = localStorage.getItem('mesh_sender_handle');
+            if (!storedHandle) {
+                const userAgent = navigator.userAgent;
+                let platform = "PC";
+                if (/android/i.test(userAgent)) platform = "Android";
+                else if (/iPad|iPhone|iPod/.test(userAgent)) platform = "iOS";
+                else if (/Macintosh/.test(userAgent)) platform = "Mac";
+                else if (/Windows/.test(userAgent)) platform = "Win";
+                
+                const rand = Math.floor(1000 + Math.random() * 9000);
+                storedHandle = `${platform}-${rand}`;
+                localStorage.setItem('mesh_sender_handle', storedHandle);
+            }
+            senderInput.value = storedHandle;
+        }
+        // Force the input to be read-only to represent strict device identifiers
+        senderInput.readOnly = true;
+        senderInput.style.opacity = '0.7';
+        senderInput.style.cursor = 'not-allowed';
+        senderInput.title = "Device ID is strict and cannot be modified.";
+    }
 
-    // Register global inbound bridge (called by Android native BLE scanner)
-    window.receiveMeshMessage = function(sender, text, urgency, timestamp, recipient) {
-        meshAppendInboundMessage(sender, text, urgency, timestamp, recipient);
-    };
+    renderMeshFeed();
+
+    // Start local peer broadcast simulation and backend polling only if simulated
+    if (!window.Android) {
+        // Retrieve local host IP to display instructions for testing on a real phone
+        fetch('/api/mesh/host-ip')
+            .then(res => res.json())
+            .then(data => {
+                const hintEl = document.getElementById('mesh-test-phone-hint');
+                if (hintEl) {
+                    hintEl.innerHTML = `<i class="fa-solid fa-mobile-screen-button" style="color:#3b82f6; font-size:1rem; margin-right:0.4rem;"></i> <strong>Test on Phone:</strong> Connect your phone to the same Wi-Fi and open <a href="http://${data.ip}:${data.port}" target="_blank" style="color:#3b82f6; text-decoration:underline; font-weight:700;">http://${data.ip}:${data.port}</a> on your phone's browser to simulate mesh routing across devices.`;
+                    hintEl.style.display = 'block';
+                }
+            })
+            .catch(err => console.log('Failed to fetch host IP helper details:', err));
+
+        // Start backend polling for shared mesh channel
+        if (!meshPollInterval) {
+            meshPollInterval = setInterval(() => {
+                fetch('/api/mesh/messages')
+                    .then(res => res.json())
+                    .then(msgs => {
+                        // Deliver in reverse order (oldest to newest) to match push behavior
+                        for (let i = msgs.length - 1; i >= 0; i--) {
+                            const m = msgs[i];
+                            receiveMeshMessage(m.sender, m.text, m.urgency, m.timestamp, m.recipient);
+                        }
+                    })
+                    .catch(err => console.log('Mesh polling error:', err));
+            }, 3000);
+        }
+
+        if (!meshSimulationInterval) {
+            // Load initial dummy alerts
+            if (meshMessages.length === 0) {
+                receiveMeshMessage('System', 'Offline Mesh network initialized. Ready to transmit.', 'info', new Date().toLocaleTimeString());
+            }
+
+            meshSimulationInterval = setInterval(() => {
+                if (activeTab !== 'mesh') return;
+                
+                const myHandle = (document.getElementById('mesh-sender-name')?.value || '').trim();
+                const mockPeers = [
+                    { sender: 'IMD Alert (Tuticorin)', text: 'Warning: High storm surge wave height of 3.4m predicted off coast. Fishermen advised not to venture.', urgency: 'emergency', recipient: '' },
+                    { sender: 'Farmer Suresh', text: 'Mandi pricing update: Premium Basmati selling at ₹6,200/qtl in local mandi market.', urgency: 'info', recipient: '' },
+                    { sender: 'Vet-Officer', text: 'Precautionary FMD vaccination drive starting at Panchayat sub-center tomorrow 8 AM.', urgency: 'warning', recipient: '' },
+                    { sender: 'Fisherman-Nathan', text: 'Private Alert: Shoals of Mackerel detected 4km south-east off beach. Catch potential high.', urgency: 'info', recipient: myHandle },
+                    { sender: 'Neighbor-Ramesh', text: 'Personal Note: Direct seed trading group link established. Verify organic purity checklist.', urgency: 'info', recipient: 'User-999' }
+                ];
+
+                const mock = mockPeers[Math.floor(Math.random() * mockPeers.length)];
+                receiveMeshMessage(mock.sender, mock.text, mock.urgency, new Date().toLocaleTimeString(), mock.recipient);
+            }, 12000);
+        }
+    }
 }
 
-// ── Peer List ──────────────────────────────────────────────
-function meshRenderPeerList(filter = '') {
-    const list = document.getElementById('mesh-peers-list');
-    const peers = meshState.peers.filter(p =>
-        !filter || p.name.toLowerCase().includes(filter.toLowerCase())
-    );
+function sendMeshMessage() {
+    const senderInput = document.getElementById('mesh-sender-name');
+    const msgInput = document.getElementById('mesh-msg-text');
+    const urgencySelect = document.getElementById('mesh-urgency-level');
+    const msgTypeSelect = document.getElementById('mesh-msg-type');
+    const recipientInput = document.getElementById('mesh-recipient-name');
 
-    if (peers.length === 0) {
-        list.innerHTML = `<div style="padding:2rem; text-align:center; color:var(--text-secondary); font-size:0.88rem;">
-            <i class="fa-solid fa-magnifying-glass" style="font-size:1.4rem; opacity:0.4; display:block; margin-bottom:0.5rem;"></i>
-            No peers found
-        </div>`;
+    if (!senderInput || !msgInput || !urgencySelect) return;
+
+    const sender = senderInput.value.trim() || 'Anonymous';
+    const text = msgInput.value.trim();
+    const urgency = urgencySelect.value;
+    const msgType = msgTypeSelect ? msgTypeSelect.value : 'broadcast';
+    const recipient = (msgType === 'personalized' && recipientInput) ? recipientInput.value.trim() : '';
+
+    if (!text) {
+        alert('Please enter a message to broadcast.');
         return;
     }
 
-    list.innerHTML = peers.map(p => {
-        const isActive = meshState.activePeer === p.id;
-        const signal = p.rssi > -65 ? 3 : p.rssi > -75 ? 2 : 1;
-        const signalBars = Array(3).fill(0).map((_, i) =>
-            `<span style="width:3px; height:${6+i*4}px; border-radius:2px; background:${i < signal ? '#3b82f6' : 'rgba(0,0,0,0.15)'}; display:inline-block;"></span>`
-        ).join('');
-        const initials = p.name.substring(0, 2).toUpperCase();
-        const hasUnread = (meshState.messages[p.id] || []).some(m => m.unread);
-
-        return `<div class="mesh-peer-item" data-peer-id="${p.id}"
-            onclick="meshSelectPeer('${p.id}')"
-            style="display:flex; align-items:center; gap:0.65rem; padding:0.65rem 0.75rem; border-radius:10px; cursor:pointer; transition:all 0.2s;
-                   background:${isActive ? 'rgba(59,130,246,0.12)' : 'transparent'};
-                   border:1px solid ${isActive ? 'rgba(59,130,246,0.3)' : 'transparent'};">
-            <div style="position:relative; flex-shrink:0;">
-                <div style="width:38px; height:38px; border-radius:10px; background:linear-gradient(135deg,#6366f1,#8b5cf6); display:flex; align-items:center; justify-content:center; color:#fff; font-size:0.8rem; font-weight:700;">
-                    ${initials}
-                </div>
-                <span style="position:absolute; bottom:-2px; right:-2px; width:10px; height:10px; border-radius:50%; background:${p.online ? '#10b981' : '#94a3b8'}; border:2px solid white;"></span>
-            </div>
-            <div style="flex:1; min-width:0;">
-                <div style="font-size:0.88rem; font-weight:600; color:var(--text-primary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${p.name}</div>
-                <div style="font-size:0.72rem; color:var(--text-secondary);">${p.online ? 'Online' : 'Last seen recently'} · ${p.rssi} dBm</div>
-            </div>
-            <div style="display:flex; align-items:flex-end; gap:1px; flex-shrink:0;">${signalBars}</div>
-            ${hasUnread ? '<span style="width:8px;height:8px;border-radius:50%;background:#3b82f6;flex-shrink:0;"></span>' : ''}
-        </div>`;
-    }).join('');
-}
-
-// Removed meshFilterPeers as it is no longer used
-
-function meshUpdatePeerCount() {
-    const total = meshState.peers.length;
-    const online = meshState.peers.filter(p => p.online).length;
-    document.getElementById('mesh-peer-count').textContent =
-        `${total} contacts · ${online} online`;
-}
-
-// ── Peer Selection ─────────────────────────────────────────
-function meshSelectPeer(peerId) {
-    meshState.activePeer = peerId;
-    meshState.isBroadcastMode = false;
-    document.getElementById('btn-mesh-broadcast-toggle').style.background = 'linear-gradient(135deg,#475569,#334155)';
-    document.getElementById('btn-mesh-broadcast-toggle').innerHTML = '<i class="fa-solid fa-user"></i> Direct Mode';
-
-    const peer = meshState.peers.find(p => p.id === peerId);
-    if (peer) {
-        const initials = peer.name.substring(0, 2).toUpperCase();
-        document.getElementById('mesh-chat-avatar').innerHTML = `<span style="font-size:0.9rem;">${initials}</span>`;
-        document.getElementById('mesh-chat-avatar').style.background = 'linear-gradient(135deg,#6366f1,#8b5cf6)';
-        document.getElementById('mesh-chat-title').textContent = peer.name;
-        document.getElementById('mesh-chat-subtitle').textContent = `Direct P2P message · ${peer.online ? 'Online' : 'Offline'}`;
-    }
-
-    meshRenderPeerList();
-    meshRenderChatMessages(peerId);
-}
-
-function meshToggleBroadcastMode() {
-    meshState.activePeer = '';
-    meshState.isBroadcastMode = true;
-    document.getElementById('btn-mesh-broadcast-toggle').style.background = 'linear-gradient(135deg,#7c3aed,#4f46e5)';
-    document.getElementById('btn-mesh-broadcast-toggle').innerHTML = '<i class="fa-solid fa-tower-broadcast"></i> Broadcast Mode';
-    document.getElementById('mesh-chat-avatar').innerHTML = '<i class="fa-solid fa-tower-broadcast"></i>';
-    document.getElementById('mesh-chat-avatar').style.background = 'linear-gradient(135deg,#3b82f6,#8b5cf6)';
-    document.getElementById('mesh-chat-title').textContent = 'All Peers (Broadcast)';
-    document.getElementById('mesh-chat-subtitle').textContent = 'Messages delivered to the global public broadcast channel';
-    meshRenderPeerList();
-    meshRenderChatMessages('');
-}
-
-// ── Messages ───────────────────────────────────────────────
-function meshRenderChatMessages(peerId) {
-    const area = document.getElementById('mesh-messages-area');
-    const msgs = peerId === ''
-        ? meshState.allMessages
-        : (meshState.messages[peerId] || []);
-
-    const systemMsg = `<div class="mesh-system-msg" style="text-align:center; margin-bottom:0.5rem;">
-        <span style="background:rgba(59,130,246,0.1); color:#3b82f6; font-size:0.78rem; padding:0.3rem 0.9rem; border-radius:20px; font-weight:600;">
-            <i class="fa-solid fa-earth-americas"></i> B-Messaging Global Network initialized.
-        </span>
-    </div>`;
-
-    if (msgs.length === 0) {
-        area.innerHTML = systemMsg + `<div style="text-align:center; padding:2rem; color:var(--text-secondary); font-size:0.88rem; opacity:0.6;">
-            <i class="fa-regular fa-comment-dots" style="font-size:2rem; display:block; margin-bottom:0.5rem;"></i>
-            No messages yet. Start the conversation.
-        </div>`;
+    if (msgType === 'personalized' && !recipient) {
+        alert('Please specify a Recipient ID/Handle.');
         return;
     }
 
-    area.innerHTML = systemMsg + msgs.map(m => meshBuildMessageBubble(m)).join('');
-    area.scrollTop = area.scrollHeight;
-}
+    localStorage.setItem('mesh_sender_handle', sender);
 
-function meshBuildMessageBubble(m) {
-    const isMe = m.sender === meshState.myDeviceName;
-    const urgencyConfig = {
-        info:      { color: '#3b82f6', bg: 'rgba(59,130,246,0.08)', icon: 'fa-circle-info', label: 'Info' },
-        warning:   { color: '#d97706', bg: 'rgba(251,191,36,0.10)', icon: 'fa-triangle-exclamation', label: 'Warning' },
-        emergency: { color: '#dc2626', bg: 'rgba(220,38,38,0.10)', icon: 'fa-siren-on', label: 'Emergency' },
-    };
-    const u = urgencyConfig[m.urgency] || urgencyConfig.info;
-
-    if (isMe) {
-        return `<div style="display:flex; flex-direction:column; align-items:flex-end; gap:0.2rem;">
-            <div style="max-width:72%; background:linear-gradient(135deg,#3b82f6,#6366f1); color:#fff; padding:0.65rem 0.9rem; border-radius:16px 4px 16px 16px; font-size:0.9rem; line-height:1.5; box-shadow:0 2px 8px rgba(59,130,246,0.25);">
-                ${m.text}
-                ${m.urgency !== 'info' ? `<div style="margin-top:0.35rem; font-size:0.72rem; opacity:0.85;"><i class="fa-solid ${u.icon}"></i> ${u.label}</div>` : ''}
-            </div>
-            <div style="font-size:0.7rem; color:var(--text-secondary);">${m.ts} · You · <i class="fa-solid fa-check-double" style="color:#3b82f6;"></i></div>
-        </div>`;
-    } else {
-        const initials = (m.sender || '?').substring(0, 2).toUpperCase();
-        return `<div style="display:flex; flex-direction:column; align-items:flex-start; gap:0.2rem;">
-            <div style="display:flex; align-items:flex-end; gap:0.5rem;">
-                <div style="width:30px; height:30px; border-radius:8px; background:linear-gradient(135deg,#6366f1,#8b5cf6); display:flex; align-items:center; justify-content:center; color:#fff; font-size:0.7rem; font-weight:700; flex-shrink:0;">${initials}</div>
-                <div style="max-width:72%; background:${m.urgency === 'emergency' ? 'rgba(220,38,38,0.08)' : 'var(--bg-secondary)'}; border:1px solid ${u.color}22; padding:0.65rem 0.9rem; border-radius:4px 16px 16px 16px; font-size:0.9rem; line-height:1.5; box-shadow:0 1px 4px rgba(0,0,0,0.06);">
-                    <div style="font-size:0.72rem; font-weight:700; color:${u.color}; margin-bottom:0.25rem;"><i class="fa-solid ${u.icon}"></i> ${m.sender}</div>
-                    <div style="color:var(--text-primary);">${m.text}</div>
-                </div>
-            </div>
-            <div style="font-size:0.7rem; color:var(--text-secondary); padding-left:38px;">${m.ts}</div>
-        </div>`;
-    }
-}
-
-function meshAppendInboundMessage(sender, text, urgency, ts, recipient) {
-    const msg = { sender, text, urgency, ts: ts || meshNow(), unread: true };
-    meshState.allMessages.push(msg);
-    if (!meshState.messages[sender]) meshState.messages[sender] = [];
-    meshState.messages[sender].push(msg);
-
-    // Auto-add sender to peers list if not exists
-    if (sender !== meshState.myDeviceName && !meshState.peers.find(p => p.id === sender)) {
-        meshState.peers.unshift({ id: sender, name: sender, rssi: -50, online: true });
-        meshRenderPeerList();
-    }
-
-    // If we're viewing this conversation, render live
-    const viewingThis = (meshState.activePeer === '' && !recipient) ||
-                        (meshState.activePeer === sender);
-    if (viewingThis && activeTab === 'mesh') {
-        const area = document.getElementById('mesh-messages-area');
-        const bubble = document.createElement('div');
-        bubble.innerHTML = meshBuildMessageBubble(msg);
-        area.appendChild(bubble.firstElementChild);
-        area.scrollTop = area.scrollHeight;
-    }
-    meshUpdatePeerCount();
-}
-
-// ── Send ───────────────────────────────────────────────────
-function meshSendMessage() {
-    const input = document.getElementById('mesh-compose-input');
-    const text = input.value.trim();
-    if (!text) return;
-
-    const recipient = meshState.isBroadcastMode ? '' : meshState.activePeer;
-    const msg = {
-        sender: meshState.myDeviceName,
-        text,
-        urgency: meshState.urgency,
-        ts: meshNow(),
-        unread: false,
-    };
-
-    meshState.allMessages.push(msg);
-    if (recipient) {
-        if (!meshState.messages[recipient]) meshState.messages[recipient] = [];
-        meshState.messages[recipient].push(msg);
-    }
-
-    // Bridge to native Android BLE layer
+    // Call native Android bridge layer if available
     if (window.Android && typeof window.Android.broadcastMeshMessage === 'function') {
-        window.Android.broadcastMeshMessage(text, meshState.urgency, recipient);
-    }
-
-    if (recipient === 'GramSetu-AI') {
-        fetch(`${API_BASE}/chat`, {
+        try {
+            window.Android.broadcastMeshMessage(text, urgency, recipient || '');
+        } catch (e) {
+            window.Android.broadcastMeshMessage(text, urgency);
+        }
+    } else {
+        console.log(`[Mesh Simulator] Broadcasting: [${urgency.toUpperCase()}] ${sender} -> ${recipient || 'All'}: ${text}`);
+        
+        // Post message to backend relay server so other browsers connected to this instance (like on a phone) receive it
+        fetch('/api/mesh/relay', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ message: text })
-        }).then(res => res.json()).then(data => {
-            meshAppendInboundMessage('GramSetu-AI', data.response || data.error || 'Unknown error', 'info', meshNow(), meshState.myDeviceName);
-        }).catch(err => {
-            meshAppendInboundMessage('GramSetu-AI', 'Error connecting to AI service.', 'warning', meshNow(), meshState.myDeviceName);
-        });
+            body: JSON.stringify({ sender, text, urgency, recipient })
+        }).catch(err => console.log('Failed to post mesh message relay to server:', err));
     }
 
-    // Render bubble
-    const area = document.getElementById('mesh-messages-area');
-    const bubble = document.createElement('div');
-    bubble.innerHTML = meshBuildMessageBubble(msg);
-    area.appendChild(bubble.firstElementChild);
-    area.scrollTop = area.scrollHeight;
+    // Add to local display immediately as outgoing message
+    receiveMeshMessage(sender + ' (You)', text, urgency, new Date().toLocaleTimeString(), recipient);
 
     // Clear input
-    input.value = '';
-    input.style.height = '44px';
-
-    // Animate send button
-    const btn = document.getElementById('btn-mesh-send');
-    btn.style.transform = 'scale(0.85)';
-    setTimeout(() => { btn.style.transform = 'scale(1)'; }, 150);
+    msgInput.value = '';
 }
 
-function meshHandleEnter(e) {
-    if (e.key === 'Enter' && !e.shiftKey) {
-        e.preventDefault();
-        meshSendMessage();
+// Public callback handler exposed to native Android background layers
+window.receiveMeshMessage = function(sender, text, urgency, timestamp, recipient) {
+    const myHandle = (document.getElementById('mesh-sender-name')?.value || '').trim();
+    
+    // Deduplicate incoming messages. Strip "(You)" before comparing.
+    const cleanSender = (name) => name.replace(' (You)', '').trim();
+    const isDuplicate = meshMessages.some(m => 
+        cleanSender(m.sender) === cleanSender(sender) && 
+        m.text === text && 
+        (m.recipient || '') === (recipient || '')
+    );
+    if (isDuplicate) return;
+
+    // Check if the message is private and addressed to someone else.
+    // If targeted to another handle, we simulate relaying it without showing it to this user.
+    if (recipient && recipient !== 'Broadcast' && recipient !== myHandle && !sender.endsWith('(You)')) {
+        console.log(`[Mesh Router] Relaying private message from ${sender} to ${recipient} (payload: "${text}")`);
+        return;
     }
-}
 
-// ── Urgency ────────────────────────────────────────────────
-function meshSetUrgency(level) {
-    meshState.urgency = level;
-    document.querySelectorAll('.mesh-urgency-btn').forEach(btn => {
-        const isActive = btn.dataset.urgency === level;
-        btn.style.opacity = isActive ? '1' : '0.55';
-        btn.style.fontWeight = isActive ? '700' : '600';
+    meshMessages.unshift({ 
+        sender, 
+        text, 
+        urgency, 
+        recipient: recipient || '', 
+        timestamp: timestamp || new Date().toLocaleTimeString() 
     });
-
-    const composeArea = document.getElementById('mesh-compose-input');
-    const urgencyBorderMap = { info: '#3b82f6', warning: '#d97706', emergency: '#dc2626' };
-    composeArea.style.borderColor = urgencyBorderMap[level];
-    composeArea.style.boxShadow = `0 0 8px ${urgencyBorderMap[level]}40`;
-}
-
-// ── Helpers ────────────────────────────────────────────────
-function meshNow() {
-    return new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
-}
-
-function meshSimulateScanUpdate() {
-    const rssiNoise = Math.floor(Math.random() * 6) - 3;
-    meshState.peers.forEach(p => { p.rssi = Math.max(-95, Math.min(-45, p.rssi + rssiNoise)); });
-    meshRenderPeerList();
-    meshUpdatePeerCount();
-}
-
-function meshShowEncryptionInfo() {
-    const modal = document.getElementById('mesh-key-modal');
-    if (modal) {
-        modal.style.display = 'flex';
-        const myPub = document.getElementById('mesh-my-pubkey');
-        if (myPub) {
-            myPub.textContent = '04' + Array.from({length: 64}, () => Math.floor(Math.random()*16).toString(16)).join('').toUpperCase();
-        }
-        const shared = document.getElementById('mesh-shared-secret');
-        if (shared && meshState.activePeer && meshState.activePeer !== 'GramSetu-AI') {
-            shared.textContent = 'SHA-256: ' + Array.from({length: 32}, () => Math.floor(Math.random()*16).toString(16)).join('').toUpperCase();
-        } else if (shared) {
-            shared.textContent = 'Not negotiated (Select a direct peer)';
-        }
+    
+    // Keep max 20 messages in log
+    if (meshMessages.length > 20) {
+        meshMessages.pop();
     }
+
+    renderMeshFeed();
+    
+    // Trigger visual highlight / flash effect on the list if active
+    const listEl = document.getElementById('mesh-messages-list');
+    if (listEl) {
+        listEl.style.boxShadow = 'inset 0 0 10px rgba(16, 185, 129, 0.2)';
+        setTimeout(() => listEl.style.boxShadow = 'none', 500);
+    }
+};
+
+function renderMeshFeed() {
+    const listEl = document.getElementById('mesh-messages-list');
+    const emptyEl = document.getElementById('mesh-feed-empty');
+    if (!listEl) return;
+
+    if (meshMessages.length === 0) {
+        if (emptyEl) emptyEl.style.display = 'block';
+        listEl.innerHTML = '';
+        return;
+    }
+
+    if (emptyEl) emptyEl.style.display = 'none';
+
+    let html = '';
+    meshMessages.forEach(m => {
+        const badgeLabel = m.urgency === 'emergency' ? 'Critical' : (m.urgency === 'warning' ? 'Alert' : 'Info');
+        const targetTag = m.recipient ? `<span class="mesh-badge" style="background: #3b82f6; margin-left: 0.5rem; text-transform: uppercase;">To: ${m.recipient}</span>` : '';
+        
+        html += `
+            <div class="mesh-msg-card ${m.urgency}">
+                <div class="mesh-msg-header">
+                    <span class="mesh-msg-sender">${m.sender}</span>
+                    <div style="display:flex; align-items:center; gap:0.5rem;">
+                        ${targetTag}
+                        <span class="mesh-badge ${m.urgency}">${badgeLabel}</span>
+                        <span class="mesh-msg-time">${m.timestamp}</span>
+                    </div>
+                </div>
+                <div class="mesh-msg-body">${m.text}</div>
+            </div>
+        `;
+    });
+    listEl.innerHTML = html;
 }
