@@ -1,5 +1,17 @@
 // GramSetu Core Application JavaScript
 
+// Determine backend API base URL dynamically
+const getApiBase = () => {
+    if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+        return '/api';
+    }
+    if (window.location.port === '8081') {
+        return '/api';
+    }
+    return `${API_BASE}`;
+};
+const API_BASE = getApiBase();
+
 // Application State
 let activeTab = 'news';
 let cattleMap = null;
@@ -161,9 +173,9 @@ function switchFarmingSubView(viewId) {
 async function loadDashboardStats() {
     try {
         // Fetch stats from endpoints
-        const resDiseases = await fetch('http://localhost:8000/diseases');
-        const resSightings = await fetch('http://localhost:8000/birds/sightings');
-        const resPrices = await fetch('http://localhost:8000/prices');
+        const resDiseases = await fetch(`${API_BASE}/diseases`);
+        const resSightings = await fetch(`${API_BASE}/birds/sightings`);
+        const resPrices = await fetch(`${API_BASE}/prices`);
 
         const diseasesRes = await resDiseases.json();
         const sightingsRes = await resSightings.json();
@@ -220,8 +232,8 @@ function initCattleMap() {
 async function loadCattleDiseases() {
     try {
         const [instRes, disRes] = await Promise.all([
-            fetch('http://localhost:8000/institutions'),
-            fetch('http://localhost:8000/diseases')
+            fetch(`${API_BASE}/institutions`),
+            fetch(`${API_BASE}/diseases`)
         ]);
         institutionsData = await instRes.json();
         diseaseData = await disRes.json();
@@ -365,7 +377,7 @@ const DISTRICT_COORDINATES = {
 // 4. Mandi prices filter, table, and data fetching
 async function loadMandiPrices() {
     try {
-        const response = await fetch('http://localhost:8000/prices');
+        const response = await fetch(`${API_BASE}/prices`);
         const json = await response.json();
         priceData = Array.isArray(json) ? json : (json.data || []);
 
@@ -662,7 +674,7 @@ async function uploadAudioForClassification(audioBlob) {
     formData.append('file', audioBlob, 'capture.wav');
 
     try {
-        const response = await fetch('http://localhost:8000/birds/classify', {
+        const response = await fetch(`${API_BASE}/birds/classify`, {
             method: 'POST',
             body: formData
         });
@@ -748,7 +760,7 @@ function initBirdsMap() {
 
 async function loadBirdSightings() {
     try {
-        const response = await fetch('http://localhost:8000/birds/sightings');
+        const response = await fetch(`${API_BASE}/birds/sightings`);
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         const data = await response.json();
         birdSightings = Array.isArray(data) ? data : [];
@@ -797,7 +809,7 @@ function renderBirdMarkers() {
 
 async function loadBirdStatsTable() {
     try {
-        const response = await fetch('http://localhost:8000/birds/stats');
+        const response = await fetch(`${API_BASE}/birds/stats`);
         const stats = await response.json();
 
         const body = document.getElementById('bird-stats-table-body');
@@ -877,7 +889,7 @@ async function submitSightingPayload(lat, lng) {
     };
 
     try {
-        const response = await fetch('http://localhost:8000/birds/sightings', {
+        const response = await fetch(`${API_BASE}/birds/sightings`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
@@ -907,7 +919,7 @@ async function triggerManualSync() {
     btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Synchronizing...';
 
     try {
-        const response = await fetch('http://localhost:8000/sync/trigger', { method: 'POST' });
+        const response = await fetch(`${API_BASE}/sync/trigger`, { method: 'POST' });
         const result = await response.json();
 
         if (response.ok) {
@@ -1009,7 +1021,7 @@ async function handleSellerRegister() {
     }
 
     try {
-        const response = await fetch('http://localhost:8000/market/register', {
+        const response = await fetch(`${API_BASE}/market/register`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ username: u, password: p, name: n, contact: c, role: 'SELLER' })
@@ -1040,7 +1052,7 @@ async function handleSellerLogin() {
     }
 
     try {
-        const response = await fetch('http://localhost:8000/market/login', {
+        const response = await fetch(`${API_BASE}/market/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ username: u, password: p })
@@ -1097,7 +1109,7 @@ async function submitBioProduct() {
     };
 
     try {
-        const response = await fetch('http://localhost:8000/market/products', {
+        const response = await fetch(`${API_BASE}/market/products`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
@@ -1125,7 +1137,7 @@ async function submitBioProduct() {
 
 async function loadMarketProducts() {
     try {
-        const response = await fetch('http://localhost:8000/market/products');
+        const response = await fetch(`${API_BASE}/market/products`);
         marketProducts = await response.json();
         renderMarketProducts(marketProducts);
     } catch (e) {
@@ -1343,11 +1355,11 @@ function initFisheriesMap() {
 async function loadFisheriesData() {
     try {
         const [resMap, resBans, resTrends, resSchemes, resSightings] = await Promise.all([
-            fetch('http://localhost:8000/fisheries/fish-map').then(r => r.json()),
-            fetch('http://localhost:8000/fisheries/reproduction').then(r => r.json()),
-            fetch('http://localhost:8000/fisheries/historical-trends').then(r => r.json()),
-            fetch('http://localhost:8000/fisheries/schemes').then(r => r.json()),
-            fetch('http://localhost:8000/fisheries/sightings').then(r => r.json())
+            fetch(`${API_BASE}/fisheries/fish-map`).then(r => r.json()),
+            fetch(`${API_BASE}/fisheries/reproduction`).then(r => r.json()),
+            fetch(`${API_BASE}/fisheries/historical-trends`).then(r => r.json()),
+            fetch(`${API_BASE}/fisheries/schemes`).then(r => r.json()),
+            fetch(`${API_BASE}/fisheries/sightings`).then(r => r.json())
         ]);
 
         fishSchools = resMap;
@@ -1552,7 +1564,7 @@ async function submitMarineSighting() {
     formData.append('notes', notes);
 
     try {
-        const response = await fetch('http://localhost:8000/fisheries/sightings', {
+        const response = await fetch(`${API_BASE}/fisheries/sightings`, {
             method: 'POST',
             body: formData
         });
@@ -1570,7 +1582,7 @@ async function submitMarineSighting() {
             document.getElementById('dropzone-icon').style.color = '';
 
             // Refresh sightings list
-            const sightings = await fetch('http://localhost:8000/fisheries/sightings').then(r => r.json());
+            const sightings = await fetch(`${API_BASE}/fisheries/sightings`).then(r => r.json());
             renderMarineSightings(sightings);
         } else {
             alert("Failed to submit sighting. Please try again.");
@@ -1629,7 +1641,7 @@ let activeNewsTopic = 'all';
 
 async function loadNews() {
     try {
-        const response = await fetch('http://localhost:8000/news');
+        const response = await fetch(`${API_BASE}/news`);
         newsArticles = await response.json();
         renderNews();
     } catch (e) {
@@ -1733,7 +1745,7 @@ async function triggerManualNewsSync() {
     btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Syncing...';
 
     try {
-        const response = await fetch('http://localhost:8000/news/sync', { method: 'POST' });
+        const response = await fetch(`${API_BASE}/news/sync`, { method: 'POST' });
         const result = await response.json();
 
         if (response.ok) {
@@ -1864,8 +1876,8 @@ let climateTrendsData = null;
 
 async function loadWeather() {
     try {
-        const resForecast = await fetch('http://localhost:8000/weather/forecast');
-        const resTrends = await fetch('http://localhost:8000/weather/climate-trends');
+        const resForecast = await fetch(`${API_BASE}/weather/forecast`);
+        const resTrends = await fetch(`${API_BASE}/weather/climate-trends`);
 
         const forecasts = await resForecast.json();
         const trends = await resTrends.json();
@@ -2626,7 +2638,7 @@ function translateUI(lang) {
 // 13.5 Groundwater Depletion & Sewage Contamination Module
 async function loadGroundwaterData() {
     try {
-        const response = await fetch('http://localhost:8000/weather/groundwater');
+        const response = await fetch(`${API_BASE}/weather/groundwater`);
         groundwaterData = await response.json();
     } catch (e) {
         console.warn("Could not fetch groundwater data from API.", e);
@@ -2890,7 +2902,7 @@ function initFeedbackTab() {
 }
 
 function fetchFeedback() {
-    fetch('http://localhost:8000/feedback')
+    fetch(`${API_BASE}/feedback`)
         .then(res => res.json())
         .then(data => {
             renderFeedbackFeed(data);
@@ -2928,7 +2940,7 @@ function submitFeedback() {
         submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Submitting...';
     }
 
-    fetch('http://localhost:8000/feedback', {
+    fetch(`${API_BASE}/feedback`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -3300,7 +3312,7 @@ function meshSendMessage() {
     }
 
     if (recipient === 'GramSetu-AI') {
-        fetch('http://localhost:8000/chat', {
+        fetch(`${API_BASE}/chat`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ message: text })

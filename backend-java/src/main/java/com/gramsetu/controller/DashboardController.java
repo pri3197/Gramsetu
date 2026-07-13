@@ -129,37 +129,32 @@ public class DashboardController {
         return ResponseEntity.ok(commodities);
     }
 
-    private List<CattleOutbreak> fetchOutbreaksFromPythonService() {
+    @GetMapping("/institutions")
+    public ResponseEntity<List<Map<String, Object>>> getInstitutions() {
         try {
-            String url = pythonServiceUrl + "/diseases";
+            String url = pythonServiceUrl + "/institutions";
             Map<String, Object> response = restTemplate.getForObject(url, Map.class);
-            List<CattleOutbreak> outbreaks = new ArrayList<>();
             if (response != null && response.containsKey("data")) {
-                List<Map<String, Object>> records = (List<Map<String, Object>>) response.get("data");
-                for (Map<String, Object> r : records) {
-                    CattleOutbreak o = new CattleOutbreak();
-                    o.setState((String) r.get("state"));
-                    o.setDistrict((String) r.get("district"));
-                    o.setLatitude(Double.valueOf(r.get("latitude").toString()));
-                    o.setLongitude(Double.valueOf(r.get("longitude").toString()));
-                    o.setDisease((String) r.get("disease"));
-                    o.setSeverity((String) r.get("severity"));
-                    o.setTransmission((String) r.get("transmission"));
-                    o.setRecommendedVaccines((String) r.get("recommendedVaccines"));
-                    o.setActiveCases(Integer.valueOf(r.get("activeCases").toString()));
-                    outbreaks.add(o);
-                }
+                return ResponseEntity.ok((List<Map<String, Object>>) response.get("data"));
             }
-            return outbreaks;
         } catch (Exception e) {
-            log.error("Failed to fetch outbreaks from Python API: {}", e.getMessage());
-            return new ArrayList<>();
+            log.error("Failed to fetch institutions: {}", e.getMessage());
         }
+        return ResponseEntity.ok(new ArrayList<>());
     }
 
     @GetMapping("/diseases")
-    public ResponseEntity<List<CattleOutbreak>> getDiseases() {
-        return ResponseEntity.ok(fetchOutbreaksFromPythonService());
+    public ResponseEntity<List<Map<String, Object>>> getDiseases() {
+        try {
+            String url = pythonServiceUrl + "/diseases";
+            Map<String, Object> response = restTemplate.getForObject(url, Map.class);
+            if (response != null && response.containsKey("data")) {
+                return ResponseEntity.ok((List<Map<String, Object>>) response.get("data"));
+            }
+        } catch (Exception e) {
+            log.error("Failed to fetch outbreaks: {}", e.getMessage());
+        }
+        return ResponseEntity.ok(new ArrayList<>());
     }
 
     @GetMapping("/birds/sightings")
@@ -226,6 +221,21 @@ public class DashboardController {
             response.put("status", "error");
             response.put("message", e.getMessage());
             return ResponseEntity.internalServerError().body(response);
+        }
+    }
+
+    @PostMapping("/chat")
+    public ResponseEntity<Map> chatWithAI(@RequestBody Map<String, String> payload) {
+        log.info("Forwarding AI chat request...");
+        try {
+            String url = pythonServiceUrl + "/chat";
+            ResponseEntity<Map> response = restTemplate.postForEntity(url, payload, Map.class);
+            return ResponseEntity.ok(response.getBody());
+        } catch (Exception e) {
+            log.error("Failed to process AI chat: {}", e.getMessage());
+            Map<String, String> err = new HashMap<>();
+            err.put("error", "AI service is currently offline: " + e.getMessage());
+            return ResponseEntity.status(503).body(err);
         }
     }
 }

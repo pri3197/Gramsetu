@@ -29,6 +29,9 @@ public class WeatherController {
     @Autowired
     private WeatherForecastRepository weatherRepository;
 
+    @Autowired
+    private GroundwaterRecordRepository groundwaterRepository;
+
     private final RestTemplate restTemplate = new RestTemplate();
 
     private List<WeatherForecast> fetchWeatherFromPythonService() {
@@ -76,5 +79,37 @@ public class WeatherController {
         }
 
         return ResponseEntity.ok(List.of());
+    }
+
+    @GetMapping("/groundwater")
+    public ResponseEntity<List<GroundwaterRecord>> getGroundwaterData() {
+        log.info("Fetching groundwater depletion records");
+        List<GroundwaterRecord> list = groundwaterRepository.findAll();
+        if (list.isEmpty()) {
+            try {
+                String url = pythonServiceUrl + "/weather/groundwater";
+                Map<String, Object> response = restTemplate.getForObject(url, Map.class);
+                if (response != null && response.containsKey("data")) {
+                    List<Map<String, Object>> records = (List<Map<String, Object>>) response.get("data");
+                    List<GroundwaterRecord> fallbackList = new ArrayList<>();
+                    for (Map<String, Object> r : records) {
+                        GroundwaterRecord gr = new GroundwaterRecord();
+                        gr.setState((String) r.get("state"));
+                        gr.setDistrict((String) r.get("district"));
+                        gr.setLatitude(Double.valueOf(r.get("latitude").toString()));
+                        gr.setLongitude(Double.valueOf(r.get("longitude").toString()));
+                        gr.setYear(Integer.valueOf(r.get("year").toString()));
+                        gr.setWaterTableDepth(Double.valueOf(r.get("waterTableDepth").toString()));
+                        gr.setSewageContamination(Double.valueOf(r.get("sewageContamination").toString()));
+                        gr.setDepletionRate(Double.valueOf(r.get("depletionRate").toString()));
+                        fallbackList.add(gr);
+                    }
+                    return ResponseEntity.ok(fallbackList);
+                }
+            } catch (Exception e) {
+                log.error("Could not fetch fallback groundwater data: {}", e.getMessage());
+            }
+        }
+        return ResponseEntity.ok(list);
     }
 }

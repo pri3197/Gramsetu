@@ -238,45 +238,134 @@ class DataFetcher:
             print(f"[WARN] Failed to download NADRES dataset: {e}")
             raise RuntimeError(f"Failed to download NADRES dataset: {e}")
 
-    def fetch_brucellosis_vaccination_data(self) -> list:
-        """
-        Returns state-wise historical data for Vaccination of Female Cattle and Buffalo Calves 
-        against Brucellosis from 2021 to 01-08-2023 (Resource: 30a3be49-601a-44ad-aa36-e568ce8a4707).
-        """
-        # Authentic data snapshot from the official DAHD August 2023 datasets
-        historical_records = [
-            {"state": "Odisha", "target_bovine_population": 449000, "vaccinated": 449000, "latitude": 20.9517, "longitude": 85.0985},
-            {"state": "Goa", "target_bovine_population": 1200, "vaccinated": 1200, "latitude": 15.2993, "longitude": 74.1240},
-            {"state": "Gujarat", "target_bovine_population": 756645, "vaccinated": 731125, "latitude": 22.2587, "longitude": 71.1924},
-            {"state": "Chandigarh", "target_bovine_population": 3450, "vaccinated": 3450, "latitude": 30.7333, "longitude": 76.7794},
-            {"state": "West Bengal", "target_bovine_population": 2226700, "vaccinated": 2155910, "latitude": 22.9868, "longitude": 87.8550},
-            {"state": "Karnataka", "target_bovine_population": 1000000, "vaccinated": 992149, "latitude": 15.3173, "longitude": 75.7139},
-            {"state": "Andhra Pradesh", "target_bovine_population": 1080000, "vaccinated": 1000325, "latitude": 15.9129, "longitude": 79.7400},
-            {"state": "Delhi", "target_bovine_population": 18000, "vaccinated": 18000, "latitude": 28.7041, "longitude": 77.1025},
-            {"state": "Kerala", "target_bovine_population": 253240, "vaccinated": 29806, "latitude": 10.8505, "longitude": 76.2711},
-            {"state": "Arunachal Pradesh", "target_bovine_population": 61486, "vaccinated": 10304, "latitude": 28.2180, "longitude": 94.7278},
-            {"state": "Meghalaya", "target_bovine_population": 94000, "vaccinated": 12365, "latitude": 25.4670, "longitude": 91.3662},
-            {"state": "Sikkim", "target_bovine_population": 25000, "vaccinated": 4671, "latitude": 27.5330, "longitude": 88.5122}
-        ]
+    def _download_and_extract_pdf(self) -> dict:
+        pdf_path = os.path.join("data", "dahd_report.pdf")
+        os.makedirs("data", exist_ok=True)
         
-        processed_map_data = []
-        for record in historical_records:
-            # Calculate coverage performance percentage
-            coverage_pct = round((record["vaccinated"] / record["target_bovine_population"]) * 100, 2) if record["target_bovine_population"] > 0 else 0.0
+        # In a real scenario, this would use BeautifulSoup to parse https://dahd.gov.in/en/annual-report
+        # For this requirement we use the provided latest report link.
+        report_url = "https://dahd.gov.in/sites/default/files/2026-02/BAHS2025.pdf"
+        
+        # Cache for 24 hours based on file modification time
+        if not os.path.exists(pdf_path) or (datetime.datetime.now().timestamp() - os.path.getmtime(pdf_path)) > 86400:
+            try:
+                print(f"[DataFetcher] Downloading latest BAHS report from {report_url}...")
+                response = requests.get(report_url, timeout=30)
+                if response.status_code == 200:
+                    with open(pdf_path, 'wb') as f:
+                        f.write(response.content)
+            except Exception as e:
+                print(f"[WARN] Failed to download PDF: {e}")
+                
+        institutions_data = []
+        disease_outbreaks = []
+        
+        if not os.path.exists(pdf_path):
+            return {"institutions": [], "outbreaks": []}
             
-            processed_map_data.append({
-                "state": record["state"],
-                "latitude": record["latitude"],
-                "longitude": record["longitude"],
-                "dataset_resource_id": "30a3be49-601a-44ad-aa36-e568ce8a4707",
-                "metric_period": "2021 to 2023-08-01",
-                "target_population": record["target_bovine_population"],
-                "animals_vaccinated": record["vaccinated"],
-                "coverage_percentage": coverage_pct,
-                "marker_type": "vaccination_cluster"
-            })
+        try:
+            import pdfplumber
             
-        return processed_map_data
+            # Fast search by only looking at relevant pages (80 to 110)
+            pages_to_parse = set(range(80, 110))
+            
+            with pdfplumber.open(pdf_path) as pdf:
+                for i in pages_to_parse:
+                    if i >= len(pdf.pages): continue
+                    page = pdf.pages[i]
+                    text = page.extract_text()
+                    if not text: continue
+                    
+                    # 1. Parse Table 17 (Number of Veterinary Institutions)
+                    if "NUMBER OF VETERINARY INSTITUTIONS" in text.upper() or "VETERINARY INSTITUTIONS" in text.upper():
+                        tables = page.extract_tables()
+                        if tables:
+                            for row in tables[0]:
+                                if len(row) >= 6 and row[1] and row[1].strip() != "States/UTs" and "Total" not in row[1]:
+                                    try:
+                                        state = row[1].strip().replace('\n', ' ')
+                                        total_str = str(row[-1]).replace('\n', '').strip().replace(',', '')
+                                        if total_str.isdigit():
+                                            institutions_data.append({
+                                                "state": state,
+                                                "total_institutions": int(total_str),
+                                                # Add coordinates for the frontend map based on state names
+                                                "latitude": 0.0,
+                                                "longitude": 0.0
+                                            })
+                                    except:
+                                        pass
+                    
+                    # 2. Parse Table 16(B) (Disease Outbreaks)
+                    if "TABLE 16 (B)" in text.upper() or "TABLE 16(B)" in text.upper():
+                        tables = page.extract_tables()
+                        if tables:
+                            for row in tables[0]:
+                                if len(row) >= 6 and row[1] and row[1].strip() != "Disease Name":
+                                    disease_name = str(row[1]).strip().replace('\n', ' ')
+                                    species = str(row[2]).strip().replace('\n', ' ') if row[2] else ""
+                                    outbreak = str(row[3]).strip().replace(',', '') if row[3] else "0"
+                                    attack = str(row[4]).strip().replace(',', '') if row[4] else "0"
+                                    death = str(row[5]).strip().replace(',', '') if row[5] else "0"
+                                    
+                                    if not disease_name and species and disease_outbreaks:
+                                        disease_name = disease_outbreaks[-1]['disease']
+                                        
+                                    if disease_name and disease_name != 'None' and species:
+                                        try:
+                                            disease_outbreaks.append({
+                                                "disease": disease_name,
+                                                "species": species,
+                                                "outbreaks": int(outbreak) if outbreak.isdigit() else 0,
+                                                "attacks": int(attack) if attack.isdigit() else 0,
+                                                "deaths": int(death) if death.isdigit() else 0,
+                                                "activeCases": int(attack) if attack.isdigit() else 0,
+                                                "severity": "High" if (int(outbreak) if outbreak.isdigit() else 0) > 10 else "Medium",
+                                                "state": "National",
+                                                "district": "Multiple"
+                                            })
+                                        except Exception as e:
+                                            pass
+        except Exception as e:
+            print(f"[WARN] Failed to parse PDF: {e}")
+            
+        return {"institutions": institutions_data, "outbreaks": disease_outbreaks}
+
+    def fetch_veterinary_institutions_data(self) -> list:
+        data = self._download_and_extract_pdf()
+        institutions = data.get("institutions", [])
+        
+        # Hardcode some state coordinates for map markers
+        coords = {
+            "Andhra Pradesh": (15.9129, 79.7400), "Arunachal Pradesh": (28.2180, 94.7278),
+            "Assam": (26.2006, 92.9376), "Bihar": (25.0961, 85.3131),
+            "Chhattisgarh": (21.2787, 81.8661), "Goa": (15.2993, 74.1240),
+            "Gujarat": (22.2587, 71.1924), "Haryana": (29.0588, 76.0856),
+            "Himachal Pradesh": (31.1048, 77.1665), "Jharkhand": (23.6102, 85.2799),
+            "Karnataka": (15.3173, 75.7139), "Kerala": (10.8505, 76.2711),
+            "Madhya Pradesh": (22.9734, 78.6569), "Maharashtra": (19.7515, 75.7139),
+            "Manipur": (24.6637, 93.9063), "Meghalaya": (25.4670, 91.3662),
+            "Mizoram": (23.1645, 92.9376), "Nagaland": (26.1584, 94.5624),
+            "Odisha": (20.9517, 85.0985), "Punjab": (31.1471, 75.3412),
+            "Rajasthan": (27.0238, 74.2179), "Sikkim": (27.5330, 88.5122),
+            "Tamil Nadu": (11.1271, 78.6569), "Telangana": (18.1124, 79.0193),
+            "Tripura": (23.9408, 91.9882), "Uttar Pradesh": (26.8467, 80.9462),
+            "Uttarakhand": (30.0668, 79.0193), "West Bengal": (22.9868, 87.8550)
+        }
+        
+        for inst in institutions:
+            if inst["state"] in coords:
+                inst["latitude"] = coords[inst["state"]][0]
+                inst["longitude"] = coords[inst["state"]][1]
+            else:
+                inst["latitude"] = 20.0
+                inst["longitude"] = 77.0
+                
+        return [i for i in institutions if i["latitude"] != 0.0]
+
+    def fetch_cattle_disease_outbreaks(self) -> list:
+        data = self._download_and_extract_pdf()
+        return data.get("outbreaks", [])
 
     def fetch_news_articles(self) -> list:
         api_key = os.getenv("NEWS_API_KEY")
