@@ -128,8 +128,8 @@ def get_mandi_prices(
             end_date=end_date,
         )
         if not prices:
-            return None
-        return prices
+            return {"count": 0, "data": []}
+        return {"count": len(prices), "data": prices}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to fetch commodity prices: {str(e)}")
 
@@ -179,7 +179,7 @@ def get_wheat_north_india() -> dict:
     if not filtered:
         filtered = [p for p in prices if "wheat" in str(p.get("commodity", "")).lower()]
     avg = round(sum(p["modal_price"] for p in filtered) / len(filtered)) if filtered else None
-    return filtered
+    return {"count": len(filtered), "data": filtered, "avg_modal_price": avg, "region": "North India", "source": "fallback"}
 
 @app.get("/institutions")
 def get_institutions():
@@ -188,7 +188,7 @@ def get_institutions():
     """
     try:
         data = default_fetcher.fetch_veterinary_institutions_data()
-        return data
+        return {"count": len(data), "data": data}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to compile historical map data: {str(e)}")
     
@@ -199,7 +199,7 @@ def get_cattle_diseases():
     """
     try:
         outbreaks = default_fetcher.fetch_cattle_disease_outbreaks()
-        return outbreaks
+        return {"count": len(outbreaks), "data": outbreaks}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to fetch cattle disease outbreaks: {str(e)}")
 
@@ -210,7 +210,7 @@ def get_news():
     """
     try:
         articles = default_fetcher.fetch_news_articles()
-        return articles
+        return {"count": len(articles), "data": articles}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to fetch news articles: {str(e)}")
 
@@ -218,7 +218,7 @@ def get_news():
 def get_weather_forecast():
     try:
         forecasts = default_fetcher.fetch_weather_forecasts()
-        return forecasts
+        return {"count": len(forecasts), "data": forecasts}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -226,7 +226,7 @@ def get_weather_forecast():
 def get_climate_trends():
     try:
         trends = default_fetcher.fetch_climate_trends()
-        return trends
+        return {"count": len(trends), "data": trends}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -237,7 +237,7 @@ def get_groundwater_data():
     """
     try:
         data = default_fetcher.fetch_groundwater_data()
-        return data
+        return {"count": len(data), "data": data}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to fetch groundwater data: {str(e)}")
 
@@ -248,7 +248,7 @@ def get_imd_warnings():
     """
     try:
         warnings = default_fetcher.fetch_imd_fisherman_warnings()
-        return warnings
+        return {"count": len(warnings), "data": warnings}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to fetch IMD warnings: {str(e)}")
 
@@ -259,7 +259,7 @@ def get_historical_mangroves():
     """
     try:
         data = default_fetcher.fetch_historical_mangroves()
-        return data
+        return {"count": len(data), "data": data}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to fetch historical mangrove data: {str(e)}")
 
@@ -267,7 +267,7 @@ def get_historical_mangroves():
 def get_fish_map():
     try:
         data = default_fetcher.fetch_fish_map_data()
-        return data
+        return {"count": len(data), "data": data}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to fetch fish map data: {str(e)}")
 
@@ -275,7 +275,7 @@ def get_fish_map():
 def get_reproduction_bans():
     try:
         data = default_fetcher.fetch_reproduction_bans()
-        return data
+        return {"count": len(data), "data": data}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to fetch reproduction bans: {str(e)}")
 
@@ -283,7 +283,7 @@ def get_reproduction_bans():
 def get_historical_trends():
     try:
         data = default_fetcher.fetch_historical_trends()
-        return data
+        return {"count": len(data), "data": data}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to fetch historical trends: {str(e)}")
 
@@ -291,7 +291,7 @@ def get_historical_trends():
 def get_fisheries_schemes():
     try:
         data = default_fetcher.fetch_fisheries_schemes()
-        return data
+        return {"count": len(data), "data": data}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to fetch fisheries schemes: {str(e)}")
 
