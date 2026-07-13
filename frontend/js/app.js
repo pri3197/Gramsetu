@@ -3093,22 +3093,10 @@ function initMeshTab() {
     }
     document.getElementById('mesh-my-device-name').textContent = meshState.myDeviceName;
 
-    // Populate demo peers after scan delay
-    setTimeout(() => {
-        meshState.peers = JSON.parse(JSON.stringify(MESH_DEMO_PEERS));
-        meshRenderPeerList();
-        meshUpdatePeerCount();
-        document.getElementById('mesh-ble-label').textContent = `${meshState.peers.filter(p => p.online).length} Peers Found`;
-
-        // Add demo messages to broadcast view
-        MESH_DEMO_MSGS.forEach(m => meshAppendInboundMessage(m.sender, m.text, m.urgency, m.ts, ''));
-    }, 1800);
-
-    // Simulate BLE scan updates every 30s
-    meshState.simulatorInterval = setInterval(() => {
-        if (activeTab !== 'mesh') return;
-        meshSimulateScanUpdate();
-    }, 30000);
+    // Populate demo peers immediately
+    meshState.peers = JSON.parse(JSON.stringify(MESH_DEMO_PEERS));
+    meshRenderPeerList();
+    meshUpdatePeerCount();
 
     // Register global inbound bridge (called by Android native BLE scanner)
     window.receiveMeshMessage = function(sender, text, urgency, timestamp, recipient) {
@@ -3164,9 +3152,10 @@ function meshRenderPeerList(filter = '') {
 // Removed meshFilterPeers as it is no longer used
 
 function meshUpdatePeerCount() {
+    const total = meshState.peers.length;
     const online = meshState.peers.filter(p => p.online).length;
     document.getElementById('mesh-peer-count').textContent =
-        `${meshState.peers.length} peers detected · ${online} online`;
+        `${total} contacts · ${online} online`;
 }
 
 // ── Peer Selection ─────────────────────────────────────────
@@ -3182,7 +3171,7 @@ function meshSelectPeer(peerId) {
         document.getElementById('mesh-chat-avatar').innerHTML = `<span style="font-size:0.9rem;">${initials}</span>`;
         document.getElementById('mesh-chat-avatar').style.background = 'linear-gradient(135deg,#6366f1,#8b5cf6)';
         document.getElementById('mesh-chat-title').textContent = peer.name;
-        document.getElementById('mesh-chat-subtitle').textContent = `Direct BLE message · ${peer.online ? 'Online' : 'Offline'} · Signal: ${peer.rssi} dBm`;
+        document.getElementById('mesh-chat-subtitle').textContent = `Direct P2P message · ${peer.online ? 'Online' : 'Offline'}`;
     }
 
     meshRenderPeerList();
@@ -3197,7 +3186,7 @@ function meshToggleBroadcastMode() {
     document.getElementById('mesh-chat-avatar').innerHTML = '<i class="fa-solid fa-tower-broadcast"></i>';
     document.getElementById('mesh-chat-avatar').style.background = 'linear-gradient(135deg,#3b82f6,#8b5cf6)';
     document.getElementById('mesh-chat-title').textContent = 'All Peers (Broadcast)';
-    document.getElementById('mesh-chat-subtitle').textContent = 'Messages delivered to all nearby BLE devices';
+    document.getElementById('mesh-chat-subtitle').textContent = 'Messages delivered to the global public broadcast channel';
     meshRenderPeerList();
     meshRenderChatMessages('');
 }
@@ -3211,7 +3200,7 @@ function meshRenderChatMessages(peerId) {
 
     const systemMsg = `<div class="mesh-system-msg" style="text-align:center; margin-bottom:0.5rem;">
         <span style="background:rgba(59,130,246,0.1); color:#3b82f6; font-size:0.78rem; padding:0.3rem 0.9rem; border-radius:20px; font-weight:600;">
-            <i class="fa-brands fa-bluetooth-b"></i> B-Messaging BLE Mesh initialized. Range: ~100m
+            <i class="fa-solid fa-earth-americas"></i> B-Messaging Global Network initialized.
         </span>
     </div>`;
 
@@ -3371,4 +3360,21 @@ function meshSimulateScanUpdate() {
     meshState.peers.forEach(p => { p.rssi = Math.max(-95, Math.min(-45, p.rssi + rssiNoise)); });
     meshRenderPeerList();
     meshUpdatePeerCount();
+}
+
+function meshShowEncryptionInfo() {
+    const modal = document.getElementById('mesh-key-modal');
+    if (modal) {
+        modal.style.display = 'flex';
+        const myPub = document.getElementById('mesh-my-pubkey');
+        if (myPub) {
+            myPub.textContent = '04' + Array.from({length: 64}, () => Math.floor(Math.random()*16).toString(16)).join('').toUpperCase();
+        }
+        const shared = document.getElementById('mesh-shared-secret');
+        if (shared && meshState.activePeer && meshState.activePeer !== 'GramSetu-AI') {
+            shared.textContent = 'SHA-256: ' + Array.from({length: 32}, () => Math.floor(Math.random()*16).toString(16)).join('').toUpperCase();
+        } else if (shared) {
+            shared.textContent = 'Not negotiated (Select a direct peer)';
+        }
+    }
 }

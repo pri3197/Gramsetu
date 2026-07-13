@@ -1,7 +1,7 @@
 // GramSetu Core Application JavaScript
 
 // Application State
-let activeTab = 'dashboard';
+let activeTab = 'news';
 let cattleMap = null;
 let birdsMap = null;
 let groundwaterMap = null;
@@ -9,10 +9,10 @@ let priceData = [];
 let diseaseData = [];
 let birdSightings = [];
 let groundwaterData = [];
+let institutionsData = [];
 let selectedGroundwaterDistrict = null;
-let activeGroundwaterYear = 2025;
+let activeGroundwaterYear = 2026;
 let isSewageOverlayVisible = true;
-
 
 // Audio Recording Variables
 let mediaRecorder = null;
@@ -34,7 +34,7 @@ document.addEventListener('DOMContentLoaded', () => {
     loadCattleDiseases();
     loadBirdSightings();
     loadMarketProducts();
-    //  loadGroundwaterData();
+    // loadGroundwaterData();
 
     // Initialize Visualizer Canvas default state
     clearCanvas();
@@ -53,11 +53,23 @@ function switchTab(tabId) {
         document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
 
-        const panel = document.getElementById(`panel-${tabId}`);
+        // Resolve target panel and sub-view
+        let targetTabId = tabId;
+        let subViewId = null;
+
+        if (tabId === 'prices') {
+            targetTabId = 'farming';
+            subViewId = 'mandi';
+        } else if (tabId === 'bio') {
+            targetTabId = 'farming';
+            subViewId = 'market';
+        }
+
+        const panel = document.getElementById(`panel-${targetTabId}`);
         if (panel) {
             panel.classList.add('active');
         } else {
-            console.warn(`Panel not found for tabId: ${tabId}`);
+            console.warn(`Panel not found for tabId: ${targetTabId}`);
         }
 
         const btn = document.getElementById(`nav-btn-${tabId}`);
@@ -65,21 +77,27 @@ function switchTab(tabId) {
             btn.classList.add('active');
         }
 
-        activeTab = tabId;
+        // Extremely important: Set activeTab to the underlying physical panel (farming) 
+        // so that data loaders and map initializers inside app.js continue to work normally.
+        activeTab = targetTabId;
 
         // Lazy initialize and resize maps when they become visible
-        if (tabId === 'farming') {
-            switchFarmingSubView(activeFarmingSubView || 'mandi');
-        } else if (tabId === 'fisheries') {
+        if (targetTabId === 'farming') {
+            switchFarmingSubView(subViewId || activeFarmingSubView || 'mandi');
+        } else if (targetTabId === 'fisheries') {
             initFisheriesMap();
             loadFisheriesData();
             if (fisheriesMap) setTimeout(() => fisheriesMap.invalidateSize(), 100);
         } else if (tabId === 'news') {
             loadNews();
         } else if (tabId === 'weather') {
+            if (climateTrendsData) {
+                // Data already fetched – just re-render the chart now that tab is visible
+                requestAnimationFrame(() => renderClimateTrendsChart(climateTrendsData));
+            }
             loadWeather();
-            /*  initGroundwaterMap();
-             if (groundwaterMap) setTimeout(() => groundwaterMap.invalidateSize(), 100); */
+            initGroundwaterMap();
+            if (groundwaterMap) setTimeout(() => groundwaterMap.invalidateSize(), 100);
         } else if (tabId === 'birds') {
             initBirdsMap();
             if (birdsMap) setTimeout(() => birdsMap.invalidateSize(), 100);
@@ -99,7 +117,15 @@ function switchTab(tabId) {
 let activeFarmingSubView = 'mandi';
 let mandiPricesMap = null;
 
+function toggleMobileNav() {
+    const tabs = document.getElementById('main-nav-tabs');
+    if (tabs) {
+        tabs.classList.toggle('show');
+    }
+}
+
 function switchFarmingSubView(viewId) {
+
     console.log("switchFarmingSubView called with:", viewId);
     try {
         activeFarmingSubView = viewId;
@@ -135,13 +161,17 @@ function switchFarmingSubView(viewId) {
 async function loadDashboardStats() {
     try {
         // Fetch stats from endpoints
-        const resDiseases = await fetch('/api/diseases');
-        const resSightings = await fetch('/api/birds/sightings');
-        const resPrices = await fetch('/api/prices');
+        const resDiseases = await fetch('http://localhost:8000/diseases');
+        const resSightings = await fetch('http://localhost:8000/birds/sightings');
+        const resPrices = await fetch('http://localhost:8000/prices');
 
-        const diseases = await resDiseases.json();
-        const sightings = await resSightings.json();
-        const prices = await resPrices.json();
+        const diseasesRes = await resDiseases.json();
+        const sightingsRes = await resSightings.json();
+        const pricesRes = await resPrices.json();
+
+        const diseases = Array.isArray(diseasesRes) ? diseasesRes : (diseasesRes.data || []);
+        const sightings = Array.isArray(sightingsRes) ? sightingsRes : (sightingsRes.data || []);
+        const prices = Array.isArray(pricesRes) ? pricesRes : (pricesRes.data || []);
 
         // Outbreaks Count
         let totalOutbreaks = 0;
@@ -151,36 +181,19 @@ async function loadDashboardStats() {
         // Bird Sightings Count
         document.getElementById('stats-bird-sightings').innerText = sightings.length;
 
-        // Average Wheat Price – prefer North India average from dedicated endpoint
-        try {
-            const wheatResp = await fetch('/api/prices/wheat-north-india');
-            if (wheatResp.ok) {
-                const wheatData = await wheatResp.json();
-                if (wheatData && wheatData.avgModalPrice) {
-                    document.getElementById('stats-wheat-price').innerText = `₹ ${wheatData.avgModalPrice.toLocaleString('en-IN')}`;
-                    document.getElementById('lbl-auto-32').innerText =
-                        `Avg modal price/quintal · ${wheatData.count || 0} North India mandis · ${wheatData.source === 'live' ? 'Agmarknet Live' : 'CACP MSP-anchored'}`;
-                    throw new Error('done'); // skip fallback below
-                }
-            }
-        } catch (e) { if (e.message !== 'done') console.debug('[wheat] Dedicated endpoint skipped:', e.message); }
-
-        // Fallback: compute from /api/prices (all commodities)
-        const wheatPrices = prices.filter(p => p.commodity && p.commodity.toLowerCase().includes('wheat'));
+        // Average Wheat Price Modal
+        const wheatPrices = prices.filter(p => p.commodity.toLowerCase().includes('wheat'));
         if (wheatPrices.length > 0) {
             const sum = wheatPrices.reduce((acc, curr) => acc + curr.modalPrice, 0);
             const avg = Math.round(sum / wheatPrices.length);
-            document.getElementById('stats-wheat-price').innerText = `₹ ${avg.toLocaleString('en-IN')}`;
-            document.getElementById('lbl-auto-32').innerText =
-                `Avg modal price/quintal · ${wheatPrices.length} mandi records · Agmarknet data`;
+            document.getElementById('stats-wheat-price').innerText = `₹ ${avg}`;
         } else {
-            document.getElementById('stats-wheat-price').innerText = `₹ 2,411`;
-            document.getElementById('lbl-auto-32').innerText = 'Avg modal price/quintal · North Indian Mandis';
+            document.getElementById('stats-wheat-price').innerText = `N/A`;
         }
     } catch (e) {
         console.warn("Could not fetch dashboard summary stats.", e);
         document.getElementById('stats-outbreaks-count').innerText = "0";
-        document.getElementById('stats-wheat-price').innerText = "₹ 2,411";
+        document.getElementById('stats-wheat-price').innerText = "N/A";
         document.getElementById('stats-bird-sightings').innerText = "0";
     }
 }
@@ -206,30 +219,53 @@ function initCattleMap() {
 
 async function loadCattleDiseases() {
     try {
-        const response = await fetch('/api/diseases');
-        diseaseData = await response.json();
+        const [instRes, disRes] = await Promise.all([
+            fetch('http://localhost:8000/institutions'),
+            fetch('http://localhost:8000/diseases')
+        ]);
+        institutionsData = await instRes.json();
+        diseaseData = await disRes.json();
         if (activeTab === 'cattle') renderCattleMarkers();
+        
+        // Render Disease Table
+        const tbody = document.getElementById('disease-outbreaks-tbody');
+        if (tbody) {
+            tbody.innerHTML = '';
+            if (diseaseData.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">No data found</td></tr>';
+            } else {
+                diseaseData.forEach(d => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${d.disease}</td>
+                        <td>${d.species}</td>
+                        <td>${d.outbreaks}</td>
+                        <td>${d.attacks}</td>
+                        <td>${d.deaths}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            }
+        }
     } catch (e) {
-        console.error("Error loading cattle disease data:", e);
+        console.error("Error loading cattle/institutions data:", e);
     }
 }
 
 function renderCattleMarkers() {
-    if (!cattleMap || !diseaseData.length) return;
+    if (!cattleMap || !institutionsData.length) return;
 
     // Clear old markers (just re-creating is simple for demo)
-    // Create circle overlay markers based on disease parameters
-    diseaseData.forEach(d => {
-        let color = '#3b82f6'; // Medium - Blue
-        let radius = 18000;
-
-        if (d.severity === 'Critical') {
-            color = '#ef4444'; // Red
-            radius = 35000;
-        } else if (d.severity === 'High') {
-            color = '#fbbf24'; // Orange/Gold
-            radius = 26000;
+    cattleMap.eachLayer((layer) => {
+        if (layer instanceof L.Circle) {
+            cattleMap.removeLayer(layer);
         }
+    });
+
+    // Create circle overlay markers based on institutions parameters
+    institutionsData.forEach(d => {
+        let color = '#3b82f6'; // Medium - Blue
+        let radius = Math.max(10000, Math.min(50000, d.total_institutions * 10)); // Scale radius by count
 
         const circle = L.circle([d.latitude, d.longitude], {
             color: color,
@@ -241,10 +277,8 @@ function renderCattleMarkers() {
         // Binding a popup message details
         const popupContent = `
             <div style="font-family: var(--font-body); padding: 5px;">
-                <h4 style="margin-bottom: 5px; color:var(--text-primary);">${d.disease}</h4>
-                <p><strong>District:</strong> ${d.district}, ${d.state}</p>
-                <p><strong>Active Cases:</strong> ${d.activeCases} cows</p>
-                <p><strong>Severity:</strong> <span class="status-badge ${d.severity.toLowerCase()}">${d.severity}</span></p>
+                <h4 style="margin-bottom: 5px; color:var(--text-primary);">${d.state}</h4>
+                <p><strong>Total Institutions:</strong> ${d.total_institutions}</p>
             </div>
         `;
         circle.bindPopup(popupContent);
@@ -257,22 +291,17 @@ function renderCattleMarkers() {
 }
 
 function showAdvisory(outbreak) {
-    document.getElementById('cattle-advisory-prompt').style.display = 'none';
+    const prompt = document.getElementById('cattle-advisory-prompt');
+    if (prompt) prompt.style.display = 'none';
+    
     const content = document.getElementById('cattle-advisory-content');
-    content.style.display = 'block';
+    if (content) content.style.display = 'block';
 
-    document.getElementById('adv-district-title').innerText = `District: ${outbreak.district} (${outbreak.state})`;
+    const dName = document.getElementById('adv-district-title');
+    if (dName) dName.innerText = `State: ${outbreak.state}`;
 
-    const dName = document.getElementById('adv-disease-name');
-    dName.className = `status-badge ${outbreak.severity.toLowerCase()}`;
-    dName.innerText = outbreak.disease;
-
-    document.getElementById('adv-cases-count').innerText = outbreak.activeCases;
-    document.getElementById('adv-severity-label').innerText = outbreak.severity;
-    document.getElementById('adv-transmission-desc').innerText = outbreak.transmission;
-
-    // Display list of vaccines needed
-    document.getElementById('adv-vaccines-list').innerText = outbreak.recommendedVaccines;
+    const cases = document.getElementById('adv-cases-count');
+    if (cases) cases.innerText = outbreak.total_institutions;
 }
 
 // Coordinates mapping for major agricultural districts in India
@@ -336,8 +365,9 @@ const DISTRICT_COORDINATES = {
 // 4. Mandi prices filter, table, and data fetching
 async function loadMandiPrices() {
     try {
-        const response = await fetch('/api/prices');
-        priceData = await response.json();
+        const response = await fetch('http://localhost:8000/prices');
+        const json = await response.json();
+        priceData = Array.isArray(json) ? json : (json.data || []);
 
         populateFilterDropdowns();
         renderPricesTable(priceData);
@@ -632,7 +662,7 @@ async function uploadAudioForClassification(audioBlob) {
     formData.append('file', audioBlob, 'capture.wav');
 
     try {
-        const response = await fetch('/api/birds/classify', {
+        const response = await fetch('http://localhost:8000/birds/classify', {
             method: 'POST',
             body: formData
         });
@@ -718,19 +748,22 @@ function initBirdsMap() {
 
 async function loadBirdSightings() {
     try {
-        const response = await fetch('/api/birds/sightings');
-        birdSightings = await response.json();
+        const response = await fetch('http://localhost:8000/birds/sightings');
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        const data = await response.json();
+        birdSightings = Array.isArray(data) ? data : [];
 
         if (activeTab === 'birds') renderBirdMarkers();
         loadBirdStatsTable();
         loadDashboardStats();
     } catch (e) {
         console.error("Error loading bird sightings: ", e);
+        birdSightings = [];
     }
 }
 
 function renderBirdMarkers() {
-    if (!birdsMap) return;
+    if (!birdsMap || !Array.isArray(birdSightings)) return;
 
     // In a real environment, we'd clear previous markers first.
     // For simplicity, we just rebuild.
@@ -764,7 +797,7 @@ function renderBirdMarkers() {
 
 async function loadBirdStatsTable() {
     try {
-        const response = await fetch('/api/birds/stats');
+        const response = await fetch('http://localhost:8000/birds/stats');
         const stats = await response.json();
 
         const body = document.getElementById('bird-stats-table-body');
@@ -844,7 +877,7 @@ async function submitSightingPayload(lat, lng) {
     };
 
     try {
-        const response = await fetch('/api/birds/sightings', {
+        const response = await fetch('http://localhost:8000/birds/sightings', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
@@ -874,7 +907,7 @@ async function triggerManualSync() {
     btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Synchronizing...';
 
     try {
-        const response = await fetch('/api/sync/trigger', { method: 'POST' });
+        const response = await fetch('http://localhost:8000/sync/trigger', { method: 'POST' });
         const result = await response.json();
 
         if (response.ok) {
@@ -976,7 +1009,7 @@ async function handleSellerRegister() {
     }
 
     try {
-        const response = await fetch('/api/market/register', {
+        const response = await fetch('http://localhost:8000/market/register', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ username: u, password: p, name: n, contact: c, role: 'SELLER' })
@@ -1007,7 +1040,7 @@ async function handleSellerLogin() {
     }
 
     try {
-        const response = await fetch('/api/market/login', {
+        const response = await fetch('http://localhost:8000/market/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ username: u, password: p })
@@ -1064,7 +1097,7 @@ async function submitBioProduct() {
     };
 
     try {
-        const response = await fetch('/api/market/products', {
+        const response = await fetch('http://localhost:8000/market/products', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
@@ -1092,7 +1125,7 @@ async function submitBioProduct() {
 
 async function loadMarketProducts() {
     try {
-        const response = await fetch('/api/market/products');
+        const response = await fetch('http://localhost:8000/market/products');
         marketProducts = await response.json();
         renderMarketProducts(marketProducts);
     } catch (e) {
@@ -1163,7 +1196,7 @@ async function deleteBioProduct(id) {
     if (!confirm("Are you sure you want to remove this advertisement?")) return;
 
     try {
-        const response = await fetch(`/api/market/products/${id}`, {
+        const response = await fetch(`http://localhost:8000/market/products/${id}`, {
             method: 'DELETE'
         });
         if (response.ok) {
@@ -1310,11 +1343,11 @@ function initFisheriesMap() {
 async function loadFisheriesData() {
     try {
         const [resMap, resBans, resTrends, resSchemes, resSightings] = await Promise.all([
-            fetch('/api/fisheries/fish-map').then(r => r.json()),
-            fetch('/api/fisheries/reproduction').then(r => r.json()),
-            fetch('/api/fisheries/historical-trends').then(r => r.json()),
-            fetch('/api/fisheries/schemes').then(r => r.json()),
-            fetch('/api/fisheries/sightings').then(r => r.json())
+            fetch('http://localhost:8000/fisheries/fish-map').then(r => r.json()),
+            fetch('http://localhost:8000/fisheries/reproduction').then(r => r.json()),
+            fetch('http://localhost:8000/fisheries/historical-trends').then(r => r.json()),
+            fetch('http://localhost:8000/fisheries/schemes').then(r => r.json()),
+            fetch('http://localhost:8000/fisheries/sightings').then(r => r.json())
         ]);
 
         fishSchools = resMap;
@@ -1406,7 +1439,7 @@ function renderHistoricalChart() {
     const graphHeight = height - paddingTop - paddingBottom;
 
     const minYear = 2016;
-    const maxYear = 2025;
+    const maxYear = 2026;
     const minVal = 0;
     const maxVal = 100;
 
@@ -1519,7 +1552,7 @@ async function submitMarineSighting() {
     formData.append('notes', notes);
 
     try {
-        const response = await fetch('/api/fisheries/sightings', {
+        const response = await fetch('http://localhost:8000/fisheries/sightings', {
             method: 'POST',
             body: formData
         });
@@ -1537,7 +1570,7 @@ async function submitMarineSighting() {
             document.getElementById('dropzone-icon').style.color = '';
 
             // Refresh sightings list
-            const sightings = await fetch('/api/fisheries/sightings').then(r => r.json());
+            const sightings = await fetch('http://localhost:8000/fisheries/sightings').then(r => r.json());
             renderMarineSightings(sightings);
         } else {
             alert("Failed to submit sighting. Please try again.");
@@ -1584,6 +1617,9 @@ window.addEventListener('resize', () => {
     if (activeTab === 'fisheries' && activeFisheriesSubView === 'trends') {
         renderHistoricalChart();
     }
+    if (activeTab === 'weather' && climateTrendsData) {
+        requestAnimationFrame(() => renderClimateTrendsChart(climateTrendsData));
+    }
 });
 
 // 10. News Portal Module State & Actions
@@ -1593,21 +1629,8 @@ let activeNewsTopic = 'all';
 
 async function loadNews() {
     try {
-        // Fetch from the external NewsAPI endpoint with provided API key
-        const url = "https://newsapi.org/v2/everything?q=(farming%20OR%20weather%20OR%20weather%20OR%20biotechnology%20OR%20fishery%20OR%20aquaculture%20OR%20agriculture)&sortBy=publishedAt&language=en&apiKey=469db6fc98f74c8cb2e0dc7911cedc83";
-        const response = await fetch(url);
-        const json = await response.json();
-        // Map raw NewsAPI articles to the shape expected by the UI
-        newsArticles = (json.articles || []).map(item => ({
-            title: item.title || "",
-            summary: item.description || "",
-            source: (item.source && item.source.name) || "",
-            url: item.url || "#",
-            publishDate: item.publishedAt ? item.publishedAt.slice(0, 10) : "",
-            category: "Agriculture",
-            topic: "Trending",
-            outletType: "Global"
-        }));
+        const response = await fetch('http://localhost:8000/news');
+        newsArticles = await response.json();
         renderNews();
     } catch (e) {
         console.error("Error loading news: ", e);
@@ -1692,9 +1715,9 @@ function filterNewsCategory(cat) {
         document.getElementById('btn-news-cat-all').classList.add('active');
     } else if (cat === 'agriculture') {
         document.getElementById('btn-news-cat-agri').classList.add('active');
-    } /* else if (cat === 'fishery') {
+    } else if (cat === 'fishery') {
         document.getElementById('btn-news-cat-fish').classList.add('active');
-    } */
+    }
 
     renderNews();
 }
@@ -1710,7 +1733,7 @@ async function triggerManualNewsSync() {
     btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Syncing...';
 
     try {
-        const response = await fetch('/api/news/sync', { method: 'POST' });
+        const response = await fetch('http://localhost:8000/news/sync', { method: 'POST' });
         const result = await response.json();
 
         if (response.ok) {
@@ -1837,48 +1860,27 @@ function animateMorphCanvas() {
 
 
 // 13. Weather & Climate Updates Loader
+let climateTrendsData = null;
+
 async function loadWeather() {
     try {
-        const resForecast = await fetch('/api/weather/forecast');
-        const resTrends = await fetch('/api/weather/climate-trends');
+        const resForecast = await fetch('http://localhost:8000/weather/forecast');
+        const resTrends = await fetch('http://localhost:8000/weather/climate-trends');
 
         const forecasts = await resForecast.json();
         const trends = await resTrends.json();
 
+        climateTrendsData = trends;   // cache globally for re-renders on resize / tab revisit
+
         renderWeatherForecasts(forecasts);
-        renderClimateTrendsChart(trends);
+
+        // Defer chart render so the tab panel is fully visible and has real pixel dimensions
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => renderClimateTrendsChart(trends));
+        });
     } catch (e) {
         console.error("Error loading weather data:", e);
     }
-}
-
-function renderWeatherForecasts(forecasts) {
-    const grid = document.getElementById('weather-forecast-grid');
-    if (!grid) return;
-    grid.innerHTML = '';
-
-    if (!forecasts || forecasts.length === 0) {
-        grid.innerHTML = '<div class="card-glass" style="text-align: center; padding: 2rem; grid-column: span 2;"><p style="color: var(--text-secondary);">No forecast data available.</p></div>';
-        return;
-    }
-
-    forecasts.forEach(f => {
-        const card = `
-            <div class="card-glass" style="padding: 1.5rem; display: flex; flex-direction: column; justify-content: space-between;">
-                <div>
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
-                        <span class="status-badge critical" style="background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2);"><i class="fa-solid fa-temperature-three-quarters"></i> ${f.currentTemp}°C</span>
-                        <span class="status-badge" style="background: rgba(217, 119, 6, 0.1); color: var(--color-gold); border: 1px solid rgba(217, 119, 6, 0.2); font-weight:600;">ENSO Index: ${f.anomalyIndex}</span>
-                    </div>
-                    <h3 class="card-title" style="margin-bottom: 0.5rem; color: var(--text-primary); font-family: var(--font-heading); font-weight: 600;">${f.region}</h3>
-                    <p style="color: var(--text-primary); font-weight: 600; font-size: 0.95rem; margin-bottom: 0.75rem;"><i class="fa-solid fa-cloud-sun"></i> ${f.forecast}</p>
-                    <p style="color: var(--text-secondary); font-size: 0.85rem; line-height: 1.5; margin-bottom: 0.25rem;"><strong>El Niño Status:</strong> ${f.elNinoStatus}</p>
-                    <p style="color: var(--text-secondary); font-size: 0.85rem; line-height: 1.5;"><strong>Monsoon Impact:</strong> ${f.elNinoImpact}</p>
-                </div>
-            </div>
-        `;
-        grid.innerHTML += card;
-    });
 }
 
 function renderClimateTrendsChart(trends) {
@@ -1890,108 +1892,114 @@ function renderClimateTrendsChart(trends) {
     const width = rect.width > 0 ? Math.floor(rect.width) : (container.offsetWidth || 800);
     const height = rect.height > 0 ? Math.floor(rect.height) : (container.offsetHeight || 350);
 
-    // Guard: container not yet visible/rendered
-    // Guard: container not yet visible/rendered
     if (!width || !height) return;
 
-    const paddingLeft = 65;
-    const paddingRight = 65;
-    const paddingTop = 30;
-    const paddingBottom = 50;
+    // Generous padding so axis labels fit INSIDE the SVG viewBox
+    const paddingLeft = 72;
+    const paddingRight = 72;
+    const paddingTop = 24;
+    const paddingBottom = 52;   // room for x-axis year labels
 
     const graphWidth = width - paddingLeft - paddingRight;
     const graphHeight = height - paddingTop - paddingBottom;
 
     const years = trends.map(t => t.year);
-    const minYear = Math.min(...years);
-    const maxYear = Math.max(...years);
+    const minYear = Math.min(...years);   // 2000
+    const maxYear = Math.max(...years);   // 2026
 
-    // =========================================================================
-    // 🛠️ FIX 1: DYNAMIC SCALE BOUNDS (No more hardcoded magic numbers)
-    // =========================================================================
-    const tempValues = trends.map(t => Number(t.temp_anomaly) || 0);
-    const rainValues = trends.map(t => Number(t.rainfall_deviation) || 0);
+    // 1. Normalise rainfall deviation if backend sent raw mm
+    trends.forEach(t => {
+        if (t.annual_accumulated_rain_mm && (t.rainfall_deviation > 100 || t.rainfall_deviation < -100)) {
+            t.rainfall_deviation = ((t.annual_accumulated_rain_mm - 650) / 650) * 100;
+        }
+    });
 
-    // Auto-scale to the data, but keep a sensible minimum container view
-    const minTemp = Math.min(...tempValues, 0);
-    const maxTemp = Math.max(...tempValues, 1.5);
+    // 2. Dynamic bounds with 15% breathing room
+    const temps = trends.map(t => t.temp_anomaly);
+    const rains = trends.map(t => t.rainfall_deviation);
 
-    const minRain = Math.min(...rainValues, -25);
-    const maxRain = Math.max(...rainValues, 15);
+    let minTemp = Math.min(...temps);
+    let maxTemp = Math.max(...temps);
+    let minRain = Math.min(...rains);
+    let maxRain = Math.max(...rains);
 
-    // Prevent division-by-zero errors if the datasets are entirely flat
-    const tempRange = (maxTemp - minTemp) || 1;
-    const rainRange = (maxRain - minRain) || 1;
-    const yearRange = (maxYear - minYear) || 1;
+    const tempPad = (maxTemp - minTemp) === 0 ? 0.5 : (maxTemp - minTemp) * 0.15;
+    minTemp -= tempPad; maxTemp += tempPad;
 
-    // =========================================================================
-    // Updated Coordinate Functions using the dynamic ranges
-    // =========================================================================
-    const getX = (year) => paddingLeft + ((year - minYear) / yearRange) * graphWidth;
-    const getYTemp = (val) => paddingTop + graphHeight - ((val - minTemp) / tempRange) * graphHeight;
-    const getYRain = (val) => paddingTop + graphHeight - ((val - minRain) / rainRange) * graphHeight;
+    const rainPad = (maxRain - minRain) === 0 ? 5 : (maxRain - minRain) * 0.15;
+    minRain -= rainPad; maxRain += rainPad;
 
-    // =========================================================================
-    // 🛠️ FIX 2: CONTROL OVERFLOW 
-    // Changed overflow to hidden to prevent rogue elements from escaping the card
-    // =========================================================================
-    let svg = `<svg width="100%" height="100%" viewBox="0 0 ${width} ${height}" style="overflow:hidden;">`;
+    // 3. Scale helpers — clamp Y so dots never leave the plot area
+    const getX = year => paddingLeft + ((year - minYear) / (maxYear - minYear || 1)) * graphWidth;
+    const getYTemp = val => paddingTop + graphHeight - ((val - minTemp) / (maxTemp - minTemp)) * graphHeight;
+    const getYRain = val => paddingTop + graphHeight - ((val - minRain) / (maxRain - minRain)) * graphHeight;
+    const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 
-    // Gridlines & Axis Values (Will automatically adapt to new scale names!)
-    for (let i = 0; i <= 4; i++) {
-        const ratio = i / 4;
+    // 4. Build SVG — clipPath keeps lines inside the plot box
+    let svg = `<svg width="100%" height="100%" viewBox="0 0 ${width} ${height}" style="overflow:hidden; display:block;">`;
+    svg += `<defs><clipPath id="plot-clip"><rect x="${paddingLeft}" y="${paddingTop}" width="${graphWidth}" height="${graphHeight}"/></clipPath></defs>`;
+
+    // 5. Horizontal gridlines (6 bands) + dual Y-axis labels
+    const GRID_STEPS = 6;
+    for (let i = 0; i <= GRID_STEPS; i++) {
+        const ratio = i / GRID_STEPS;
         const y = paddingTop + ratio * graphHeight;
-        svg += `<line x1="${paddingLeft}" y1="${y}" x2="${width - paddingRight}" y2="${y}" stroke="rgba(15,23,42,0.08)" stroke-width="1"/>`;
-
-        const tempVal = (maxTemp - (ratio * tempRange)).toFixed(2);
-        svg += `<text x="${paddingLeft - 10}" y="${y + 4}" fill="var(--text-secondary)" font-size="10" text-anchor="end">${tempVal}°C</text>`;
-
-        const rainVal = Math.round(maxRain - (ratio * rainRange));
-        svg += `<text x="${width - paddingRight + 10}" y="${y + 4}" fill="var(--text-secondary)" font-size="10" text-anchor="start">${rainVal}%</text>`;
+        // gridline
+        svg += `<line x1="${paddingLeft}" y1="${y}" x2="${paddingLeft + graphWidth}" y2="${y}" stroke="rgba(15,23,42,0.07)" stroke-width="1"/>`;
+        // left axis: temp anomaly (°C)
+        const tempVal = (maxTemp - ratio * (maxTemp - minTemp)).toFixed(2);
+        svg += `<text x="${paddingLeft - 8}" y="${y + 4}" fill="#ef4444" font-size="10" text-anchor="end" font-family="sans-serif">${tempVal}°C</text>`;
+        // right axis: rainfall deviation (%)
+        const rainVal = (maxRain - ratio * (maxRain - minRain)).toFixed(1);
+        svg += `<text x="${paddingLeft + graphWidth + 8}" y="${y + 4}" fill="#3b82f6" font-size="10" text-anchor="start" font-family="sans-serif">${rainVal}%</text>`;
     }
 
-    const labelYears = [2000, 2005, 2010, 2015, 2020, 2025];
-    labelYears.forEach(year => {
-        if (year >= minYear && year <= maxYear) {
-            const x = getX(year);
-            svg += `<line x1="${x}" y1="${paddingTop}" x2="${x}" y2="${paddingTop + graphHeight}" stroke="rgba(15,23,42,0.04)" stroke-width="1"/>`;
-            svg += `<text x="${x}" y="${paddingTop + graphHeight + 20}" fill="var(--text-secondary)" font-size="10" text-anchor="middle">${year}</text>`;
+    // 6. Vertical gridlines + X-axis year labels every 5 years
+    for (let yr = minYear; yr <= maxYear; yr++) {
+        const x = getX(yr);
+        const showLabel = (yr % 5 === 0) || yr === minYear || yr === maxYear;
+        if (showLabel) {
+            svg += `<line x1="${x}" y1="${paddingTop}" x2="${x}" y2="${paddingTop + graphHeight}" stroke="rgba(15,23,42,0.06)" stroke-width="1"/>`;
+            svg += `<text x="${x}" y="${paddingTop + graphHeight + 18}" fill="var(--text-secondary)" font-size="10" text-anchor="middle" font-family="sans-serif">${yr}</text>`;
         }
-    });
+    }
 
+    // 7. Axis border lines
+    svg += `<line x1="${paddingLeft}" y1="${paddingTop}" x2="${paddingLeft}" y2="${paddingTop + graphHeight}" stroke="rgba(15,23,42,0.15)" stroke-width="1"/>`;
+    svg += `<line x1="${paddingLeft}" y1="${paddingTop + graphHeight}" x2="${paddingLeft + graphWidth}" y2="${paddingTop + graphHeight}" stroke="rgba(15,23,42,0.15)" stroke-width="1"/>`;
+
+    // 8. Build line paths (clipped)
     let pathTemp = '';
     let pathRain = '';
-
     trends.forEach((t, idx) => {
         const x = getX(t.year);
-        const yTemp = getYTemp(t.temp_anomaly);
-        const yRain = getYRain(t.rainfall_deviation);
-
-        if (idx === 0) {
-            pathTemp += `M ${x} ${yTemp}`;
-            pathRain += `M ${x} ${yRain}`;
-        } else {
-            pathTemp += ` L ${x} ${yTemp}`;
-            pathRain += ` L ${x} ${yRain}`;
-        }
+        const yTemp = clamp(getYTemp(t.temp_anomaly), paddingTop, paddingTop + graphHeight);
+        const yRain = clamp(getYRain(t.rainfall_deviation), paddingTop, paddingTop + graphHeight);
+        pathTemp += idx === 0 ? `M ${x} ${yTemp}` : ` L ${x} ${yTemp}`;
+        pathRain += idx === 0 ? `M ${x} ${yRain}` : ` L ${x} ${yRain}`;
     });
 
-    svg += `<path d="${pathTemp}" fill="none" stroke="#ef4444" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>`;
-    svg += `<path d="${pathRain}" fill="none" stroke="#3b82f6" stroke-width="3" stroke-dasharray="4,4" stroke-linecap="round" stroke-linejoin="round"/>`;
+    svg += `<g clip-path="url(#plot-clip)">`;
+    svg += `<path d="${pathTemp}" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>`;
+    svg += `<path d="${pathRain}" fill="none" stroke="#3b82f6" stroke-width="2.5" stroke-dasharray="5,4" stroke-linecap="round" stroke-linejoin="round"/>`;
 
+    // 9. Data point dots (inside clip)
     trends.forEach(t => {
         const x = getX(t.year);
-        const yTemp = getYTemp(t.temp_anomaly);
-        const yRain = getYRain(t.rainfall_deviation);
-
-        svg += `<circle cx="${x}" cy="${yTemp}" r="4" fill="#ef4444" stroke="#ffffff" stroke-width="1.5"/>`;
-        svg += `<circle cx="${x}" cy="${yRain}" r="4" fill="#3b82f6" stroke="#ffffff" stroke-width="1.5"/>`;
+        const yTemp = clamp(getYTemp(t.temp_anomaly), paddingTop, paddingTop + graphHeight);
+        const yRain = clamp(getYRain(t.rainfall_deviation), paddingTop, paddingTop + graphHeight);
+        svg += `<circle cx="${x}" cy="${yTemp}" r="3" fill="#ef4444" stroke="#fff" stroke-width="1.5"/>`;
+        svg += `<circle cx="${x}" cy="${yRain}" r="3" fill="#3b82f6" stroke="#fff" stroke-width="1.5"/>`;
     });
+    svg += `</g>`;
+
+    // 10. Axis titles (inside viewBox, at safe positions)
+    svg += `<text x="14" y="${paddingTop + graphHeight / 2}" fill="#ef4444" font-size="10" text-anchor="middle" transform="rotate(-90,14,${paddingTop + graphHeight / 2})" font-family="sans-serif">Temp Anomaly (°C)</text>`;
+    svg += `<text x="${width - 10}" y="${paddingTop + graphHeight / 2}" fill="#3b82f6" font-size="10" text-anchor="middle" transform="rotate(90,${width - 10},${paddingTop + graphHeight / 2})" font-family="sans-serif">Rainfall Dev (%)</text>`;
 
     svg += `</svg>`;
     container.innerHTML = svg;
 }
-
 // 14. Floating Accessibility Speech Reader (TTS) Controls
 let currentUtterance = null;
 
@@ -2081,7 +2089,7 @@ const TRANSLATIONS = {
         'lbl-elnino-title': '<i class="fa-solid fa-circle-exclamation" style="color: var(--color-danger);"></i> El Niño Advisory & Monsoon Impact',
         'lbl-elnino-desc': 'El Niño conditions are currently active. In India, El Niño is historically linked to weaker southwest monsoons, delayed wind arrival, and below-average rainfall (averaging a 10-15% deficit). This increases drought risks in Central and North-West India. Rural professionals are advised to prioritize water harvesting, utilize mulching to conserve soil moisture, and select drought-resistant crop varieties.',
         'lbl-regional-forecasts-title': '<i class="fa-solid fa-map-location"></i> Regional Forecasts & Monsoon Deficits',
-        'lbl-climate-title': '<i class="fa-solid fa-chart-area"></i> Decadal Temperature Anomaly & Monsoon Deviation (2000 - 2025)',
+        'lbl-climate-title': '<i class="fa-solid fa-chart-area"></i> Decadal Temperature Anomaly & Monsoon Deviation (2000 - 2026)',
         'lbl-climate-subtitle': 'Long-term temperature anomalies (relative to 20th century average) and corresponding rainfall deficits illustrating climate change footprints.',
         'lbl-coral-title': '<i class="fa-solid fa-shield-heart"></i> Coral Reef Protection Guide',
         'lbl-coral-intro': 'Coral reefs are the rain forests of the sea. They occupy less than 0.1% of the ocean but shelter over 25% of all marine life, serving as primary nurseries for sardines, mackerel, and snapper.',
@@ -2110,7 +2118,7 @@ const TRANSLATIONS = {
         'lbl-market-subtitle': 'Register, login, and browse organic products directly from rural sellers. Explanations of "bio" and home chemical testing kits are available below.',
         'lbl-fisheries-title': '<i class="fa-solid fa-ship"></i> Fisheries Hub & Marine Ecosystem',
         'lbl-fisheries-desc': 'Explore coastal fish heatmap zones, breeding restriction calendars with multilingual conservation insights, ocean population charts, and marine mammal sightings.',
-        'lbl-groundwater-title': '<i class="fa-solid fa-droplet"></i> Groundwater Depletion & Sewage Contamination Visualizer (2016 - 2025)',
+        'lbl-groundwater-title': '<i class="fa-solid fa-droplet"></i> Groundwater Depletion & Sewage Contamination Visualizer (2016 - 2026)',
         'lbl-groundwater-subtitle': 'Monitor water table drawdown (mbgl) and track the overlap of urban sewage mixing in agricultural aquifers.',
         'lbl-gw-year-label': 'Select Forecast/Historical Year:',
         'lbl-gw-map-title': 'Interactive Ground Water Aquifers Map',
@@ -2161,7 +2169,7 @@ const TRANSLATIONS = {
         'lbl-elnino-title': '<i class="fa-solid fa-circle-exclamation" style="color: var(--color-danger);"></i> अल नीनो सलाह और मानसून प्रभाव',
         'lbl-elnino-desc': 'अल नीनो स्थिति वर्तमान में सक्रिय है। भारत में, अल नीनो ऐतिहासिक रूप से कमजोर दक्षिण-पश्चिम मानसून, देरी से हवाओं के आगमन और औसत से कम वर्षा (औसत 10-15% की कमी) से जुड़ा हुआ है। इससे मध्य और उत्तर-पश्चिम भारत में सूखे का खतरा बढ़ जाता है। ग्रामीण पेशेवरों को जल संचयन को प्राथमिकता देने, मिट्टी की नमी को बनाए रखने के लिए मल्चिंग का उपयोग करने और सूखा-प्रतिरोधी फसल किस्मों का चयन करने की सलाह दी जाती है।',
         'lbl-regional-forecasts-title': '<i class="fa-solid fa-map-location"></i> क्षेत्रीय पूर्वानुमान और मानसून की कमी',
-        'lbl-climate-title': '<i class="fa-solid fa-chart-area"></i> दशक तापमान विसंगति और मानसून विचलन (2000 - 2025)',
+        'lbl-climate-title': '<i class="fa-solid fa-chart-area"></i> दशक तापमान विसंगति और मानसून विचलन (2000 - 2026)',
         'lbl-climate-subtitle': 'दीर्घकालिक तापमान विसंगतियां और संबंधित वर्षा घाटा जो जलवायु परिवर्तन के प्रभावों को दर्शाते हैं।',
         'lbl-coral-title': '<i class="fa-solid fa-shield-heart"></i> मूंगा चट्टान संरक्षण गाइड',
         'lbl-coral-intro': 'मूंगा चट्टानें समुद्र के वर्षावन हैं। वे महासागर के 0.1% से भी कम हिस्से पर कब्जा करती हैं लेकिन 25% से अधिक समुद्री जीवन को आश्रय देती हैं, जो सार्डिन, मैकेरल और स्नैपर के प्राथमिक नर्सरी के रूप में कार्य करती हैं।',
@@ -2190,7 +2198,7 @@ const TRANSLATIONS = {
         'lbl-market-subtitle': 'ग्रामीण विक्रेताओं से सीधे जैविक उत्पादों को पंजीकृत करें, लॉगिन करें और ब्राउज़ करें। "बायो" और घरेलू रासायनिक परीक्षण किट की व्याख्या नीचे उपलब्ध है।',
         'lbl-fisheries-title': '<i class="fa-solid fa-ship"></i> मत्स्य पालन केंद्र और समुद्री पारिस्थितिकी तंत्र',
         'lbl-fisheries-desc': 'तटीय मछली ताप-मानचित्र क्षेत्रों, बहुभाषी संरक्षण अंतर्दृष्टि के साथ प्रजनन प्रतिबंध कैलेंडर, महासागर जनसंख्या चार्ट और समुद्री स्तनपायी देखे जाने की खोज करें।',
-        'lbl-groundwater-title': '<i class="fa-solid fa-droplet"></i> भूजल रिक्तीकरण और सीवेज संदूषण विज़ुअलाइज़र (2016 - 2025)',
+        'lbl-groundwater-title': '<i class="fa-solid fa-droplet"></i> भूजल रिक्तीकरण और सीवेज संदूषण विज़ुअलाइज़र (2016 - 2026)',
         'lbl-groundwater-subtitle': 'जल स्तर में कमी (mbgl) की निगरानी करें और कृषि जलभृतों में शहरी सीवेज मिश्रण के ओवरलैप को ट्रैक करें।',
         'lbl-gw-year-label': 'पूर्वानुमान/ऐतिहासिक वर्ष चुनें:',
         'lbl-gw-map-title': 'इंटरैक्टिव भूजल जलभृत मानचित्र',
@@ -2241,7 +2249,7 @@ const TRANSLATIONS = {
         'lbl-elnino-title': '<i class="fa-solid fa-circle-exclamation" style="color: var(--color-danger);"></i> अल निनो सल्ला आणि मान्सून परिणाम',
         'lbl-elnino-desc': 'अल निनो परिस्थिती सध्या सक्रिय आहे. भारतात, अल निनोचा कमकुवत मान्सून आणि सरासरीपेक्षा कमी पाऊस (१०-१५% तूट) यांच्याशी संबंध आहे. यामुळे दुष्काळाचा धोका वाढतो. शेतकऱ्यांनी जलसंधारणाला प्राधान्य द्यावे.',
         'lbl-regional-forecasts-title': '<i class="fa-solid fa-map-location"></i> प्रादेशिक अंदाज आणि मान्सून तूट',
-        'lbl-climate-title': '<i class="fa-solid fa-chart-area"></i> दशकातील तापमान विसंगती आणि मान्सून विचलन (2000 - 2025)',
+        'lbl-climate-title': '<i class="fa-solid fa-chart-area"></i> दशकातील तापमान विसंगती आणि मान्सून विचलन (2000 - 2026)',
         'lbl-climate-subtitle': 'दीर्घकालीन तापमान विसंगती आणि संबंधित पावसाची तूट जी हवामान बदलाचे पाऊलखुणा दर्शवते.',
         'lbl-coral-title': '<i class="fa-solid fa-shield-heart"></i> प्रवाळ खडक संरक्षण मार्गदर्शक',
         'lbl-coral-intro': 'प्रवाळ खडक हे समुद्रातील वर्षावन आहेत. ते समुद्राचा ०.१% पेक्षा कमी भाग व्यापतात परंतु २५% सागरी जीवांना आश्रय देतात.',
@@ -2270,13 +2278,13 @@ const TRANSLATIONS = {
         'lbl-market-subtitle': 'ग्रामीण विक्रेत्यांकडून थेट सेंद्रिय उत्पादने नोंदवा, लॉग इन करा आणि ब्राउझ करा. "बायो" चे स्पष्टीकरण आणि घरगुती चाचणी किट्स खाली उपलब्ध आहेत.',
         'lbl-fisheries-title': '<i class="fa-solid fa-ship"></i> मत्स्यव्यवसाय केंद्र आणि सागरी परिसंस्था',
         'lbl-fisheries-desc': 'सागरी माсеमारी नकाशे, प्रजननावरील बंदीचे कॅलेंडर, सागरी लोकसंख्या तक्ते आणि सागरी सस्तन प्राण्यांच्या नोंदी पहा.',
-        'lbl-groundwater-title': '<i class="fa-solid fa-droplet"></i> भूजल पातळी घट आणि सांडपाणी दूषण विझ्युअलायझर (2016 - 2025)',
+        'lbl-groundwater-title': '<i class="fa-solid fa-droplet"></i> भूजल पातळी घट आणि सांडपाणी दूषण विझ्युअलायझर (2016 - 2026)',
         'lbl-groundwater-subtitle': 'भूजल पातळीतील घट (mbgl) नियंत्रित करा आणि कृषी जलस्रोतांमध्ये शहरी सांडपाणी मिश्रणाचा मागोवा घ्या.',
         'lbl-gw-year-label': 'पूर्वानुमान/ऐतिहासिक वर्ष निवडा:',
         'lbl-gw-map-title': 'परस्परसंवादी भूजल जलस्रोत नकाशा',
         'lbl-groundwater-chart-title': 'भूजल पातळीचा कल (mbgl मध्ये खोली)',
         'nav-btn-mesh': '<i class="fa-solid fa-circle-nodes"></i> ऑफलाइन मेश',
-        'lbl-mesh-title': '<i class="fa-solid fa-circle-nodes"></i> ऑफलाइन मेश नेटवर्क',
+        'lbl-mesh-title': '<i class="fa-solid fa-circle-nodes"></i> &#2310;&#2347;&#2354;&#2366;&#2311;&#2344; &#2350;&#2375;&#2358; &#2344;&#2375;&#2335;&#2354;&#2352;&#2381;&#2325;',
         'lbl-mesh-desc': 'ब्लूटूथ मेश तंत्रज्ञानाद्वारे जवळच्या वापरकर्त्यांशी थेट अलर्ट आणि लहान संदेशांची देवाणघेवाण करा। सेल्युलर नेटवर्क कव्हरेजशिवाय पूर्णपणे ऑफलाइन कार्य करते।',
         'lbl-mesh-send-title': '<i class="fa-solid fa-paper-plane"></i> संदेश प्रसारित करा',
         'lbl-mesh-send-desc': 'स्थानिक ब्लूटूथ मेश नेटवर्कवर प्रसारित करण्यासाठी एक लहान सूचना तयार करा।',
@@ -2324,7 +2332,7 @@ const TRANSLATIONS = {
         'lbl-elnino-title': '<i class="fa-solid fa-circle-exclamation" style="color: var(--color-danger);"></i> எல் நினோ எச்சரிக்கை மற்றும் பருவமழை தாக்கம்',
         'lbl-elnino-desc': 'எல் நினோ நிலைமைகள் தற்போது செயலில் உள்ளன. இது பருவமழை குறைவதற்கும் வறட்சி அபாயத்திற்கும் வழிவகுக்கும். விவசாயிகள் நீர் சேகரிப்புக்கு முன்னுரிமை வழங்க அறிவுறுத்தப்படுகிறார்கள்.',
         'lbl-regional-forecasts-title': '<i class="fa-solid fa-map-location"></i> பிராந்திய முன்னறிவிப்புகள் மற்றும் பருவமழை பற்றாக்குறை',
-        'lbl-climate-title': '<i class="fa-solid fa-chart-area"></i> வெப்பநிலை மற்றும் பருவமழை மாறுபாடு வரைபடம் (2000 - 2025)',
+        'lbl-climate-title': '<i class="fa-solid fa-chart-area"></i> வெப்பநிலை மற்றும் பருவமழை மாறுபாடு வரைபடம் (2000 - 2026)',
         'lbl-climate-subtitle': 'நீண்ட கால வெப்பநிலை மாற்றங்கள் மற்றும் பருவமழை பற்றாக்குறை காலநிலை மாற்றத்தை விளக்குகின்றன.',
         'lbl-coral-title': '<i class="fa-solid fa-shield-heart"></i> பவளப்பாறை பாதுகாப்பு வழிகாட்டி',
         'lbl-coral-intro': 'பவளப்பாறைகள் கடலின் மழைக்காடுகள் ஆகும். இவை 25% கடல் உயிரினங்களுக்கு புகலிடம் அளிக்கின்றன.',
@@ -2353,7 +2361,7 @@ const TRANSLATIONS = {
         'lbl-market-subtitle': 'கிராமப்புற விற்பனையாளர்களிடமிருந்து நேரடியாக இயற்கை தயாரிப்புகளை பதிவு செய்யவும், உள்நுழையவும் மற்றும் உலாவவும். "பयो" விளக்கங்கள் மற்றும் வீட்டு சோதனை கருவிகள் கீழே உள்ளன.',
         'lbl-fisheries-title': '<i class="fa-solid fa-ship"></i> மீன்வள மையம் & கடல்சார் சுற்றுச்சூழல் அமைப்பு',
         'lbl-fisheries-desc': 'கடலோர மீன் வரைபடங்கள், மீன் இனப்பெருக்க தடை காலங்கள், கடல்சார் மக்கள் தொகை விளக்கப்படங்கள் மற்றும் கடல் பாலೂட்டிகளின் பதிவுகளை ஆராயுங்கள்.',
-        'lbl-groundwater-title': '<i class="fa-solid fa-droplet"></i> நிலத்தடி நீர் குறைப்பு & கழிவுநீர் மாசு காட்சிப்படுத்தி (2016 - 2025)',
+        'lbl-groundwater-title': '<i class="fa-solid fa-droplet"></i> நிலத்தடி நீர் குறைப்பு & கழிவுநீர் மாசு காட்சிப்படுத்தி (2016 - 2026)',
         'lbl-groundwater-subtitle': 'நிலத்தடி நீர் மட்டக் குறைவைக் கண்காணித்து, விவசாய நீர்நிலைகளில் நகர்ப்புற கழிவுநீர் கலப்பைக் கண்டறியவும்.',
         'lbl-gw-year-label': 'முன்கணிப்பு/வரலாற்று ஆண்டைத் தேர்ந்தெடுக்கவும்:',
         'lbl-gw-map-title': 'ஊடாடும் நிலத்தடி நீர்நிலைகள் வரைபடம்',
@@ -2391,7 +2399,7 @@ const TRANSLATIONS = {
         'lbl-elnino-title': '<i class="fa-solid fa-circle-exclamation" style="color: var(--color-danger);"></i> എல் നിനോ മുന്നറിയിപ്പും മൺസൂൺ സ്വാധീനവും',
         'lbl-elnino-desc': 'എல் നിനോ പ്രതിഭാസം സജീവമാണ്. ഇത് മൺസൂൺ കുറയുന്നതിനും വരൾച്ചയ്ക്കും കാരണമായേക്കാം. കർഷകർ ജലസംരക്ഷണത്തിന് പ്രാധാന്യം നൽകണം.',
         'lbl-regional-forecasts-title': '<i class="fa-solid fa-map-location"></i> പ്രാദേശിക കാലാവസ്ഥാ പ്രവചനവും മൺസൂൺ കുറവും',
-        'lbl-climate-title': '<i class="fa-solid fa-chart-area"></i> താപനില വ്യതിയാനത്തിന്റെയും മൺസൂൺ കുറവിന്റെയും ചാർട്ട് (2000 - 2025)',
+        'lbl-climate-title': '<i class="fa-solid fa-chart-area"></i> താപനില വ്യതിയാനത്തിന്റെയും മൺസൂൺ കുറവിന്റെയും ചാർട്ട് (2000 - 2026)',
         'lbl-climate-subtitle': 'ദീർഘകാല താപനില വ്യതിയാനങ്ങളും മഴയുടെ കുറവും കാലാവസ്ഥാ വ്യതിയാനത്തിന്റെ ലക്ഷണങ്ങൾ കാണിക്കുന്നു.',
         'lbl-coral-title': '<i class="fa-solid fa-shield-heart"></i> പവിഴപ്പുറ്റുകളുടെ സംരക്ഷണ സഹായി',
         'lbl-coral-intro': 'പവിഴപ്പുറ്റുകൾ കടലിലെ മഴക്കാടുകളാണ്. അവ 25 ശതമാനത്തിലധികം കടൽ ജീവികൾക്ക് സംരക്ഷണം നൽകുന്നു.',
@@ -2420,7 +2428,7 @@ const TRANSLATIONS = {
         'lbl-market-subtitle': 'ഗ്രാമീണ കർഷകരിൽ നിന്ന് നേരിട്ട് ജൈવ ഉൽപ്പന്നങ്ങൾ വാങ്ങാനും വിൽക്കാനുമുള്ള മാർക്കറ്റ്. പരിശോധന മാർഗ്ഗങ്ങളും താഴെ കൊടുത്തിരിക്കുന്നു.',
         'lbl-fisheries-title': '<i class="fa-solid fa-ship"></i> ഫിഷറീസ് ഹബ്ബും സമുദ്ര ആവാസവ്യവസ്ഥയും',
         'lbl-fisheries-desc': 'തീരദേശ മത്സ്യ ലഭ്യത ഭൂപടങ്ങൾ, പ്രജനന നിരോധന കലണ്ടർ, സമുദ്ര ജീവികളുടെ എണ്ണത്തിലുള്ള മാറ്റങ്ങൾ എന്നിവ കണ്ടെത്തുക.',
-        'lbl-groundwater-title': '<i class="fa-solid fa-droplet"></i> ഭൂഗർഭജല ചൂഷണവും മലിനജല കലർച്ചയും കാണിക്കുന്ന മാപ്പ് (2016 - 2025)',
+        'lbl-groundwater-title': '<i class="fa-solid fa-droplet"></i> ഭൂഗർഭജല ചൂഷണവും മലിനജല കലർച്ചയും കാണിക്കുന്ന മാപ്പ് (2016 - 2026)',
         'lbl-groundwater-subtitle': 'ഭൂഗർഭ ജലനിരപ്പിലെ കുറവും (mbgl) കാർഷിക ജലാശയങ്ങളിൽ നഗര മലിനജലം കലരുന്നത് ട്രാക്ക് ചെയ്യാനും സഹായിക്കുന്നു.',
         'lbl-gw-year-label': 'വർഷം തിരഞ്ഞെടുക്കുക:',
         'lbl-sewage-toggle-label': 'മലിനജല കലർച്ചയുടെ മാപ്പ് കാണിക്കുക',
@@ -2502,7 +2510,7 @@ const TRANSLATIONS = {
         'lbl-market-subtitle': 'গ্রামীণ বিক্রেতাদের কাছ থেকে সরাসরি জৈব পণ্য নিবন্ধন করুন, লগইন করুন এবং ব্রাউজ করুন। জৈব চাষের ব্যাখ্যা ও পরীক্ষা পদ্ধতি নিচে উপলব্ধ।',
         'lbl-fisheries-title': '<i class="fa-solid fa-ship"></i> মৎস্য কেন্দ্র ও সামুদ্রিক বাস্তুতন্ত্র',
         'lbl-fisheries-desc': 'উপকূলীয় মাছের উপস্থিতি মানচিত্র, প্রজনন নিষেধাজ্ঞা ক্যালেন্ডার, সামুদ্রিক মাছের জনসংখ্যা এবং অন্যান্য বিবরণ দেখুন।',
-        'lbl-groundwater-title': '<i class="fa-solid fa-droplet"></i> ভূগর্ভস্থ জল হ্রাস এবং পয়ঃনিষ্কাশন দূষণ ভিজ্যুয়ালাইজার (2016 - 2025)',
+        'lbl-groundwater-title': '<i class="fa-solid fa-droplet"></i> ভূগর্ভস্থ জল হ্রাস এবং পয়ঃনিষ্কাশন দূষণ ভিজ্যুয়ালাইজার (2016 - 2026)',
         'lbl-groundwater-subtitle': 'ভূগর্ভস্থ জলের স্তর হ্রাস (mbgl) নিরীক্ষণ করুন এবং কৃষি জলাশয়ে পয়ঃনিষ্কাশন মিশ্রণের ওভারল্যাপ ট্র্যাক করুন।',
         'lbl-gw-year-label': 'পূর্বাভাস/ঐতিহাসিক বছর নির্বাচন করুন:',
         'lbl-gw-map-title': 'ইন্টারেক্টিভ ভূগর্ভস্থ জলাশয় মানচিত্র',
@@ -2540,7 +2548,7 @@ const TRANSLATIONS = {
         'lbl-elnino-title': '<i class="fa-solid fa-circle-exclamation" style="color: var(--color-danger);"></i> ఎల్ నినో సలహా & రుతుపవనాల ప్రభావం',
         'lbl-elnino-desc': 'ఎల్ నినో పరిస్థితులు ప్రస్తుతం క్రియాశీలంగా ఉన్నాయి. భారతదేశంలో, ఇది బలహీనమైన నైరుతి రుతుపవనాలకు, ఆలస్యంగా వచ్చే గాలికి మరియు సగటు కంటే తక్కువ వర్షపాతానికి (సగటున 10-15% లోటు) దారితీస్తుంది. ఇది మధ్య మరియు వాయువ్య భారతదేశంలో కరువు ప్రమాదాలను పెంచుతుంది. నీటి సంరక్షణకు ప్రాధాన్యత ఇవ్వాలని, నేల తేమను కాపాడటానికి రక్షక కవచాలను ఉపయోగించాలని మరియు కరువును తట్టుకునే పంట రకాలను ఎంచుకోవాలని సూచించబడింది.',
         'lbl-regional-forecasts-title': '<i class="fa-solid fa-map-location"></i> ప్రాంతీయ వాతావరణ అంచనాలు & రుతుపవనాల లోటు',
-        'lbl-climate-title': '<i class="fa-solid fa-chart-area"></i> దశాబ్దపు ఉష్ణోగ్రత వైవిధ్యం & రుతుపవనాల విచలనం (2000 - 2025)',
+        'lbl-climate-title': '<i class="fa-solid fa-chart-area"></i> దశాబ్దపు ఉష్ణోగ్రత వైవిధ్యం & రుతుపవనాల విచలనం (2000 - 2026)',
         'lbl-climate-subtitle': 'దీర్ఘకాలిక ఉష్ణోగ్రత వైవిధ్యాలు మరియు దానికి సంబంధించిన వర్షపాత లోటు వాతావరణ మార్పుల ప్రభావాన్ని సూచిస్తుంది.',
         'lbl-coral-title': '<i class="fa-solid fa-shield-heart"></i> పగడపు దిబ్బల పరిరక్షణ మార్గదర్శి',
         'lbl-coral-intro': 'పగడపు దిబ్బలు సముద్రపు వర్షారణ్యాలు. ఇవి సముద్రంలో 0.1% కంటే తక్కువ భాగాన్ని మాత్రమే ఆక్రమించినప్పటికీ, 25% పైగా సముద్ర జీవులకు ఆశ్రయం కల్పిస్తాయి, సర్డినెస్, మాకేరెల్ మరియు స్నాపర్ వంటి చేపలకు ప్రాథమిక నర్సరీలుగా పనిచేస్తాయి.',
@@ -2569,7 +2577,7 @@ const TRANSLATIONS = {
         'lbl-market-subtitle': 'నమోదు చేసుకోండి, లాగిన్ అవ్వండి మరియు గ్రామీణ విక్రేతల నుండి నేరుగా సేంద్రీయ ఉత్పత్తులను బ్రౌజ్ చేయండి. బయో వివరణలు మరియు గృహ రసాయన పరీక్షల కిట్లు క్రింద అందుబాటులో ఉన్నాయి.',
         'lbl-fisheries-title': '<i class="fa-solid fa-ship"></i> మత్స్య సంపద కేంద్రం & సముద్ర పర్యావరణ వ్యవస్థ',
         'lbl-fisheries-desc': 'తీరప్రాంత చేపల హీట్‌మ్యాప్ జోన్‌లు, బహుభాషా పరిరక్షణ అంతర్దృష్టులతో సంతానోత్పత్తి నియంత్రణ క్యాలెండర్లు, సముద్ర జనాభా చార్టులు మరియు సముద్ర క్షీరదాల వీక్షణలను అన్వేషించండి.',
-        'lbl-groundwater-title': '<i class="fa-solid fa-droplet"></i> భూగర్భ జలాల క్షీణత & మురుగునీటి కాలుష్య విజువలైజర్ (2016 - 2025)',
+        'lbl-groundwater-title': '<i class="fa-solid fa-droplet"></i> భూగర్భ జలాల క్షీణత & మురుగునీటి కాలుష్య విజువలైజర్ (2016 - 2026)',
         'lbl-groundwater-subtitle': 'భూగర్భ జలాల తగ్గుదలను పర్యవేక్షించండి మరియు వ్యవసాయ భూగర్భ జలాల్లో పట్టణ మురుగునీటి కలయికను ట్రాక్ చేయండి.',
         'lbl-gw-year-label': 'అంచనా/చారిత్రక సంవత్సరాన్ని ఎంచుకోండి:',
         'lbl-sewage-toggle-label': 'మురుగునీటి కాలుష్య ఓవర్లేను చూపించు',
@@ -2616,9 +2624,9 @@ function translateUI(lang) {
 }
 
 // 13.5 Groundwater Depletion & Sewage Contamination Module
-/* async function loadGroundwaterData() {
+async function loadGroundwaterData() {
     try {
-        const response = await fetch('/api/weather/groundwater');
+        const response = await fetch('http://localhost:8000/weather/groundwater');
         groundwaterData = await response.json();
     } catch (e) {
         console.warn("Could not fetch groundwater data from API.", e);
@@ -2747,7 +2755,7 @@ function renderGroundwaterChart() {
 
     // Determine dataset for chart (specific district or national average)
     let points = [];
-    const years = [2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2025];
+    const years = [2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026];
 
     const localLabels = {
         'en': { natAvg: "National Average (All Districts)", dist: "District: " },
@@ -2798,7 +2806,7 @@ function renderGroundwaterChart() {
     const graphHeight = height - paddingTop - paddingBottom;
 
     const minYear = 2016;
-    const maxYear = 2025;
+    const maxYear = 2026;
 
     // We want the chart to display from 0 to 50 mbgl
     const minDepth = 0;
@@ -2857,7 +2865,7 @@ function renderGroundwaterChart() {
 
     svg += `</svg>`;
     container.innerHTML = svg;
-} */
+}
 
 // 15. Feedback & Suggestion System Logic
 let feedbackRating = 5; // Default rating to 5 stars
@@ -2882,7 +2890,7 @@ function initFeedbackTab() {
 }
 
 function fetchFeedback() {
-    fetch('/api/feedback')
+    fetch('http://localhost:8000/feedback')
         .then(res => res.json())
         .then(data => {
             renderFeedbackFeed(data);
@@ -2920,7 +2928,7 @@ function submitFeedback() {
         submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Submitting...';
     }
 
-    fetch('/api/feedback', {
+    fetch('http://localhost:8000/feedback', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -3032,146 +3040,43 @@ function renderFeedbackFeed(feedbackList) {
 
 
 // ============================================================
-//  B-MESSAGING  ·  BLE Mesh Network  ·  E2EE (ECDH + AES-GCM)
+//  B-MESSAGING  (BLE Mesh Network)
 // ============================================================
 
 // ── State ──────────────────────────────────────────────────
 const meshState = {
     myDeviceName: 'This Device',
-    peers: [],
-    messages: {},       // keyed by peer id; '' = broadcast log
-    activePeer: '',
+    peers: [],           // { id, name, rssi, lastSeen, online }
+    messages: {},        // keyed by peer id ('' = broadcast)
+    activePeer: '',      // '' means broadcast
     urgency: 'info',
     isBroadcastMode: true,
     initialized: false,
-    allMessages: [],
-
-    // E2EE
-    keyPair: null,          // ECDH CryptoKeyPair (local)
-    publicKeyJwk: null,     // Exportable JWK of own public key
-    fingerprint: '',        // SHA-256 hex fingerprint
-    peerPublicKeys: {},     // peerId → CryptoKey (public)
-    sharedKeys: {},         // peerId → CryptoKey (AES-GCM derived)
+    simulatorInterval: null,
+    allMessages: [],     // flat log for broadcast view
 };
 
 const MESH_DEMO_PEERS = [
-    { id: 'Kisan-A1B2', name: 'Kisan-A1B2', rssi: -58, online: true },
-    { id: 'Pashu-C3D4', name: 'Pashu-C3D4', rssi: -72, online: true },
-    { id: 'Gram-E5F6', name: 'Gram-E5F6', rssi: -85, online: false },
-    { id: 'Mitra-G7H8', name: 'Mitra-G7H8', rssi: -61, online: true },
+    { id: 'GramSetu-AI', name: 'GramSetu AI', rssi: -10, online: true }
 ];
 
-const MESH_DEMO_MSGS = [
-    { sender: 'Kisan-A1B2', text: 'Cattle market prices dropped 12% — advise holding stock.', urgency: 'warning', ts: '09:14 AM', encrypted: true },
-    { sender: 'Pashu-C3D4', text: 'FMD vaccination camp at Dharwad — 10 AM tomorrow.', urgency: 'info', ts: '09:21 AM', encrypted: true },
-    { sender: 'Gram-E5F6', text: '⚠️ Flash flood alert in lower basin zones. Evacuate livestock now.', urgency: 'emergency', ts: '09:33 AM', encrypted: true },
-    { sender: 'Mitra-G7H8', text: 'Wheat mandi rate at Kurnool: ₹2,280/quintal today.', urgency: 'info', ts: '09:48 AM', encrypted: true },
-];
+const MESH_DEMO_MSGS = [];
 
-// ── E2EE: Key Generation ────────────────────────────────────
-async function meshInitE2EE() {
-    try {
-        // Generate ephemeral ECDH P-256 key pair
-        meshState.keyPair = await window.crypto.subtle.generateKey(
-            { name: 'ECDH', namedCurve: 'P-256' },
-            true,
-            ['deriveKey']
-        );
-
-        // Export public key as JWK for sharing
-        meshState.publicKeyJwk = await window.crypto.subtle.exportKey('jwk', meshState.keyPair.publicKey);
-
-        // Compute SHA-256 fingerprint of exported public key bytes
-        const rawPub = await window.crypto.subtle.exportKey('raw', meshState.keyPair.publicKey);
-        const hashBuf = await window.crypto.subtle.digest('SHA-256', rawPub);
-        const hashArr = Array.from(new Uint8Array(hashBuf));
-        meshState.fingerprint = hashArr.map(b => b.toString(16).padStart(2, '0')).join('').toUpperCase();
-
-        // Update UI
-        document.getElementById('mesh-e2ee-label').textContent = 'E2EE: Active';
-        document.getElementById('mesh-key-fingerprint').textContent =
-            meshState.fingerprint.match(/.{1,4}/g).join(' ');
-
-        // Pre-derive shared keys for demo peers (using simulated peer public keys)
-        for (const p of meshState.peers) {
-            await meshDeriveSharedKey(p.id);
-        }
-
-        return true;
-    } catch (err) {
-        console.warn('E2EE init failed (likely non-HTTPS or old browser):', err);
-        document.getElementById('mesh-e2ee-label').textContent = 'E2EE: Unavailable';
-        document.getElementById('mesh-key-fingerprint').textContent = 'Web Crypto API unavailable in this context.';
-        return false;
+function meshAddPeer() {
+    const input = document.getElementById('mesh-peer-search');
+    const val = input.value.trim();
+    if (!val) return;
+    
+    // Check if peer exists
+    let peer = meshState.peers.find(p => p.name.toLowerCase() === val.toLowerCase());
+    if (!peer) {
+        // Create new peer
+        peer = { id: val, name: val, rssi: -50, online: true };
+        meshState.peers.unshift(peer);
     }
-}
-
-// Derive AES-GCM shared key for a peer (ECDH → HKDF → AES-GCM)
-async function meshDeriveSharedKey(peerId) {
-    try {
-        // For demo: generate a random peer key pair to simulate ECDH exchange
-        let peerPublicKey = meshState.peerPublicKeys[peerId];
-        if (!peerPublicKey) {
-            const peerSimKp = await window.crypto.subtle.generateKey(
-                { name: 'ECDH', namedCurve: 'P-256' }, true, ['deriveKey']
-            );
-            peerPublicKey = peerSimKp.publicKey;
-            meshState.peerPublicKeys[peerId] = peerPublicKey;
-        }
-
-        const sharedKey = await window.crypto.subtle.deriveKey(
-            { name: 'ECDH', public: peerPublicKey },
-            meshState.keyPair.privateKey,
-            { name: 'AES-GCM', length: 256 },
-            false,
-            ['encrypt', 'decrypt']
-        );
-        meshState.sharedKeys[peerId] = sharedKey;
-        return sharedKey;
-    } catch (err) {
-        console.warn('Key derivation failed for', peerId, err);
-        return null;
-    }
-}
-
-// Encrypt plaintext to base64 ciphertext using AES-GCM
-async function meshEncrypt(text, peerId) {
-    const key = meshState.sharedKeys[peerId];
-    if (!key) return { ciphertext: btoa(text), iv: 'none', encrypted: false };
-    try {
-        const iv = window.crypto.getRandomValues(new Uint8Array(12));
-        const enc = new TextEncoder();
-        const cipherBuf = await window.crypto.subtle.encrypt(
-            { name: 'AES-GCM', iv },
-            key,
-            enc.encode(text)
-        );
-        return {
-            ciphertext: btoa(String.fromCharCode(...new Uint8Array(cipherBuf))),
-            iv: btoa(String.fromCharCode(...iv)),
-            encrypted: true,
-        };
-    } catch (err) {
-        return { ciphertext: btoa(text), iv: 'none', encrypted: false };
-    }
-}
-
-// Decrypt AES-GCM ciphertext from base64
-async function meshDecrypt(ciphertext, ivB64, peerId) {
-    const key = meshState.sharedKeys[peerId];
-    if (!key || ivB64 === 'none') return atob(ciphertext);
-    try {
-        const cipherBuf = Uint8Array.from(atob(ciphertext), c => c.charCodeAt(0));
-        const iv = Uint8Array.from(atob(ivB64), c => c.charCodeAt(0));
-        const plainBuf = await window.crypto.subtle.decrypt(
-            { name: 'AES-GCM', iv },
-            key,
-            cipherBuf
-        );
-        return new TextDecoder().decode(plainBuf);
-    } catch (err) {
-        return '[Decryption failed]';
-    }
+    
+    input.value = '';
+    meshSelectPeer(peer.id);
 }
 
 // ── Init ───────────────────────────────────────────────────
@@ -3179,7 +3084,7 @@ function initMeshTab() {
     if (meshState.initialized) return;
     meshState.initialized = true;
 
-    // Resolve device name
+    // Resolve device name from Android bridge or generate one
     if (window.Android && typeof window.Android.getDeviceName === 'function') {
         meshState.myDeviceName = window.Android.getDeviceName();
     } else {
@@ -3188,33 +3093,14 @@ function initMeshTab() {
     }
     document.getElementById('mesh-my-device-name').textContent = meshState.myDeviceName;
 
-    // Load demo peers then init E2EE
-    setTimeout(async () => {
-        meshState.peers = JSON.parse(JSON.stringify(MESH_DEMO_PEERS));
-        meshRenderPeerList();
-        meshUpdatePeerCount();
-        document.getElementById('mesh-ble-label').textContent =
-            `${meshState.peers.filter(p => p.online).length} Peers Found`;
+    // Populate demo peers immediately
+    meshState.peers = JSON.parse(JSON.stringify(MESH_DEMO_PEERS));
+    meshRenderPeerList();
+    meshUpdatePeerCount();
 
-        // Init crypto
-        await meshInitE2EE();
-
-        // Load demo messages (flagged as encrypted)
-        MESH_DEMO_MSGS.forEach(m => meshAppendInboundMessage(m.sender, m.text, m.urgency, m.ts, '', m.encrypted));
-    }, 1500);
-
-    // BLE scan simulator
-    setInterval(() => {
-        if (activeTab !== 'mesh') return;
-        const noise = () => Math.floor(Math.random() * 6) - 3;
-        meshState.peers.forEach(p => { p.rssi = Math.max(-95, Math.min(-45, p.rssi + noise())); });
-        meshRenderPeerList();
-        meshUpdatePeerCount();
-    }, 30000);
-
-    // Android inbound bridge
-    window.receiveMeshMessage = function (sender, text, urgency, timestamp, recipient) {
-        meshAppendInboundMessage(sender, text, urgency, timestamp, recipient, true);
+    // Register global inbound bridge (called by Android native BLE scanner)
+    window.receiveMeshMessage = function(sender, text, urgency, timestamp, recipient) {
+        meshAppendInboundMessage(sender, text, urgency, timestamp, recipient);
     };
 }
 
@@ -3236,35 +3122,40 @@ function meshRenderPeerList(filter = '') {
     list.innerHTML = peers.map(p => {
         const isActive = meshState.activePeer === p.id;
         const signal = p.rssi > -65 ? 3 : p.rssi > -75 ? 2 : 1;
-        const signalBars = [0, 1, 2].map(i =>
-            `<span style="width:3px; height:${6 + i * 4}px; border-radius:2px; background:${i < signal ? '#3b82f6' : 'rgba(0,0,0,0.15)'}; display:inline-block;"></span>`
+        const signalBars = Array(3).fill(0).map((_, i) =>
+            `<span style="width:3px; height:${6+i*4}px; border-radius:2px; background:${i < signal ? '#3b82f6' : 'rgba(0,0,0,0.15)'}; display:inline-block;"></span>`
         ).join('');
         const initials = p.name.substring(0, 2).toUpperCase();
-        const hasKey = !!meshState.sharedKeys[p.id];
+        const hasUnread = (meshState.messages[p.id] || []).some(m => m.unread);
 
-        return `<div class="mesh-peer-item" onclick="meshSelectPeer('${p.id}')"
+        return `<div class="mesh-peer-item" data-peer-id="${p.id}"
+            onclick="meshSelectPeer('${p.id}')"
             style="display:flex; align-items:center; gap:0.65rem; padding:0.65rem 0.75rem; border-radius:10px; cursor:pointer; transition:all 0.2s;
                    background:${isActive ? 'rgba(59,130,246,0.12)' : 'transparent'};
                    border:1px solid ${isActive ? 'rgba(59,130,246,0.3)' : 'transparent'};">
             <div style="position:relative; flex-shrink:0;">
-                <div style="width:38px; height:38px; border-radius:10px; background:linear-gradient(135deg,#6366f1,#8b5cf6); display:flex; align-items:center; justify-content:center; color:#fff; font-size:0.8rem; font-weight:700;">${initials}</div>
+                <div style="width:38px; height:38px; border-radius:10px; background:linear-gradient(135deg,#6366f1,#8b5cf6); display:flex; align-items:center; justify-content:center; color:#fff; font-size:0.8rem; font-weight:700;">
+                    ${initials}
+                </div>
                 <span style="position:absolute; bottom:-2px; right:-2px; width:10px; height:10px; border-radius:50%; background:${p.online ? '#10b981' : '#94a3b8'}; border:2px solid white;"></span>
             </div>
             <div style="flex:1; min-width:0;">
                 <div style="font-size:0.88rem; font-weight:600; color:var(--text-primary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${p.name}</div>
-                <div style="font-size:0.72rem; color:var(--text-secondary);">${p.online ? 'Online' : 'Offline'} · ${p.rssi} dBm ${hasKey ? '· 🔒' : ''}</div>
+                <div style="font-size:0.72rem; color:var(--text-secondary);">${p.online ? 'Online' : 'Last seen recently'} · ${p.rssi} dBm</div>
             </div>
             <div style="display:flex; align-items:flex-end; gap:1px; flex-shrink:0;">${signalBars}</div>
+            ${hasUnread ? '<span style="width:8px;height:8px;border-radius:50%;background:#3b82f6;flex-shrink:0;"></span>' : ''}
         </div>`;
     }).join('');
 }
 
-function meshFilterPeers(val) { meshRenderPeerList(val); }
+// Removed meshFilterPeers as it is no longer used
 
 function meshUpdatePeerCount() {
+    const total = meshState.peers.length;
     const online = meshState.peers.filter(p => p.online).length;
     document.getElementById('mesh-peer-count').textContent =
-        `${meshState.peers.length} peers · ${online} online`;
+        `${total} contacts · ${online} online`;
 }
 
 // ── Peer Selection ─────────────────────────────────────────
@@ -3277,12 +3168,12 @@ function meshSelectPeer(peerId) {
     const peer = meshState.peers.find(p => p.id === peerId);
     if (peer) {
         const initials = peer.name.substring(0, 2).toUpperCase();
-        document.getElementById('mesh-chat-avatar').innerHTML = `<span>${initials}</span>`;
+        document.getElementById('mesh-chat-avatar').innerHTML = `<span style="font-size:0.9rem;">${initials}</span>`;
         document.getElementById('mesh-chat-avatar').style.background = 'linear-gradient(135deg,#6366f1,#8b5cf6)';
         document.getElementById('mesh-chat-title').textContent = peer.name;
-        document.getElementById('mesh-chat-subtitle').textContent =
-            `Direct BLE · ${peer.online ? 'Online' : 'Offline'} · ${peer.rssi} dBm · ${meshState.sharedKeys[peerId] ? '🔒 E2EE Active' : 'Unencrypted'}`;
+        document.getElementById('mesh-chat-subtitle').textContent = `Direct P2P message · ${peer.online ? 'Online' : 'Offline'}`;
     }
+
     meshRenderPeerList();
     meshRenderChatMessages(peerId);
 }
@@ -3295,7 +3186,7 @@ function meshToggleBroadcastMode() {
     document.getElementById('mesh-chat-avatar').innerHTML = '<i class="fa-solid fa-tower-broadcast"></i>';
     document.getElementById('mesh-chat-avatar').style.background = 'linear-gradient(135deg,#3b82f6,#8b5cf6)';
     document.getElementById('mesh-chat-title').textContent = 'All Peers (Broadcast)';
-    document.getElementById('mesh-chat-subtitle').textContent = 'Encrypted broadcast to all nearby BLE devices';
+    document.getElementById('mesh-chat-subtitle').textContent = 'Messages delivered to the global public broadcast channel';
     meshRenderPeerList();
     meshRenderChatMessages('');
 }
@@ -3303,94 +3194,98 @@ function meshToggleBroadcastMode() {
 // ── Messages ───────────────────────────────────────────────
 function meshRenderChatMessages(peerId) {
     const area = document.getElementById('mesh-messages-area');
-    const msgs = peerId === '' ? meshState.allMessages : (meshState.messages[peerId] || []);
+    const msgs = peerId === ''
+        ? meshState.allMessages
+        : (meshState.messages[peerId] || []);
 
     const systemMsg = `<div class="mesh-system-msg" style="text-align:center; margin-bottom:0.5rem;">
         <span style="background:rgba(59,130,246,0.1); color:#3b82f6; font-size:0.78rem; padding:0.3rem 0.9rem; border-radius:20px; font-weight:600;">
-            <i class="fa-brands fa-bluetooth-b"></i> B-Messaging BLE Mesh · AES-GCM E2EE Active
+            <i class="fa-solid fa-earth-americas"></i> B-Messaging Global Network initialized.
         </span>
     </div>`;
 
     if (msgs.length === 0) {
         area.innerHTML = systemMsg + `<div style="text-align:center; padding:2rem; color:var(--text-secondary); font-size:0.88rem; opacity:0.6;">
             <i class="fa-regular fa-comment-dots" style="font-size:2rem; display:block; margin-bottom:0.5rem;"></i>
-            No messages yet.
+            No messages yet. Start the conversation.
         </div>`;
         return;
     }
-    area.innerHTML = systemMsg + msgs.map(m => meshBuildBubble(m)).join('');
+
+    area.innerHTML = systemMsg + msgs.map(m => meshBuildMessageBubble(m)).join('');
     area.scrollTop = area.scrollHeight;
 }
 
-function meshBuildBubble(m) {
+function meshBuildMessageBubble(m) {
     const isMe = m.sender === meshState.myDeviceName;
-    const urgencyConf = {
-        info: { color: '#3b82f6', icon: 'fa-circle-info', label: 'Info' },
-        warning: { color: '#d97706', icon: 'fa-triangle-exclamation', label: 'Warning' },
-        emergency: { color: '#dc2626', icon: 'fa-siren-on', label: 'Emergency' },
+    const urgencyConfig = {
+        info:      { color: '#3b82f6', bg: 'rgba(59,130,246,0.08)', icon: 'fa-circle-info', label: 'Info' },
+        warning:   { color: '#d97706', bg: 'rgba(251,191,36,0.10)', icon: 'fa-triangle-exclamation', label: 'Warning' },
+        emergency: { color: '#dc2626', bg: 'rgba(220,38,38,0.10)', icon: 'fa-siren-on', label: 'Emergency' },
     };
-    const u = urgencyConf[m.urgency] || urgencyConf.info;
-    const lockIcon = m.encrypted !== false
-        ? `<span style="font-size:0.65rem; opacity:0.75; margin-left:0.3rem;" title="AES-GCM Encrypted">🔒</span>` : '';
+    const u = urgencyConfig[m.urgency] || urgencyConfig.info;
 
     if (isMe) {
         return `<div style="display:flex; flex-direction:column; align-items:flex-end; gap:0.2rem;">
             <div style="max-width:72%; background:linear-gradient(135deg,#3b82f6,#6366f1); color:#fff; padding:0.65rem 0.9rem; border-radius:16px 4px 16px 16px; font-size:0.9rem; line-height:1.5; box-shadow:0 2px 8px rgba(59,130,246,0.25);">
                 ${m.text}
-                ${m.urgency !== 'info' ? `<div style="margin-top:0.3rem; font-size:0.72rem; opacity:0.85;"><i class="fa-solid ${u.icon}"></i> ${u.label}</div>` : ''}
+                ${m.urgency !== 'info' ? `<div style="margin-top:0.35rem; font-size:0.72rem; opacity:0.85;"><i class="fa-solid ${u.icon}"></i> ${u.label}</div>` : ''}
             </div>
-            <div style="font-size:0.7rem; color:var(--text-secondary);">${m.ts} · You${lockIcon} · <i class="fa-solid fa-check-double" style="color:#3b82f6;"></i></div>
+            <div style="font-size:0.7rem; color:var(--text-secondary);">${m.ts} · You · <i class="fa-solid fa-check-double" style="color:#3b82f6;"></i></div>
+        </div>`;
+    } else {
+        const initials = (m.sender || '?').substring(0, 2).toUpperCase();
+        return `<div style="display:flex; flex-direction:column; align-items:flex-start; gap:0.2rem;">
+            <div style="display:flex; align-items:flex-end; gap:0.5rem;">
+                <div style="width:30px; height:30px; border-radius:8px; background:linear-gradient(135deg,#6366f1,#8b5cf6); display:flex; align-items:center; justify-content:center; color:#fff; font-size:0.7rem; font-weight:700; flex-shrink:0;">${initials}</div>
+                <div style="max-width:72%; background:${m.urgency === 'emergency' ? 'rgba(220,38,38,0.08)' : 'var(--bg-secondary)'}; border:1px solid ${u.color}22; padding:0.65rem 0.9rem; border-radius:4px 16px 16px 16px; font-size:0.9rem; line-height:1.5; box-shadow:0 1px 4px rgba(0,0,0,0.06);">
+                    <div style="font-size:0.72rem; font-weight:700; color:${u.color}; margin-bottom:0.25rem;"><i class="fa-solid ${u.icon}"></i> ${m.sender}</div>
+                    <div style="color:var(--text-primary);">${m.text}</div>
+                </div>
+            </div>
+            <div style="font-size:0.7rem; color:var(--text-secondary); padding-left:38px;">${m.ts}</div>
         </div>`;
     }
-    const initials = (m.sender || '?').substring(0, 2).toUpperCase();
-    return `<div style="display:flex; flex-direction:column; align-items:flex-start; gap:0.2rem;">
-        <div style="display:flex; align-items:flex-end; gap:0.5rem;">
-            <div style="width:30px; height:30px; border-radius:8px; background:linear-gradient(135deg,#6366f1,#8b5cf6); display:flex; align-items:center; justify-content:center; color:#fff; font-size:0.7rem; font-weight:700; flex-shrink:0;">${initials}</div>
-            <div style="max-width:72%; background:${m.urgency === 'emergency' ? 'rgba(220,38,38,0.07)' : 'var(--bg-secondary)'}; border:1px solid ${u.color}22; padding:0.65rem 0.9rem; border-radius:4px 16px 16px 16px; font-size:0.9rem; line-height:1.5; box-shadow:0 1px 4px rgba(0,0,0,0.06);">
-                <div style="font-size:0.72rem; font-weight:700; color:${u.color}; margin-bottom:0.25rem;"><i class="fa-solid ${u.icon}"></i> ${m.sender}${lockIcon}</div>
-                <div style="color:var(--text-primary);">${m.text}</div>
-            </div>
-        </div>
-        <div style="font-size:0.7rem; color:var(--text-secondary); padding-left:38px;">${m.ts}</div>
-    </div>`;
 }
 
-function meshAppendInboundMessage(sender, text, urgency, ts, recipient, encrypted = false) {
-    const msg = { sender, text, urgency, ts: ts || meshNow(), encrypted };
+function meshAppendInboundMessage(sender, text, urgency, ts, recipient) {
+    const msg = { sender, text, urgency, ts: ts || meshNow(), unread: true };
     meshState.allMessages.push(msg);
     if (!meshState.messages[sender]) meshState.messages[sender] = [];
     meshState.messages[sender].push(msg);
 
-    const viewing = (meshState.activePeer === '' && !recipient) || (meshState.activePeer === sender);
-    if (viewing && activeTab === 'mesh') {
+    // Auto-add sender to peers list if not exists
+    if (sender !== meshState.myDeviceName && !meshState.peers.find(p => p.id === sender)) {
+        meshState.peers.unshift({ id: sender, name: sender, rssi: -50, online: true });
+        meshRenderPeerList();
+    }
+
+    // If we're viewing this conversation, render live
+    const viewingThis = (meshState.activePeer === '' && !recipient) ||
+                        (meshState.activePeer === sender);
+    if (viewingThis && activeTab === 'mesh') {
         const area = document.getElementById('mesh-messages-area');
-        const wrap = document.createElement('div');
-        wrap.innerHTML = meshBuildBubble(msg);
-        area.appendChild(wrap.firstElementChild);
+        const bubble = document.createElement('div');
+        bubble.innerHTML = meshBuildMessageBubble(msg);
+        area.appendChild(bubble.firstElementChild);
         area.scrollTop = area.scrollHeight;
     }
+    meshUpdatePeerCount();
 }
 
-// ── Send (with E2EE) ───────────────────────────────────────
-async function meshSendMessage() {
+// ── Send ───────────────────────────────────────────────────
+function meshSendMessage() {
     const input = document.getElementById('mesh-compose-input');
     const text = input.value.trim();
     if (!text) return;
 
     const recipient = meshState.isBroadcastMode ? '' : meshState.activePeer;
-
-    // Encrypt for the target peer (or broadcast — encrypt to each peer separately in real use)
-    let encResult = { ciphertext: btoa(text), iv: 'none', encrypted: false };
-    if (meshState.keyPair && recipient && meshState.sharedKeys[recipient]) {
-        encResult = await meshEncrypt(text, recipient);
-    }
-
     const msg = {
         sender: meshState.myDeviceName,
-        text,       // display plaintext locally
+        text,
         urgency: meshState.urgency,
         ts: meshNow(),
-        encrypted: encResult.encrypted,
+        unread: false,
     };
 
     meshState.allMessages.push(msg);
@@ -3399,49 +3294,87 @@ async function meshSendMessage() {
         meshState.messages[recipient].push(msg);
     }
 
-    // Bridge to Android native BLE — send ciphertext over the air
+    // Bridge to native Android BLE layer
     if (window.Android && typeof window.Android.broadcastMeshMessage === 'function') {
-        window.Android.broadcastMeshMessage(encResult.ciphertext, meshState.urgency, recipient);
+        window.Android.broadcastMeshMessage(text, meshState.urgency, recipient);
     }
 
-    // Render bubble locally with plaintext
+    if (recipient === 'GramSetu-AI') {
+        fetch('http://localhost:8000/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: text })
+        }).then(res => res.json()).then(data => {
+            meshAppendInboundMessage('GramSetu-AI', data.response || data.error || 'Unknown error', 'info', meshNow(), meshState.myDeviceName);
+        }).catch(err => {
+            meshAppendInboundMessage('GramSetu-AI', 'Error connecting to AI service.', 'warning', meshNow(), meshState.myDeviceName);
+        });
+    }
+
+    // Render bubble
     const area = document.getElementById('mesh-messages-area');
-    const wrap = document.createElement('div');
-    wrap.innerHTML = meshBuildBubble(msg);
-    area.appendChild(wrap.firstElementChild);
+    const bubble = document.createElement('div');
+    bubble.innerHTML = meshBuildMessageBubble(msg);
+    area.appendChild(bubble.firstElementChild);
     area.scrollTop = area.scrollHeight;
 
+    // Clear input
     input.value = '';
     input.style.height = '44px';
 
+    // Animate send button
     const btn = document.getElementById('btn-mesh-send');
     btn.style.transform = 'scale(0.85)';
     setTimeout(() => { btn.style.transform = 'scale(1)'; }, 150);
 }
 
 function meshHandleEnter(e) {
-    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); meshSendMessage(); }
+    if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        meshSendMessage();
+    }
 }
 
 // ── Urgency ────────────────────────────────────────────────
 function meshSetUrgency(level) {
     meshState.urgency = level;
     document.querySelectorAll('.mesh-urgency-btn').forEach(btn => {
-        btn.style.opacity = btn.dataset.urgency === level ? '1' : '0.5';
+        const isActive = btn.dataset.urgency === level;
+        btn.style.opacity = isActive ? '1' : '0.55';
+        btn.style.fontWeight = isActive ? '700' : '600';
     });
-    const borderMap = { info: '#3b82f6', warning: '#d97706', emergency: '#dc2626' };
-    const compose = document.getElementById('mesh-compose-input');
-    compose.style.borderColor = borderMap[level];
-    compose.style.boxShadow = `0 0 8px ${borderMap[level]}40`;
-}
 
-// ── E2EE Info Modal ────────────────────────────────────────
-function meshShowEncryptionInfo() {
-    const modal = document.getElementById('mesh-key-modal');
-    modal.style.display = 'flex';
+    const composeArea = document.getElementById('mesh-compose-input');
+    const urgencyBorderMap = { info: '#3b82f6', warning: '#d97706', emergency: '#dc2626' };
+    composeArea.style.borderColor = urgencyBorderMap[level];
+    composeArea.style.boxShadow = `0 0 8px ${urgencyBorderMap[level]}40`;
 }
 
 // ── Helpers ────────────────────────────────────────────────
 function meshNow() {
     return new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+}
+
+function meshSimulateScanUpdate() {
+    const rssiNoise = Math.floor(Math.random() * 6) - 3;
+    meshState.peers.forEach(p => { p.rssi = Math.max(-95, Math.min(-45, p.rssi + rssiNoise)); });
+    meshRenderPeerList();
+    meshUpdatePeerCount();
+}
+
+function meshShowEncryptionInfo() {
+    const modal = document.getElementById('mesh-key-modal');
+    if (modal) {
+        modal.style.display = 'flex';
+        const myPub = document.getElementById('mesh-my-pubkey');
+        if (myPub) {
+            myPub.textContent = '04' + Array.from({length: 64}, () => Math.floor(Math.random()*16).toString(16)).join('').toUpperCase();
+        }
+        const shared = document.getElementById('mesh-shared-secret');
+        if (shared && meshState.activePeer && meshState.activePeer !== 'GramSetu-AI') {
+            shared.textContent = 'SHA-256: ' + Array.from({length: 32}, () => Math.floor(Math.random()*16).toString(16)).join('').toUpperCase();
+        } else if (shared) {
+            shared.textContent = 'Not negotiated (Select a direct peer)';
+        }
+    }
 }

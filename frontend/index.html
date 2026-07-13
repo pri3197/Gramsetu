@@ -2206,8 +2206,8 @@
                             </div>
                             <div style="flex:1; min-width:0;">
                                 <div style="font-weight:700; font-size:0.92rem; color:var(--text-primary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"
-                                    id="mesh-my-device-name">This Device</div>
-                                <div style="font-size:0.72rem; color:#3b82f6; font-weight:600;">â— You (Encrypted)
+                                    id="mesh-my-device-name">Your Global ID</div>
+                                <div style="font-size:0.72rem; color:#3b82f6; font-weight:600;">â— Active Session ID
                                 </div>
                             </div>
                         </div>
@@ -2225,11 +2225,11 @@
                         </div>
                     </div>
                     <div style="position:relative; display:flex; gap:0.5rem; align-items:center;">
-                        <input type="text" id="mesh-peer-search" placeholder="Enter Receiver Bluetooth..."
+                        <input type="text" id="mesh-peer-search" placeholder="Enter Global ID (e.g. GS-ABCD)..."
                             onkeydown="if(event.key==='Enter') meshAddPeer()"
                             style="flex:1; padding:0.55rem 0.9rem; border-radius:10px; font-size:0.87rem; border:1px solid var(--border-glass); background:rgba(255,255,255,0.1); color:var(--text-primary); outline:none;">
                         <button class="btn-primary" onclick="meshAddPeer()" style="padding:0.55rem 0.9rem; border-radius:10px;">
-                            <i class="fa-solid fa-plus"></i>
+                            Connect
                         </button>
                     </div>
                     <!-- Peers List -->
@@ -2237,13 +2237,12 @@
                         style="flex:1; overflow-y:auto; padding:0.5rem; display:flex; flex-direction:column; gap:0.35rem;"
                         id="mesh-peers-list">
                         <div style="padding:2rem; text-align:center; color:var(--text-secondary); font-size:0.88rem;">
-                            <i class="fa-solid fa-circle-notch fa-spin"
-                                style="font-size:1.5rem; color:#3b82f6; margin-bottom:0.75rem; display:block;"></i>
-                            Scanning for nearby peersâ€¦
+                            <i class="fa-solid fa-globe" style="font-size:1.5rem; color:#3b82f6; margin-bottom:0.75rem; display:block;"></i>
+                            No active chats. Enter a Global ID above to connect.
                         </div>
                     </div>
                     <div style="text-align:center; font-size:0.78rem; color:var(--text-secondary);">
-                        <span id="mesh-peer-count">0 peers detected</span>
+                        <span id="mesh-peer-count">Address Book</span>
                     </div>
                 </div>
 
