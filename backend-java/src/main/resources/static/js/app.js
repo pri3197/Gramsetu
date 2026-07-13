@@ -1895,6 +1895,49 @@ async function loadWeather() {
     }
 }
 
+function renderWeatherForecasts(forecasts) {
+    const grid = document.getElementById('weather-forecast-grid');
+    if (!grid) return;
+
+    if (!forecasts || forecasts.length === 0) {
+        grid.innerHTML = `<div class="card-glass" style="text-align: center; padding: 2rem; grid-column: span 2;">
+            <p style="color: var(--text-secondary);">No weather forecasts available.</p>
+        </div>`;
+        return;
+    }
+
+    grid.innerHTML = forecasts.map(f => {
+        const anomalyColor = f.anomalyIndex > 1.0 ? '#ef4444' : (f.anomalyIndex > 0.5 ? '#f59e0b' : '#10b981');
+        return `
+            <div class="card-glass" style="padding: 1.5rem; display: flex; flex-direction: column; gap: 0.75rem; border: 1px solid var(--border-glass); border-radius: 12px; transition: transform 0.2s ease, box-shadow 0.2s ease;">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                    <h4 style="font-family: var(--font-heading); font-size: 1.15rem; color: var(--text-primary); margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="fa-solid fa-location-dot" style="color: #3b82f6;"></i> ${f.region}
+                    </h4>
+                    <span style="font-size: 1.25rem; font-weight: 700; color: var(--text-primary);">${f.currentTemp.toFixed(1)}°C</span>
+                </div>
+                
+                <p style="color: var(--text-secondary); font-size: 0.92rem; line-height: 1.5; margin: 0;">
+                    ${f.forecast}
+                </p>
+                
+                <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: auto; padding-top: 0.5rem; border-top: 1px solid rgba(255,255,255,0.06);">
+                    <span class="badge" style="background: rgba(59, 130, 246, 0.1); color: #3b82f6; font-size: 0.75rem; padding: 0.25rem 0.5rem; border-radius: 4px;">
+                        El Niño: ${f.elNinoStatus || 'Normal'}
+                    </span>
+                    <span class="badge" style="background: rgba(239, 68, 68, 0.08); color: ${anomalyColor}; font-size: 0.75rem; padding: 0.25rem 0.5rem; border-radius: 4px;">
+                        Anomaly: +${f.anomalyIndex.toFixed(1)}°C
+                    </span>
+                </div>
+                ${f.elNinoImpact ? `
+                <div style="font-size: 0.8rem; color: var(--text-secondary); font-style: italic; margin-top: 0.25rem;">
+                    Impact: ${f.elNinoImpact}
+                </div>` : ''}
+            </div>
+        `;
+    }).join('');
+}
+
 function renderClimateTrendsChart(trends) {
     const container = document.getElementById('climate-svg-container');
     if (!container || !trends || trends.length < 2) return;
@@ -2652,6 +2695,12 @@ async function loadGroundwaterData() {
 function initGroundwaterMap() {
     if (groundwaterMap) {
         setTimeout(() => groundwaterMap.invalidateSize(), 100);
+        return;
+    }
+
+    const container = document.getElementById('groundwater-map');
+    if (!container) {
+        console.warn("Groundwater map container not found in DOM.");
         return;
     }
 
