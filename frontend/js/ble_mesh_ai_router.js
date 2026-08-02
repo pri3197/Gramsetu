@@ -308,7 +308,7 @@
   const LOCAL_CONSTITUTION_KNOWLEDGE_BASE = [
     {
       topic: "fundamental_rights",
-      keywords: ["fundamental right", "fundamental rights", "right to equality", "freedom", "article 14", "article 19", "article 21", "article 32", "rights"],
+      keywords: ["right", "rights", "my right", "my rights", "what is my right", "fundamental right", "fundamental rights", "right to equality", "freedom", "speech", "liberty", "life", "article 14", "article 19", "article 21", "article 32"],
       title: "Part III: Fundamental Rights (Articles 12 to 35)",
       articles: [
         "Article 14: Right to Equality before Law & Equal Protection of Laws.",
@@ -367,7 +367,7 @@
     },
     {
       topic: "judiciary_writs",
-      keywords: ["court", "supreme court", "high court", "writ", "article 226", "habeas corpus", "mandamus", "judge"],
+      keywords: ["court", "supreme court", "high court", "writ", "article 226", "habeas corpus", "mandamus", "judge", "lawyer"],
       title: "Part V & VI: Judiciary & Constitutional Remedies (Article 32 & 226)",
       articles: [
         "Article 32: Power of Supreme Court to issue Writs for Fundamental Rights enforcement.",
@@ -379,7 +379,7 @@
 
   function queryLocalConstitutionRAG(prompt) {
     if (!prompt) return "Please enter a valid question regarding The Constitution of India.";
-    const q = prompt.toLowerCase();
+    const q = prompt.toLowerCase().trim();
 
     let matches = [];
     LOCAL_CONSTITUTION_KNOWLEDGE_BASE.forEach(section => {
@@ -409,7 +409,7 @@
 
     let defaultAns = `[Offline Local RAG - The Constitution of India]\n\n`;
     defaultAns += `📜 Overview of The Constitution of India\n\n`;
-    defaultAns += `The Constitution of India is the supreme law of India. It establishes the democratic framework, division of powers, and guarantees rights and duties for all citizens.\n\n`;
+    defaultAns += `The Constitution of India is the supreme law of India. It establishes the democratic framework, division of powers, and guarantees fundamental rights and duties for all citizens.\n\n`;
     defaultAns += `📌 Core Constitutional Modules (Offline RAG):\n`;
     defaultAns += `- Part III (Articles 12-35): Fundamental Rights (Equality Art 14, Freedom Art 19, Life & Liberty Art 21, Remedies Art 32).\n`;
     defaultAns += `- Part IV (Articles 36-51): Directive Principles of State Policy (Panchayats Art 40).\n`;
@@ -472,47 +472,7 @@
       });
 
       setTimeout(async () => {
-        const q = queryObj.questionText.toLowerCase();
-        let aiAnswer = `[Gateway ${gateway.nodeId}] Response for "${queryObj.questionText}": Information retrieved and verified via Gateway AI network.`;
-
-        if (q.includes('farmer') && q.includes('maharashtra')) {
-          aiAnswer = `[Gateway ${gateway.nodeId}] Structured Protest Analysis (PROTEST_QUERY | Maharashtra):\n` +
-            `1. Movement Name: All India Kisan Sabha (AIKS) & SKM Farmer Agitation.\n` +
-            `2. Current Status: Active marches & regional rallies toward Mumbai/Azad Maidan.\n` +
-            `3. Location: Maharashtra (Nashik - Mumbai corridor & Azad Maidan).\n` +
-            `4. Organizers: Samyukta Kisan Morcha (SKM) & AIKS leadership.\n` +
-            `5. Main Demands: MSP (Minimum Support Price) legal guarantee, full agricultural loan waiver, PMFBY crop insurance claim settlement, and pension for aged farmers.\n` +
-            `6. Government Response: Ministerial coordination committee formed to review MSP formula & loan relief.\n` +
-            `7. Historical Context: Builds on 2018 Kisan Long March to Mumbai.`;
-        } else if (q.includes('cjp') || (q.includes('citizens for justice') && q.includes('peace'))) {
-          aiAnswer = `[Gateway ${gateway.nodeId}] Citizens for Justice and Peace (CJP) in India advocates for: 1. Legal accountability for hate speech & communal violence. 2. Legal aid for NRC/citizenship-excluded individuals (e.g. in Assam). 3. Enforcement of Forest Rights Act (FRA 2006) for Adivasi and forest-dwelling communities. 4. Protection of constitutional secularism and human rights defenders.`;
-        } else if (q.includes('protest') && q.includes('mumbai')) {
-          aiAnswer = `[Gateway ${gateway.nodeId}] I couldn't find reports of any major protests currently taking place in Mumbai. If you are referring to a specific issue or organization, please provide more details.`;
-        } else if (q.includes('japan')) {
-          aiAnswer = `[Gateway ${gateway.nodeId}] The capital of Japan is Tokyo.`;
-        } else if (q.includes('wangchuk') || q.includes('hunger strike') || q.includes('ladakh')) {
-          aiAnswer = `[Gateway ${gateway.nodeId}] Environmentalist Sonam Wangchuk conducted climate fasts/hunger strikes in Leh, Ladakh demanding 6th Schedule constitutional safeguards and statehood for Ladakh.`;
-        } else if (q.includes('student') && (q.includes('protest') || q.includes('rights') || q.includes('india'))) {
-          aiAnswer = `[Gateway ${gateway.nodeId}] Students in India are protesting regarding NEET-UG exam paper leak allegations, demanding transparency, re-examinations, and National Testing Agency (NTA) structural reforms.`;
-        } else if (q.includes('protest') && (q.includes('farmer') || q.includes('mandi') || q.includes('agriculture'))) {
-          aiAnswer = `[Gateway ${gateway.nodeId}] Agricultural & mandi reform discussions regarding minimum support prices and crop insurance guarantees.`;
-        } else if (q.includes('protest')) {
-          aiAnswer = `[Gateway ${gateway.nodeId}] Public protests in India center on student exam integrity (NEET paper leak inquiries), agricultural policy reforms, and civic rights guarantees.`;
-        } else if (q.includes('indian penal code') || q.includes('ipc') || q.includes('indian laws') || q.includes('law')) {
-          aiAnswer = `[Gateway ${gateway.nodeId}] Indian Penal Code (now Bharatiya Nyaya Sanhita, 2023) lays down criminal offenses, penalties, and constitutional procedural rights. Fundamental rights under Article 14, 19, and 21 guarantee equality, expression, and personal liberty.`;
-        } else if (q.includes('student') || q.includes('rights in india')) {
-          aiAnswer = `[Gateway ${gateway.nodeId}] Students in India possess Rights to Education (RTE Act, Article 21A), freedom of peaceful assembly, protection against arbitrary expulsion or discrimination, and fair evaluation/re-evaluation mechanisms.`;
-        } else if (q.includes('modi') || q.includes('narendra modi')) {
-          aiAnswer = `[Gateway ${gateway.nodeId}] Prime Minister Narendra Modi leads the Union Government of India, focusing on digital infrastructure (Digital India), agricultural support (PM-KISAN), and national economic initiatives.`;
-        } else if (q.includes('neet') || q.includes('paper leak')) {
-          aiAnswer = `[Gateway ${gateway.nodeId}] NEET exam integrity concerns led to Central Bureau of Investigation (CBI) inquiries, high-level educational reform panels, and enhanced anti-paper leak legislation passed by Parliament.`;
-        } else if (q.includes('weather') || q.includes('monsoon')) {
-          aiAnswer = `[Gateway ${gateway.nodeId}] Southwest monsoon updates show normal to slightly above-average rainfall across Central and Peninsular India.`;
-        } else if (q.includes('sport') || q.includes('cricket')) {
-          aiAnswer = `[Gateway ${gateway.nodeId}] India won the ICC Men's T20 World Cup, marking a historic achievement in international cricket.`;
-        } else if (q.includes('science') || q.includes('relativity') || q.includes('photosynthesis')) {
-          aiAnswer = `[Gateway ${gateway.nodeId}] Photosynthesis converts light energy into chemical energy using chlorophyll, releasing oxygen as a byproduct.`;
-        }
+        const aiAnswer = queryLocalConstitutionRAG(queryObj.questionText);
 
         const encryptedResponse = await MeshAIQueryPackager.encryptPayload(aiAnswer);
         const responseFrame = {
