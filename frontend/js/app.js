@@ -3206,7 +3206,7 @@ function renderSavedContacts() {
     if (!pillsContainer) return;
 
     if (meshSavedContacts.length === 0) {
-        pillsContainer.innerHTML = `<span style="font-size:0.75rem; color:var(--text-secondary);">No saved contacts yet. Enter a receiver handle above.</span>`;
+        pillsContainer.innerHTML = `<span style="font-size:0.75rem; color:#64748b;">No saved contacts yet. Enter a receiver handle above.</span>`;
         return;
     }
 
@@ -3215,7 +3215,7 @@ function renderSavedContacts() {
         const displayName = c.alias || c.handle;
         html += `
             <button onclick="selectSavedContact('${c.handle}')" class="btn-secondary" 
-                style="padding: 0.3rem 0.7rem; border-radius: 20px; font-size: 0.78rem; display: inline-flex; align-items: center; gap: 0.4rem; background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(59, 130, 246, 0.3); color: #3b82f6; cursor: pointer; white-space: nowrap;">
+                style="padding: 0.32rem 0.75rem; border-radius: 20px; font-size: 0.78rem; font-weight: 700; display: inline-flex; align-items: center; gap: 0.4rem; background: #0284c7; border: 1px solid #0369a1; color: #ffffff; cursor: pointer; white-space: nowrap; box-shadow: 0 2px 5px rgba(2, 132, 199, 0.25);">
                 <i class="fa-solid fa-user-tag"></i> ${displayName}
             </button>
         `;
