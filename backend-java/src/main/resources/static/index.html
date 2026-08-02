@@ -2242,13 +2242,17 @@
                         </div>
                     </div>
 
-                    <div style="margin-top: 1.5rem; display:flex; gap:0.75rem;">
-                        <button class="btn-primary" style="flex: 1;" onclick="sendMeshMessage()"
+                    <div style="margin-top: 1.5rem; display:flex; flex-wrap:wrap; gap:0.6rem;">
+                        <button class="btn-primary" style="flex: 1; min-width: 140px;" onclick="sendMeshMessage()"
                             id="lbl-mesh-broadcast-btn">
                             <i class="fa-solid fa-rss"></i> Broadcast Offline
                         </button>
+                        <button class="btn-primary" style="flex: 1; min-width: 140px; background: linear-gradient(135deg,#0284c7,#2563eb);"
+                            onclick="sendPersonalMeshMessage()" id="lbl-mesh-personal-btn">
+                            <i class="fa-solid fa-paper-plane"></i> Send Personal Message
+                        </button>
                         <button class="btn-primary"
-                            style="flex: 1; background: linear-gradient(135deg,#8b5cf6,#ec4899);"
+                            style="flex: 1; min-width: 140px; background: linear-gradient(135deg,#8b5cf6,#ec4899);"
                             onclick="meshSubmitMainTabAIQuery()">
                             <i class="fa-solid fa-sparkles"></i> Ask Mesh AI
                         </button>

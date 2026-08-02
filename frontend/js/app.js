@@ -3181,22 +3181,16 @@ function renderFeedbackFeed(feedbackList) {
 
 
 // 14. Offline Bluetooth Mesh Notification & Android Bridge Logic
-let meshMessages = [
-    { sender: 'System', text: 'Offline Mesh network initialized. Ready to transmit.', urgency: 'info', recipient: '', timestamp: '12:00:00 PM' },
-    { sender: 'IMD Alert (Tuticorin)', text: 'Warning: High storm surge wave height of 3.4m predicted off coast. Fishermen advised not to venture.', urgency: 'emergency', recipient: '', timestamp: '12:05:00 PM' },
-    { sender: 'Farmer Suresh', text: 'Mandi pricing update: Premium Basmati selling at ₹6,200/qtl in local mandi market.', urgency: 'info', recipient: '', timestamp: '12:10:00 PM' },
-    { sender: 'Vet-Officer', text: 'Precautionary FMD vaccination drive starting at Panchayat sub-center tomorrow 8 AM.', urgency: 'warning', recipient: '', timestamp: '12:15:00 PM' }
-];
+let meshMessages = [];
 let meshSimulationInterval = null;
 let meshPollInterval = null;
 
 let meshSavedContacts = JSON.parse(localStorage.getItem('gramsetu_mesh_saved_contacts') || '[]');
 
-// Seed default sample contacts if empty
+// Seed default sample contacts if empty (Identifier is permanent, handle alias is editable)
 if (meshSavedContacts.length === 0) {
     meshSavedContacts = [
-        { handle: 'iOS-8512', alias: 'Priyanka (iOS-8512)' },
-        { handle: 'Farmer-Raju', alias: 'Raju (Farmer-Raju)' }
+        { handle: 'iOS-8512', alias: 'Priyanka' }
     ];
     localStorage.setItem('gramsetu_mesh_saved_contacts', JSON.stringify(meshSavedContacts));
 }
@@ -3212,11 +3206,12 @@ function renderSavedContacts() {
 
     let html = '';
     meshSavedContacts.forEach(c => {
-        const displayName = c.alias || c.handle;
+        // Identifier (c.handle) never changes; alias is user-customized
+        const label = c.alias ? `${c.alias} (${c.handle})` : c.handle;
         html += `
             <button onclick="selectSavedContact('${c.handle}')" class="btn-secondary" 
                 style="padding: 0.32rem 0.75rem; border-radius: 20px; font-size: 0.78rem; font-weight: 700; display: inline-flex; align-items: center; gap: 0.4rem; background: #0284c7; border: 1px solid #0369a1; color: #ffffff; cursor: pointer; white-space: nowrap; box-shadow: 0 2px 5px rgba(2, 132, 199, 0.25);">
-                <i class="fa-solid fa-user-tag"></i> ${displayName}
+                <i class="fa-solid fa-user-tag"></i> ${label}
             </button>
         `;
     });
@@ -3239,18 +3234,18 @@ function selectSavedContact(handle) {
 function editCurrentContactAlias() {
     const recipientInput = document.getElementById('mesh-recipient-name');
     if (!recipientInput || !recipientInput.value.trim()) {
-        alert('Please enter or select a Receiver Handle first.');
+        alert('Please enter or select a Receiver Handle ID (e.g. iOS-8512) first.');
         return;
     }
 
     const handle = recipientInput.value.trim();
     const existing = meshSavedContacts.find(c => c.handle.toLowerCase() === handle.toLowerCase());
-    const currentAlias = existing ? existing.alias : handle;
+    const currentAlias = existing ? existing.alias : '';
 
-    const newAlias = prompt(`Edit local contact handle/name for [${handle}]:`, currentAlias);
-    if (newAlias && newAlias.trim()) {
+    const newAlias = prompt(`Edit custom nickname for Receiver ID [${handle}] (ID "${handle}" remains permanent):`, currentAlias);
+    if (newAlias !== null) {
         saveOrUpdateContact(handle, newAlias.trim());
-        alert(`Saved handle [${handle}] as "${newAlias.trim()}" on this device.`);
+        alert(`Saved nickname "${newAlias.trim() || handle}" for ID [${handle}] on this device.`);
     }
 }
 
@@ -3259,13 +3254,13 @@ function saveOrUpdateContact(handle, aliasName = null) {
     const existingIndex = meshSavedContacts.findIndex(c => c.handle.toLowerCase() === handle.toLowerCase());
     
     if (existingIndex !== -1) {
-        if (aliasName) {
+        if (aliasName !== null) {
             meshSavedContacts[existingIndex].alias = aliasName;
         }
     } else {
         meshSavedContacts.push({
             handle: handle,
-            alias: aliasName || handle
+            alias: aliasName || ''
         });
     }
     
@@ -3376,30 +3371,25 @@ function initMeshTab() {
                     .catch(() => { /* Silent fallback when offline / no relay backend */ });
             }, 3000);
         }
-
-        if (!meshSimulationInterval) {
-            // Load initial dummy alerts
-            if (meshMessages.length === 0) {
-                receiveMeshMessage('System', 'Offline Mesh network initialized. Ready to transmit.', 'info', new Date().toLocaleTimeString());
-            }
-
-            meshSimulationInterval = setInterval(() => {
-                if (activeTab !== 'mesh') return;
-
-                const myHandle = (document.getElementById('mesh-sender-name')?.value || '').trim();
-                const mockPeers = [
-                    { sender: 'IMD Alert (Tuticorin)', text: 'Warning: High storm surge wave height of 3.4m predicted off coast. Fishermen advised not to venture.', urgency: 'emergency', recipient: '' },
-                    { sender: 'Farmer Suresh', text: 'Mandi pricing update: Premium Basmati selling at ₹6,200/qtl in local mandi market.', urgency: 'info', recipient: '' },
-                    { sender: 'Vet-Officer', text: 'Precautionary FMD vaccination drive starting at Panchayat sub-center tomorrow 8 AM.', urgency: 'warning', recipient: '' },
-                    { sender: 'Fisherman-Nathan', text: 'Private Alert: Shoals of Mackerel detected 4km south-east off beach. Catch potential high.', urgency: 'info', recipient: myHandle },
-                    { sender: 'Neighbor-Ramesh', text: 'Personal Note: Direct seed trading group link established. Verify organic purity checklist.', urgency: 'info', recipient: 'User-999' }
-                ];
-
-                const mock = mockPeers[Math.floor(Math.random() * mockPeers.length)];
-                receiveMeshMessage(mock.sender, mock.text, mock.urgency, new Date().toLocaleTimeString(), mock.recipient);
-            }, 12000);
-        }
     }
+}
+
+function sendPersonalMeshMessage() {
+    const typeSelect = document.getElementById('mesh-msg-type');
+    const recipientInput = document.getElementById('mesh-recipient-name');
+    
+    if (typeSelect) {
+        typeSelect.value = 'personalized';
+        toggleRecipientField('personalized');
+    }
+
+    if (!recipientInput || !recipientInput.value.trim()) {
+        alert('Please enter or select a Target Receiver ID/Handle (e.g. iOS-8512).');
+        if (recipientInput) recipientInput.focus();
+        return;
+    }
+
+    sendMeshMessage();
 }
 
 function sendMeshMessage() {
