@@ -1,7 +1,9 @@
+from __future__ import annotations
 import os
 import requests
 import json
 import time
+from typing import Optional, List, Dict, Any
 from data_fetcher import DataFetcher
 import socket
 
@@ -30,7 +32,7 @@ class RAGService:
         keywords = ['still', 'currently', 'latest', 'today', 'now', 'recent', 'hunger strike', 'protest', 'news', 'weather', 'price', 'is ', 'are ', 'where ', 'why ']
         return any(kw in p for kw in keywords)
 
-    def extract_location(self, prompt: str) -> str | None:
+    def extract_location(self, prompt: str) -> Optional[str]:
         details = self.extract_location_details(prompt)
         return details.get("city") or details.get("state")
 
