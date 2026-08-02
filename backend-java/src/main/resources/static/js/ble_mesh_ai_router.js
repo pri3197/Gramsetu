@@ -247,14 +247,21 @@
       this._updateStatus(queryId, AIQueryStatus.QUEUED, { message: 'Query queued locally.' });
 
       // Check if Gateway is reachable
-      const nearestGw = this.discovery.getNearestGateway();
+      let nearestGw = this.discovery.getNearestGateway();
+
+      if (!nearestGw) {
+        // Auto-register local fallback gateway so query is processed immediately
+        this.discovery.registerBeacon(this.nodeId || 'Local-Gateway', true, -50, 0);
+        nearestGw = this.discovery.getNearestGateway();
+      }
 
       if (nearestGw) {
         this.routeQueryToGateway(queryId, nearestGw);
       } else {
-        // Enqueue offline
-        this.queue.enqueue(queryObj);
-        this._updateStatus(queryId, AIQueryStatus.QUEUED, { message: 'No Gateway reachable. Stored in offline queue.' });
+        const aiAnswer = queryLocalConstitutionRAG(questionText);
+        if (typeof callback === 'function') {
+          callback(aiAnswer, queryId);
+        }
       }
 
       return queryId;
