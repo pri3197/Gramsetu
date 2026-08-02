@@ -296,3 +296,45 @@ class BleMeshScanner(private val webBridge: WebAppInterface) {
     }
 }
 ```
+
+---
+
+## 7. Adaptive Channel Selection & Telemetry Bridge
+
+To support **Story 1: Adaptive Bluetooth Mesh Channel Selection**, the native Android layer exposes telemetry data (RSSI, sequence numbers, active GATT channel priority) to the web layer via `window.Android.processIncomingTelemetry(nodeId, rssi, seqNumber)`.
+
+```kotlin
+/**
+ * Adaptive Telemetry Bridge & Dynamic Scan Duty-Cycle Management
+ */
+class AdaptiveBleTelemetryManager(private val webView: WebView) {
+
+    private var currentSequenceNumber = 0
+
+    fun onScanResultCaptured(deviceAddress: String, rssi: Int, payloadSeq: Int) {
+        val nodeId = "Node-${deviceAddress.takeLast(4)}"
+        
+        // Pass empirical telemetry to the JavaScript Adaptive BLE Mesh Engine
+        webView.post {
+            val js = "javascript:if(window.meshAdaptiveEngine) { " +
+                    "window.meshAdaptiveEngine.processIncomingTelemetry('$nodeId', $rssi, $payloadSeq); }"
+            webView.evaluateJavascript(js, null)
+        }
+    }
+
+    /**
+     * Request connection priority shift to high-bandwidth / low-latency data channel
+     * when noise is detected on default advertising channels.
+     */
+    fun adaptConnectionPriority(gatt: BluetoothGatt, isHighInterference: Boolean) {
+        if (isHighInterference) {
+            // Shift to HIGH priority connection to reduce packet drop rate
+            gatt.requestConnectionPriority(BluetoothGatt.CONNECTION_PRIORITY_HIGH)
+        } else {
+            // Balance battery consumption
+            gatt.requestConnectionPriority(BluetoothGatt.CONNECTION_PRIORITY_BALANCED)
+        }
+    }
+}
+```
+

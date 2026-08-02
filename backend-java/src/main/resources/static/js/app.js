@@ -1,16 +1,17 @@
 // GramSetu Core Application JavaScript
 
 // Determine backend API base URL dynamically
-const getApiBase = () => {
-    if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+const API_BASE = (() => {
+    const { hostname, port } = window.location;
+    if (hostname !== 'localhost' && hostname !== '127.0.0.1') {
         return '/api';
     }
-    if (window.location.port === '8081') {
+    if (port === '8081') {
         return '/api';
     }
-    return `${API_BASE}`;
-};
-const API_BASE = getApiBase();
+    // Running via python http.server on port 8085 — API calls will 404 gracefully
+    return '';
+})();
 
 // Application State
 let activeTab = 'news';
@@ -238,7 +239,7 @@ async function loadCattleDiseases() {
         institutionsData = await instRes.json();
         diseaseData = await disRes.json();
         if (activeTab === 'cattle') renderCattleMarkers();
-        
+
         // Render Disease Table
         const tbody = document.getElementById('disease-outbreaks-tbody');
         if (tbody) {
@@ -305,7 +306,7 @@ function renderCattleMarkers() {
 function showAdvisory(outbreak) {
     const prompt = document.getElementById('cattle-advisory-prompt');
     if (prompt) prompt.style.display = 'none';
-    
+
     const content = document.getElementById('cattle-advisory-content');
     if (content) content.style.display = 'block';
 
@@ -2652,7 +2653,90 @@ const TRANSLATIONS = {
         'lbl-mesh-empty-text': 'ఇంకా ఎటువంటి మెష్ ప్రసారాలు కనుగొనబడలేదు.',
         'lbl-mesh-bridge-status': 'నేటివ్ బ్రిడ్జ్ కనెక్షన్ స్థితి:'
     }
-};;
+};
+
+function requestNotificationPermission() {
+    if ('Notification' in window && Notification.permission === 'default') {
+        Notification.requestPermission().then(permission => {
+            console.log('[GramSetu Notifications] Permission state:', permission);
+        });
+    }
+}
+
+function triggerMessageNotification(sender, text, urgency) {
+    if (!('Notification' in window) || Notification.permission !== 'granted') return;
+
+    const title = `GramSetu Mesh Alert from ${sender}`;
+    const options = {
+        body: text,
+        icon: '/icon-192x192.png',
+        badge: '/icon-192x192.png',
+        tag: 'gramsetu-mesh-notification',
+        renotify: true,
+        vibrate: urgency === 'emergency' ? [300, 100, 300, 100, 300] : [200, 100, 200]
+    };
+
+    if (navigator.serviceWorker && navigator.serviceWorker.controller) {
+        navigator.serviceWorker.ready.then(reg => {
+            reg.showNotification(title, options);
+        }).catch(() => {
+            try { new Notification(title, options); } catch (e) {}
+        });
+    } else {
+        try { new Notification(title, options); } catch (e) {}
+    }
+}
+
+// Public callback handler exposed to native Android background layers
+window.receiveMeshMessage = function (sender, text, urgency, timestamp, recipient) {
+    const myHandle = (document.getElementById('mesh-sender-name')?.value || '').trim();
+
+    // Prompt notification permission if default
+    requestNotificationPermission();
+
+    // Deduplicate incoming messages. Strip "(You)" before comparing.
+    const cleanSender = (name) => name.replace(' (You)', '').trim();
+    const isDuplicate = meshMessages.some(m =>
+        cleanSender(m.sender) === cleanSender(sender) &&
+        m.text === text &&
+        (m.recipient || '') === (recipient || '')
+    );
+    if (isDuplicate) return;
+
+    // Check if the message is private and addressed to someone else.
+    // If targeted to another handle, we simulate relaying it without showing it to this user.
+    if (recipient && recipient !== 'Broadcast' && recipient !== myHandle && !sender.endsWith('(You)')) {
+        console.log(`[Mesh Router] Relaying private message from ${sender} to ${recipient} (payload: "${text}")`);
+        return;
+    }
+
+    meshMessages.unshift({
+        sender,
+        text,
+        urgency,
+        recipient: recipient || '',
+        timestamp: timestamp || new Date().toLocaleTimeString()
+    });
+
+    // Keep max 20 messages in log
+    if (meshMessages.length > 20) {
+        meshMessages.pop();
+    }
+
+    renderMeshFeed();
+
+    // Trigger device/browser notification when user receives message
+    if (!sender.endsWith('(You)')) {
+        triggerMessageNotification(sender, text, urgency);
+    }
+
+    // Trigger visual highlight / flash effect on the list if active
+    const listEl = document.getElementById('mesh-messages-list');
+    if (listEl) {
+        listEl.style.boxShadow = 'inset 0 0 10px rgba(16, 185, 129, 0.2)';
+        setTimeout(() => listEl.style.boxShadow = 'none', 500);
+    }
+};
 
 function translateUI(lang) {
     activeLang = lang;
@@ -3148,7 +3232,7 @@ function initMeshTab() {
                 else if (/iPad|iPhone|iPod/.test(userAgent)) platform = "iOS";
                 else if (/Macintosh/.test(userAgent)) platform = "Mac";
                 else if (/Windows/.test(userAgent)) platform = "Win";
-                
+
                 const rand = Math.floor(1000 + Math.random() * 9000);
                 storedHandle = `${platform}-${rand}`;
                 localStorage.setItem('mesh_sender_handle', storedHandle);
@@ -3166,35 +3250,47 @@ function initMeshTab() {
 
     // Start local peer broadcast simulation and backend polling only if simulated
     if (!window.Android) {
-        // Retrieve local host IP to display instructions for testing on a real phone
-        fetch('/api/mesh/host-ip')
-            .then(res => res.json())
-            .then(data => {
-                const hintEl = document.getElementById('mesh-test-phone-hint');
-                if (hintEl) {
-                    hintEl.innerHTML = `<i class="fa-solid fa-mobile-screen-button" style="color:#3b82f6; font-size:1rem; margin-right:0.4rem;"></i> <strong>Test on Phone:</strong> Connect your phone to the same Wi-Fi and open <a href="http://${data.ip}:${data.port}" target="_blank" style="color:#3b82f6; text-decoration:underline; font-weight:700;">http://${data.ip}:${data.port}</a> on your phone's browser to simulate mesh routing across devices.`;
-                    hintEl.style.display = 'block';
-                }
-            })
-            .catch(err => console.log('Failed to fetch host IP helper details:', err));
+        // Retrieve local host IP to display instructions for testing on a real phone (only if backend present)
+        const hasRelayBackend = (window.location.port === '8080' || window.location.port === '8081');
+        if (hasRelayBackend) {
+            fetch('/api/mesh/host-ip')
+                .then(res => {
+                    if (!res.ok) return null;
+                    return res.json();
+                })
+                .then(data => {
+                    if (!data) return;
+                    const hintEl = document.getElementById('mesh-test-phone-hint');
+                    if (hintEl) {
+                        hintEl.innerHTML = `<i class="fa-solid fa-mobile-screen-button" style="color:#3b82f6; font-size:1rem; margin-right:0.4rem;"></i> <strong>Test on Phone:</strong> Connect your phone to the same Wi-Fi and open <a href="http://${data.ip}:${data.port}" target="_blank" style="color:#3b82f6; text-decoration:underline; font-weight:700;">http://${data.ip}:${data.port}</a> on your phone's browser to simulate mesh routing across devices.`;
+                        hintEl.style.display = 'block';
+                    }
+                })
+                .catch(() => { /* Silent fallback */ });
+        }
 
-        // Start backend polling for shared mesh channel
-        if (!meshPollInterval) {
+        // Start backend polling for shared mesh channel (only if backend present)
+        if (!meshPollInterval && hasRelayBackend) {
             meshPollInterval = setInterval(() => {
                 fetch('/api/mesh/messages')
-                    .then(res => res.json())
+                    .then(res => {
+                        if (!res.ok) return [];
+                        return res.json();
+                    })
                     .then(msgs => {
+                        if (!Array.isArray(msgs)) return;
                         // Deliver in reverse order (oldest to newest) to match push behavior
                         for (let i = msgs.length - 1; i >= 0; i--) {
                             const m = msgs[i];
                             receiveMeshMessage(m.sender, m.text, m.urgency, m.timestamp, m.recipient);
                         }
                     })
-                    .catch(err => console.log('Mesh polling error:', err));
+                    .catch(() => { /* Silent fallback when offline / no relay backend */ });
             }, 3000);
         }
 
         if (!meshSimulationInterval) {
+            ensureMeshEnginesInit();
             // Load initial dummy alerts
             if (meshMessages.length === 0) {
                 receiveMeshMessage('System', 'Offline Mesh network initialized. Ready to transmit.', 'info', new Date().toLocaleTimeString());
@@ -3202,7 +3298,7 @@ function initMeshTab() {
 
             meshSimulationInterval = setInterval(() => {
                 if (activeTab !== 'mesh') return;
-                
+
                 const myHandle = (document.getElementById('mesh-sender-name')?.value || '').trim();
                 const mockPeers = [
                     { sender: 'IMD Alert (Tuticorin)', text: 'Warning: High storm surge wave height of 3.4m predicted off coast. Fishermen advised not to venture.', urgency: 'emergency', recipient: '' },
@@ -3255,7 +3351,7 @@ function sendMeshMessage() {
         }
     } else {
         console.log(`[Mesh Simulator] Broadcasting: [${urgency.toUpperCase()}] ${sender} -> ${recipient || 'All'}: ${text}`);
-        
+
         // Post message to backend relay server so other browsers connected to this instance (like on a phone) receive it
         fetch('/api/mesh/relay', {
             method: 'POST',
@@ -3271,15 +3367,166 @@ function sendMeshMessage() {
     msgInput.value = '';
 }
 
+// --- Adaptive BLE Mesh & Distributed AI Main Tab Helpers ---
+let mainTabAdaptiveEngine = null;
+let mainTabAIRouter = null;
+
+function ensureMeshEnginesInit() {
+    if (!mainTabAdaptiveEngine && window.AdaptiveBleMeshEngine) {
+        mainTabAdaptiveEngine = new window.AdaptiveBleMeshEngine();
+        mainTabAdaptiveEngine.recoveryEngine.onStatusChange((nodeId, status, info) => {
+            const healthLabel = document.getElementById('mesh-health-label');
+            if (healthLabel) {
+                healthLabel.innerText = `RF Health: ${status} (${info.channel || 'Ch 37'})`;
+            }
+        });
+    }
+
+    if (!mainTabAIRouter && window.MeshAIRouterEngine) {
+        mainTabAIRouter = new window.MeshAIRouterEngine('Self-MainTab', false, '/chat');
+        mainTabAIRouter.discovery.registerBeacon('GW-Node-Alpha', true, -65, 1);
+        updateMainTabGatewayLabel();
+
+        mainTabAIRouter.onStatusChange((qId, status, details) => {
+            updateMainTabAIStatusBadge(qId, status, details);
+        });
+
+        mainTabAIRouter.onQueryDelivered((qId, responseText, originNodeId) => {
+            console.log(`[Mesh AI Delivered] Query ${qId} response delivered back to ${originNodeId}: "${responseText}"`);
+        });
+    }
+}
+
+function updateMainTabGatewayLabel() {
+    const label = document.getElementById('mesh-gw-label');
+    if (!label || !mainTabAIRouter) return;
+    const nearest = mainTabAIRouter.discovery.getNearestGateway();
+    if (nearest) {
+        label.innerText = `AI Gateway: ${nearest.nodeId} (${nearest.hopDistance} hop)`;
+        label.style.color = '#8b5cf6';
+    } else {
+        label.innerText = 'AI Gateway: Offline Queue';
+        label.style.color = '#f59e0b';
+    }
+}
+
+function meshToggleGatewaySimulation() {
+    ensureMeshEnginesInit();
+    if (!mainTabAIRouter) return;
+    const nearest = mainTabAIRouter.discovery.getNearestGateway();
+    if (nearest) {
+        mainTabAIRouter.discovery.gateways.clear();
+        alert('Simulating Offline Mesh (No Gateway in range). Queries will be Queued.');
+    } else {
+        mainTabAIRouter.discovery.registerBeacon('GW-Node-Alpha', true, -60, 1);
+        alert('Discovered Gateway Node (GW-Node-Alpha, 1 hop, -60 dBm). Flushing queue...');
+        mainTabAIRouter.flushOfflineQueue();
+    }
+    updateMainTabGatewayLabel();
+}
+
+function updateMainTabAIStatusBadge(queryId, status, details) {
+    const badge = document.getElementById(`status-badge-${queryId}`);
+    if (badge) {
+        badge.innerText = `AI Mesh Status: ${status} ${details.hopDistance ? `(Hop ${details.hopDistance})` : ''}`;
+        if (status === 'Delivered') badge.style.color = '#10b981';
+        if (status === 'Processing') badge.style.color = '#3b82f6';
+        if (status === 'Routing') badge.style.color = '#8b5cf6';
+        if (status === 'Queued') badge.style.color = '#f59e0b';
+    }
+}
+
+async function meshSubmitMainTabAIQuery() {
+    ensureMeshEnginesInit();
+    const textInput = document.getElementById('mesh-msg-text');
+    if (!textInput) return;
+    const text = textInput.value.trim();
+    if (!text) {
+        alert('Please enter an AI question.');
+        return;
+    }
+
+    const queryId = 'q_' + Date.now();
+    textInput.value = '';
+
+    // Append outgoing AI query to feed
+    receiveMeshMessage('Mesh AI Query (You)', text, 'info', new Date().toLocaleTimeString());
+
+    if (mainTabAIRouter) {
+        await mainTabAIRouter.submitQuery(text, (response, qId) => {
+            receiveMeshMessage('AI Gateway (via Mesh)', response, 'info', new Date().toLocaleTimeString());
+        });
+    }
+}
+
+function meshShowDiagnosticsModal() {
+    ensureMeshEnginesInit();
+    const modal = document.getElementById('mesh-diag-modal');
+    if (!modal) return;
+    modal.style.display = 'flex';
+
+    if (mainTabAdaptiveEngine) {
+        const diags = mainTabAdaptiveEngine.getDiagnostics();
+        document.getElementById('diag-active-ch').innerText = `Ch ${diags.channels.activeChannel}`;
+
+        const logsContainer = document.getElementById('diag-logs-container');
+        logsContainer.innerHTML = diags.logs.map(l =>
+            `<div>[${l.timestamp.split('T')[1].split('.')[0]}] [${l.level}] ${l.event} ${JSON.stringify(l)}</div>`
+        ).join('') || '<div>No telemetry events recorded yet.</div>';
+    }
+}
+
+function meshSimulateInterference() {
+    ensureMeshEnginesInit();
+    if (!mainTabAdaptiveEngine) return;
+    alert('Simulating heavy RF interference (-92 dBm RSSI, 35% packet loss)...');
+
+    for (let seq = 100; seq < 110; seq += 3) {
+        mainTabAdaptiveEngine.processIncomingTelemetry('Peer-Sim', -92, seq, ['Relay-Alpha', 'Relay-Beta']);
+    }
+
+    meshShowDiagnosticsModal();
+}
+
+function meshDownloadLogsCSV() {
+    ensureMeshEnginesInit();
+    if (!mainTabAdaptiveEngine) return;
+    const csv = mainTabAdaptiveEngine.logger.exportCSV();
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `mesh_diagnostics_${Date.now()}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
+async function meshRunQASuiteModal() {
+    if (!window.QATestRunner) {
+        alert('QA Suite engine loading...');
+        return;
+    }
+    const runner = new window.QATestRunner();
+    const report = await runner.runAllSubtasks();
+
+    let summaryText = '--- Story 1 QA Subtasks Verification Report ---\n\n';
+    report.subtasks.forEach(st => {
+        summaryText += `[${st.passed ? 'PASS' : 'FAIL'}] ${st.subtask}\n   ${st.details}\n\n`;
+    });
+
+    alert(summaryText);
+    meshShowDiagnosticsModal();
+}
+
 // Public callback handler exposed to native Android background layers
-window.receiveMeshMessage = function(sender, text, urgency, timestamp, recipient) {
+window.receiveMeshMessage = function (sender, text, urgency, timestamp, recipient) {
     const myHandle = (document.getElementById('mesh-sender-name')?.value || '').trim();
-    
+
     // Deduplicate incoming messages. Strip "(You)" before comparing.
     const cleanSender = (name) => name.replace(' (You)', '').trim();
-    const isDuplicate = meshMessages.some(m => 
-        cleanSender(m.sender) === cleanSender(sender) && 
-        m.text === text && 
+    const isDuplicate = meshMessages.some(m =>
+        cleanSender(m.sender) === cleanSender(sender) &&
+        m.text === text &&
         (m.recipient || '') === (recipient || '')
     );
     if (isDuplicate) return;
@@ -3291,21 +3538,21 @@ window.receiveMeshMessage = function(sender, text, urgency, timestamp, recipient
         return;
     }
 
-    meshMessages.unshift({ 
-        sender, 
-        text, 
-        urgency, 
-        recipient: recipient || '', 
-        timestamp: timestamp || new Date().toLocaleTimeString() 
+    meshMessages.unshift({
+        sender,
+        text,
+        urgency,
+        recipient: recipient || '',
+        timestamp: timestamp || new Date().toLocaleTimeString()
     });
-    
+
     // Keep max 20 messages in log
     if (meshMessages.length > 20) {
         meshMessages.pop();
     }
 
     renderMeshFeed();
-    
+
     // Trigger visual highlight / flash effect on the list if active
     const listEl = document.getElementById('mesh-messages-list');
     if (listEl) {
@@ -3331,7 +3578,7 @@ function renderMeshFeed() {
     meshMessages.forEach(m => {
         const badgeLabel = m.urgency === 'emergency' ? 'Critical' : (m.urgency === 'warning' ? 'Alert' : 'Info');
         const targetTag = m.recipient ? `<span class="mesh-badge" style="background: #3b82f6; margin-left: 0.5rem; text-transform: uppercase;">To: ${m.recipient}</span>` : '';
-        
+
         html += `
             <div class="mesh-msg-card ${m.urgency}">
                 <div class="mesh-msg-header">

@@ -41,31 +41,44 @@
                     <span id="lbl-auto-2" class="logo-tagline">Rural Professionals Data Bridge</span>
                 </div>
             </div>
-            
+
             <button class="hamburger-btn" onclick="toggleMobileNav()" id="mobile-nav-toggle">
                 <i class="fa-solid fa-bars"></i>
             </button>
-            
+
             <nav class="nav-tabs" id="main-nav-tabs" aria-label="Main Navigation">
-                <button class="tab-btn active" onclick="switchTab('news')" id="nav-btn-news"><i class="fa-solid fa-newspaper"></i> News Portal</button>
-                <button class="tab-btn" onclick="switchTab('weather')" id="nav-btn-weather"><i class="fa-solid fa-cloud-sun-rain"></i> Weather</button>
-                <button class="tab-btn" onclick="switchTab('prices')" id="nav-btn-prices"><i class="fa-solid fa-chart-line"></i> Market Prices</button>
-                <button class="tab-btn" onclick="switchTab('mesh')" id="nav-btn-mesh"><img src="/uploads/icon_mesh.png" alt="" class="nav-tab-icon"> B-Messaging</button>
-                <button class="tab-btn" onclick="switchTab('bio')" id="nav-btn-bio"><img src="/uploads/icon_bio_market.png" alt="" class="nav-tab-icon"> Bio Market</button>
-                <button class="tab-btn" onclick="switchTab('feedback')" id="nav-btn-feedback"><i class="fa-solid fa-comments"></i> Feedback Hub</button>
-                
+                <button class="tab-btn active" onclick="switchTab('news')" id="nav-btn-news"><i
+                        class="fa-solid fa-newspaper"></i> News Portal</button>
+                <button class="tab-btn" onclick="switchTab('weather')" id="nav-btn-weather"><i
+                        class="fa-solid fa-cloud-sun-rain"></i> Weather</button>
+                <button class="tab-btn" onclick="switchTab('prices')" id="nav-btn-prices"><i
+                        class="fa-solid fa-chart-line"></i> Market Prices</button>
+                <button class="tab-btn" onclick="switchTab('mesh')" id="nav-btn-mesh"><img src="/uploads/icon_mesh.png"
+                        alt="" class="nav-tab-icon"> B-Messaging</button>
+                <button class="tab-btn" onclick="switchTab('bio')" id="nav-btn-bio"><img
+                        src="/uploads/icon_bio_market.png" alt="" class="nav-tab-icon"> Bio Market</button>
+                <button class="tab-btn" onclick="switchTab('feedback')" id="nav-btn-feedback"><i
+                        class="fa-solid fa-comments"></i> Feedback Hub</button>
+
                 <!-- Hidden legacy tabs for future use -->
-                <button class="tab-btn" onclick="switchTab('farming')" id="nav-btn-farming" style="display:none;">Farming</button>
-                <button class="tab-btn" onclick="switchTab('fisheries')" id="nav-btn-fisheries" style="display:none;">Fisheries</button>
-                <button class="tab-btn" onclick="switchTab('dashboard')" id="nav-btn-dashboard" style="display:none;">Dashboard</button>
-                <button class="tab-btn" onclick="switchTab('birds')" id="nav-btn-birds" style="display:none;">Bird Acoustic</button>
-                <button class="tab-btn" onclick="switchTab('datasources')" id="nav-btn-datasources" style="display:none;">Data</button>
+                <button class="tab-btn" onclick="switchTab('farming')" id="nav-btn-farming"
+                    style="display:none;">Farming</button>
+                <button class="tab-btn" onclick="switchTab('fisheries')" id="nav-btn-fisheries"
+                    style="display:none;">Fisheries</button>
+                <button class="tab-btn" onclick="switchTab('dashboard')" id="nav-btn-dashboard"
+                    style="display:none;">Dashboard</button>
+                <button class="tab-btn" onclick="switchTab('birds')" id="nav-btn-birds" style="display:none;">Bird
+                    Acoustic</button>
+                <button class="tab-btn" onclick="switchTab('datasources')" id="nav-btn-datasources"
+                    style="display:none;">Data</button>
             </nav>
-            
+
             <div class="header-actions" style="display: flex; align-items: center;">
-                <div style="display: flex; align-items: center; gap: 0.5rem; background: var(--bg-secondary); border: 1px solid var(--border-glass); padding: 0.4rem 0.8rem; border-radius: 12px; box-shadow: var(--shadow-main);">
+                <div
+                    style="display: flex; align-items: center; gap: 0.5rem; background: var(--bg-secondary); border: 1px solid var(--border-glass); padding: 0.4rem 0.8rem; border-radius: 12px; box-shadow: var(--shadow-main);">
                     <i class="fa-solid fa-language" style="color: var(--color-accent); font-size: 1.1rem;"></i>
-                    <select id="header-language-select" onchange="translateUI(this.value)" style="background: transparent; border: none; color: var(--text-primary); font-family: var(--font-body); font-size: 0.88rem; font-weight: 600; outline: none; cursor: pointer;">
+                    <select id="header-language-select" onchange="translateUI(this.value)"
+                        style="background: transparent; border: none; color: var(--text-primary); font-family: var(--font-body); font-size: 0.88rem; font-weight: 600; outline: none; cursor: pointer;">
                         <option value="en">English</option>
                         <option value="hi">हिंदी</option>
                         <option value="mr">मराठी</option>
@@ -2104,117 +2117,220 @@
 
 
         <!-- ======================== B-MESSAGING (MESH) PANEL ======================== -->
-<!-- OFFLINE BLUETOOTH MESH NETWORK TAB -->
+        <!-- OFFLINE BLUETOOTH MESH NETWORK TAB -->
         <section id="panel-mesh" class="tab-panel" aria-labelledby="nav-btn-mesh">
-            <h2 class="hero-title" style="font-size: 2rem; margin-bottom: 0.5rem;" id="lbl-mesh-title">
-                <i class="fa-solid fa-circle-nodes"></i> Offline Mesh Network
-            </h2>
-            <p id="lbl-mesh-desc" style="color: var(--text-secondary); margin-bottom: 2rem;">
-                Exchange alerts and short messages directly with nearby users via Bluetooth mesh technology. Operating entirely offline without cellular network coverage.
-            </p>
+            <div
+                style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:1.5rem; flex-wrap:wrap; gap:1rem;">
+                <div>
+                    <h2 class="hero-title" style="font-size: 2rem; margin-bottom: 0.5rem;" id="lbl-mesh-title">
+                        <i class="fa-solid fa-circle-nodes"></i> Offline Mesh & Distributed AI Network
+                    </h2>
+                    <p id="lbl-mesh-desc" style="color: var(--text-secondary); margin-bottom: 0;">
+                        Exchange encrypted alerts and route AI queries securely across nearby Bluetooth Mesh devices
+                        without internet.
+                    </p>
+                </div>
+                <!-- Status Badges Bar -->
+                <div style="display:flex; align-items:center; gap:0.6rem; flex-wrap:wrap;">
+                    <!-- Mesh AI Gateway Status Badge -->
+                    <div id="mesh-gw-status-badge"
+                        style="display:flex; align-items:center; gap:0.5rem; background:rgba(139,92,246,0.1); border:1px solid rgba(139,92,246,0.3); padding:0.4rem 0.85rem; border-radius:20px; cursor:pointer;"
+                        onclick="meshToggleGatewaySimulation()" title="Click to Toggle Gateway Mode Simulation">
+                        <i class="fa-solid fa-microchip" style="color:#8b5cf6; font-size:0.82rem;"></i>
+                        <span style="font-size:0.82rem; font-weight:600; color:#8b5cf6;" id="mesh-gw-label">AI Gateway:
+                            Searching…</span>
+                    </div>
+                    <!-- Adaptive Mesh Health Badge -->
+                    <div id="mesh-adaptive-status"
+                        style="display:flex; align-items:center; gap:0.5rem; background:rgba(16,185,129,0.1); border:1px solid rgba(16,185,129,0.3); padding:0.4rem 0.85rem; border-radius:20px; cursor:pointer;"
+                        onclick="meshShowDiagnosticsModal()" title="View Adaptive Mesh Performance Diagnostics">
+                        <i class="fa-solid fa-chart-line" style="color:#10b981; font-size:0.82rem;"></i>
+                        <span style="font-size:0.82rem; font-weight:600; color:#10b981;" id="mesh-health-label">RF
+                            Health: OPTIMAL (Ch 37)</span>
+                    </div>
+                    <!-- E2EE Badge -->
+                    <div id="mesh-e2ee-badge"
+                        style="display:flex; align-items:center; gap:0.5rem; background:rgba(16,185,129,0.1); border:1px solid rgba(16,185,129,0.3); padding:0.4rem 0.85rem; border-radius:20px;">
+                        <i class="fa-solid fa-lock" style="color:#10b981; font-size:0.82rem;"></i>
+                        <span style="font-size:0.82rem; font-weight:600; color:#10b981;">E2EE: Active</span>
+                    </div>
+                    <button class="btn-secondary" onclick="meshRunQASuiteModal()"
+                        style="font-size:0.82rem; display:flex; align-items:center; gap:0.4rem; padding:0.45rem 0.9rem; border-radius:10px; background:rgba(59,130,246,0.15); color:#3b82f6; border:1px solid rgba(59,130,246,0.3); cursor:pointer;">
+                        <i class="fa-solid fa-list-check"></i> Run QA Suite
+                    </button>
+                    <button class="btn-secondary" onclick="meshSimulateInterference()"
+                        style="font-size:0.82rem; display:flex; align-items:center; gap:0.4rem; padding:0.45rem 0.9rem; border-radius:10px; background:rgba(239,68,68,0.1); color:#ef4444; border:1px solid rgba(239,68,68,0.3); cursor:pointer;">
+                        <i class="fa-solid fa-bolt"></i> Sim Noise
+                    </button>
+                </div>
+            </div>
 
             <div class="grid-cols-2">
-                <!-- Outbound Broadcaster Form -->
+                <!-- Outbound Broadcaster & AI Query Form -->
                 <div class="card-glass" style="display: flex; flex-direction: column; justify-content: space-between;">
                     <div>
                         <h3 class="card-title" id="lbl-mesh-send-title">
-                            <i class="fa-solid fa-paper-plane"></i> Broadcast Message
+                            <i class="fa-solid fa-paper-plane"></i> Outbound Message & AI Query
                         </h3>
-                        <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 1.5rem;" id="lbl-mesh-send-desc">
-                            Compose a short notification to broadcast over the local Bluetooth mesh network.
+                        <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 1.5rem;"
+                            id="lbl-mesh-send-desc">
+                            Broadcast notifications or submit an AI question routed over Bluetooth Mesh.
                         </p>
 
                         <div style="display: flex; flex-direction: column; gap: 1.25rem;">
                             <!-- Sender Name -->
                             <div class="filter-group" style="min-width: 100%;">
                                 <label for="mesh-sender-name" id="lbl-mesh-sender-label">Your Sender ID / Handle</label>
-                                <input type="text" id="mesh-sender-name" placeholder="E.g. Fisherman-Raju" style="background: rgba(11, 15, 25, 0.6); border: 1px solid var(--border-glass); color: var(--text-primary); padding: 0.6rem 0.9rem; border-radius: 8px; font-family: var(--font-body); outline: none;">
+                                <input type="text" id="mesh-sender-name" placeholder="E.g. Farmer-Raju"
+                                    style="background: rgba(11, 15, 25, 0.6); border: 1px solid var(--border-glass); color: var(--text-primary); padding: 0.6rem 0.9rem; border-radius: 8px; font-family: var(--font-body); outline: none;">
                             </div>
 
                             <!-- Alert Level / Urgency -->
                             <div class="filter-group" style="min-width: 100%;">
                                 <label for="mesh-urgency-level" id="lbl-mesh-urgency-label">Alert Urgency Level</label>
-                                <select id="mesh-urgency-level" style="background: rgba(11, 15, 25, 0.6); border: 1px solid var(--border-glass); color: var(--text-primary); padding: 0.6rem 0.9rem; border-radius: 8px; font-family: var(--font-body); outline: none;">
+                                <select id="mesh-urgency-level"
+                                    style="background: rgba(11, 15, 25, 0.6); border: 1px solid var(--border-glass); color: var(--text-primary); padding: 0.6rem 0.9rem; border-radius: 8px; font-family: var(--font-body); outline: none;">
                                     <option value="info">Informational (Green)</option>
                                     <option value="warning">Advisory / Warning (Orange)</option>
                                     <option value="emergency">Emergency / Critical (Red)</option>
                                 </select>
                             </div>
 
-                            <!-- Message Type -->
-                            <div class="filter-group" style="min-width: 100%;">
-                                <label for="mesh-msg-type" id="lbl-mesh-type-label">Message Type</label>
-                                <select id="mesh-msg-type" onchange="toggleRecipientField(this.value)" style="background: rgba(11, 15, 25, 0.6); border: 1px solid var(--border-glass); color: var(--text-primary); padding: 0.6rem 0.9rem; border-radius: 8px; font-family: var(--font-body); outline: none;">
-                                    <option value="broadcast">Broadcast (All Peers)</option>
-                                    <option value="personalized">Personalized (Targeted)</option>
-                                </select>
-                            </div>
-
-                            <!-- Recipient ID -->
-                            <div class="filter-group" id="mesh-recipient-group" style="min-width: 100%; display: none;">
-                                <label for="mesh-recipient-name" id="lbl-mesh-recipient-label">Recipient ID / Handle</label>
-                                <input type="text" id="mesh-recipient-name" placeholder="E.g. Fisherman-Raju" style="background: rgba(11, 15, 25, 0.6); border: 1px solid var(--border-glass); color: var(--text-primary); padding: 0.6rem 0.9rem; border-radius: 8px; font-family: var(--font-body); outline: none;">
-                            </div>
-
                             <!-- Message Content -->
                             <div class="filter-group" style="min-width: 100%;">
-                                <label for="mesh-msg-text" id="lbl-mesh-message-label">Broadcast Text (Max 140 Characters)</label>
-                                <textarea id="mesh-msg-text" rows="3" maxlength="140" placeholder="Type alert or message here..." style="background: rgba(11, 15, 25, 0.6); border: 1px solid var(--border-glass); color: var(--text-primary); padding: 0.6rem 0.9rem; border-radius: 8px; font-family: var(--font-body); outline: none; resize: none;"></textarea>
+                                <label for="mesh-msg-text" id="lbl-mesh-message-label">Broadcast Text or AI
+                                    Question</label>
+                                <textarea id="mesh-msg-text" rows="3" maxlength="250"
+                                    placeholder="Type alert or AI question (e.g. What is the tomato market price?)"
+                                    style="background: rgba(11, 15, 25, 0.6); border: 1px solid var(--border-glass); color: var(--text-primary); padding: 0.6rem 0.9rem; border-radius: 8px; font-family: var(--font-body); outline: none; resize: none;"></textarea>
                             </div>
                         </div>
                     </div>
 
-                    <div style="margin-top: 1.5rem;">
-                        <button class="btn-primary" style="width: 100%;" onclick="sendMeshMessage()" id="lbl-mesh-broadcast-btn">
-                            <i class="fa-solid fa-rss"></i> Broadcast Offline (Bluetooth)
+                    <div style="margin-top: 1.5rem; display:flex; gap:0.75rem;">
+                        <button class="btn-primary" style="flex: 1;" onclick="sendMeshMessage()"
+                            id="lbl-mesh-broadcast-btn">
+                            <i class="fa-solid fa-rss"></i> Broadcast Offline
+                        </button>
+                        <button class="btn-primary"
+                            style="flex: 1; background: linear-gradient(135deg,#8b5cf6,#ec4899);"
+                            onclick="meshSubmitMainTabAIQuery()">
+                            <i class="fa-solid fa-sparkles"></i> Ask Mesh AI
                         </button>
                     </div>
                 </div>
 
                 <!-- Live Stream Feed & Radar -->
-                <div class="card-glass" style="display: flex; flex-direction: column; justify-content: space-between; height: 100%;">
+                <div class="card-glass"
+                    style="display: flex; flex-direction: column; justify-content: space-between; height: 100%;">
                     <div>
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <div
+                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
                             <h3 class="card-title" style="margin-bottom: 0;" id="lbl-mesh-stream-title">
                                 <i class="fa-solid fa-list-check"></i> Live Mesh Feed
                             </h3>
-                            <div style="display: flex; align-items: center; gap: 0.5rem; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2); padding: 0.25rem 0.6rem; border-radius: 20px; font-size: 0.75rem; color: #10b981; font-weight: 700;">
-                                <span class="status-dot" style="background: #10b981; width: 8px; height: 8px; margin: 0; box-shadow: 0 0 8px #10b981; animation: pulseRadar 1.5s infinite;"></span>
+                            <div
+                                style="display: flex; align-items: center; gap: 0.5rem; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2); padding: 0.25rem 0.6rem; border-radius: 20px; font-size: 0.75rem; color: #10b981; font-weight: 700;">
+                                <span class="status-dot"
+                                    style="background: #10b981; width: 8px; height: 8px; margin: 0; box-shadow: 0 0 8px #10b981; animation: pulseRadar 1.5s infinite;"></span>
                                 <span id="mesh-peer-count-text">3 Peers Connected</span>
                             </div>
                         </div>
 
                         <!-- Radar Visualizer -->
-                        <div style="display: flex; justify-content: center; align-items: center; margin: 1.5rem 0; height: 160px; position: relative;">
-                            <div class="radar-container" style="display: flex; flex-direction: column; align-items: center; position: relative;">
+                        <div
+                            style="display: flex; justify-content: center; align-items: center; margin: 1rem 0; height: 130px; position: relative;">
+                            <div class="radar-container"
+                                style="display: flex; flex-direction: column; align-items: center; position: relative;">
                                 <div class="radar-circle">
                                     <div class="radar-wave"></div>
                                     <div class="radar-wave" style="animation-delay: 1s;"></div>
                                     <div class="radar-wave" style="animation-delay: 2s;"></div>
-                                    <i class="fa-solid fa-bluetooth" style="font-size: 2.2rem; color: #10b981; filter: drop-shadow(0 0 10px rgba(16, 185, 129, 0.4)); z-index: 10;"></i>
+                                    <i class="fa-solid fa-bluetooth"
+                                        style="font-size: 2rem; color: #10b981; filter: drop-shadow(0 0 10px rgba(16, 185, 129, 0.4)); z-index: 10;"></i>
                                 </div>
-                                <span style="font-size: 0.75rem; color: var(--text-secondary); font-weight: 600; margin-top: 0.75rem; text-transform: uppercase; letter-spacing: 1px;" id="lbl-mesh-radar-title">Bluetooth Transceiver Active</span>
+                                <span
+                                    style="font-size: 0.72rem; color: var(--text-secondary); font-weight: 600; margin-top: 0.5rem; text-transform: uppercase; letter-spacing: 1px;"
+                                    id="lbl-mesh-radar-title">Bluetooth Transceiver Active</span>
                             </div>
                         </div>
 
                         <!-- Messages Feed -->
-                        <div id="mesh-messages-list" style="display: flex; flex-direction: column; gap: 0.75rem; max-height: 250px; overflow-y: auto; padding-right: 5px;">
+                        <div id="mesh-messages-list"
+                            style="display: flex; flex-direction: column; gap: 0.75rem; max-height: 250px; overflow-y: auto; padding-right: 5px;">
                             <!-- Placeholder -->
-                            <div style="text-align: center; color: var(--text-secondary); padding: 2rem 0;" id="mesh-feed-empty">
-                                <i class="fa-solid fa-satellite-dish" style="font-size: 1.8rem; margin-bottom: 0.5rem; color: var(--text-secondary);"></i>
-                                <p style="font-size: 0.85rem;" id="lbl-mesh-empty-text">No active mesh transmissions detected yet.</p>
+                            <div style="text-align: center; color: var(--text-secondary); padding: 2rem 0;"
+                                id="mesh-feed-empty">
+                                <i class="fa-solid fa-satellite-dish"
+                                    style="font-size: 1.8rem; margin-bottom: 0.5rem; color: var(--text-secondary);"></i>
+                                <p style="font-size: 0.85rem;" id="lbl-mesh-empty-text">No active mesh transmissions
+                                    detected yet.</p>
                             </div>
                         </div>
                     </div>
 
                     <!-- Integration Info -->
-                    <div style="margin-top: 1.5rem; padding-top: 0.75rem; border-top: 1px solid var(--border-glass); display: flex; justify-content: space-between; align-items: center; font-size: 0.72rem; color: var(--text-secondary);" id="mesh-integration-card">
-                        <span><i class="fa-solid fa-circle-info"></i> <span id="lbl-mesh-bridge-status">Native Bridge Connection Status:</span></span>
-                        <span id="mesh-bridge-badge" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); padding: 0.15rem 0.4rem; border-radius: 6px; color: #ef4444; font-weight: 700;">Simulated Link</span>
+                    <div style="margin-top: 1.5rem; padding-top: 0.75rem; border-top: 1px solid var(--border-glass); display: flex; justify-content: space-between; align-items: center; font-size: 0.72rem; color: var(--text-secondary);"
+                        id="mesh-integration-card">
+                        <span><i class="fa-solid fa-circle-info"></i> <span id="lbl-mesh-bridge-status">Native Bridge
+                                Connection Status:</span></span>
+                        <span id="mesh-bridge-badge"
+                            style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); padding: 0.15rem 0.4rem; border-radius: 6px; color: #ef4444; font-weight: 700;">Simulated
+                            Link</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Diagnostics & Performance Metrics Modal -->
+            <div id="mesh-diag-modal"
+                style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:9999; align-items:center; justify-content:center; backdrop-filter:blur(4px);">
+                <div class="card-glass"
+                    style="max-width:650px; width:92%; max-height:85vh; display:flex; flex-direction:column; padding:1.75rem; border-radius:20px; position:relative; overflow:hidden;">
+                    <button onclick="document.getElementById('mesh-diag-modal').style.display='none'"
+                        style="position:absolute; top:1rem; right:1rem; background:none; border:none; cursor:pointer; font-size:1.2rem; color:var(--text-secondary);">✕</button>
+                    <h3
+                        style="font-family:var(--font-heading); color:#3b82f6; margin-bottom:0.5rem; display:flex; align-items:center; gap:0.5rem;">
+                        <i class="fa-solid fa-chart-line"></i> Adaptive BLE Mesh Diagnostics
+                    </h3>
+                    <p style="color:var(--text-secondary); font-size:0.85rem; margin-bottom:1rem;">
+                        Real-time RF interference monitoring, active channels, and diagnostic performance metrics.
+                    </p>
+                    <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:0.75rem; margin-bottom:1rem;">
+                        <div
+                            style="background:rgba(59,130,246,0.08); border:1px solid rgba(59,130,246,0.2); padding:0.75rem; border-radius:10px; text-align:center;">
+                            <div style="font-size:0.75rem; color:var(--text-secondary);">Active Channel</div>
+                            <div id="diag-active-ch"
+                                style="font-size:1.1rem; font-weight:800; color:#3b82f6; margin-top:0.2rem;">Ch 37</div>
+                        </div>
+                        <div
+                            style="background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.2); padding:0.75rem; border-radius:10px; text-align:center;">
+                            <div style="font-size:0.75rem; color:var(--text-secondary);">Avg RSSI</div>
+                            <div id="diag-avg-rssi"
+                                style="font-size:1.1rem; font-weight:800; color:#10b981; margin-top:0.2rem;">-68 dBm
+                            </div>
+                        </div>
+                        <div
+                            style="background:rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.2); padding:0.75rem; border-radius:10px; text-align:center;">
+                            <div style="font-size:0.75rem; color:var(--text-secondary);">Packet Loss</div>
+                            <div id="diag-packet-loss"
+                                style="font-size:1.1rem; font-weight:800; color:#f59e0b; margin-top:0.2rem;">1.5%</div>
+                        </div>
                     </div>
 
-                    <!-- Phone Testing Link Hint -->
-                    <div id="mesh-test-phone-hint" style="margin-top: 1rem; padding: 0.75rem; border-radius: 8px; background: rgba(59, 130, 246, 0.08); border: 1px solid rgba(59, 130, 246, 0.15); font-size: 0.75rem; line-height: 1.4; color: var(--text-secondary); display: none;">
+                    <div style="flex:1; overflow-y:auto; background:rgba(15,23,42,0.6); border:1px solid var(--border-glass); border-radius:10px; padding:0.75rem; font-family:monospace; font-size:0.78rem; color:#cbd5e1; margin-bottom:1rem;"
+                        id="diag-logs-container">
+                        Loading diagnostic logs...
+                    </div>
+
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <button onclick="meshDownloadLogsCSV()"
+                            style="padding:0.5rem 1rem; border-radius:8px; background:rgba(59,130,246,0.15); color:#3b82f6; border:1px solid rgba(59,130,246,0.3); font-size:0.82rem; font-weight:600; cursor:pointer;">
+                            <i class="fa-solid fa-download"></i> Export CSV
+                        </button>
+                        <button onclick="document.getElementById('mesh-diag-modal').style.display='none'"
+                            style="padding:0.5rem 1.25rem; border-radius:8px; background:var(--bg-glass); border:1px solid var(--border-glass); color:var(--text-primary); font-size:0.82rem; font-weight:600; cursor:pointer;">
+                            Close
+                        </button>
                     </div>
                 </div>
             </div>
@@ -2301,6 +2417,11 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
     <script src="js/ARButton.js"></script>
+
+    <!-- Bluetooth Mesh Adaptive, AI Router & QA Suite Engines -->
+    <script src="js/ble_mesh_adaptive.js"></script>
+    <script src="js/ble_mesh_ai_router.js"></script>
+    <script src="js/ble_mesh_qa_suite.js"></script>
 
     <!-- Custom Web Core Script -->
     <script src="js/app.js?v=1.1.0"></script>

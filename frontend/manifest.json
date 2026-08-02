@@ -1,23 +1,36 @@
 {
-  "name": "GramSetu",
+  "name": "GramSetu - Rural Data Bridge",
   "short_name": "GramSetu",
-  "description": "Rural Professionals Data Bridge",
+  "description": "GramSetu connects rural Indian professionals with offline Bluetooth Mesh messaging, mandi prices, and weather advisories.",
   "start_url": "/index.html",
-  "id": "/?source=pwa",
+  "scope": "/",
+  "id": "/?source=pwabuilder",
   "display": "standalone",
   "background_color": "#0f172a",
   "theme_color": "#1e293b",
   "orientation": "portrait",
+  "categories": ["social", "utilities", "productivity"],
   "icons": [
     {
       "src": "/icon-192x192.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     },
     {
       "src": "/icon-512x512.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "B-Messaging",
+      "short_name": "Messaging",
+      "description": "Open Offline Bluetooth Mesh Messaging",
+      "url": "/index.html#mesh",
+      "icons": [{ "src": "/icon-192x192.png", "sizes": "192x192" }]
     }
   ]
 }
