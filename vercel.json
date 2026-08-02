@@ -1,0 +1,22 @@
+{
+  "builds": [
+    {
+      "src": "frontend/**",
+      "use": "@vercel/static"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "https://gramsetu-backend-o5r1.onrender.com/api/$1"
+    },
+    {
+      "src": "/uploads/(.*)",
+      "dest": "https://gramsetu-backend-o5r1.onrender.com/uploads/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/frontend/$1"
+    }
+  ]
+}
