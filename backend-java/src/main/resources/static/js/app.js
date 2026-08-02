@@ -3280,11 +3280,49 @@ function clearSavedContacts() {
     }
 }
 
-function toggleRecipientField(type) {
-    const group = document.getElementById('mesh-recipient-group');
-    if (group) {
-        group.style.display = (type === 'personalized') ? 'flex' : 'none';
+function extractHardwareHandle(str) {
+    if (!str) return '';
+    const match = str.match(/\(([A-Za-z0-9_-]+)\)/);
+    if (match && match[1]) return match[1].trim();
+    return str.trim();
+}
+
+function getPermanentDeviceHandle() {
+    let stored = localStorage.getItem('mesh_sender_handle');
+    if (stored && stored !== 'undefined' && stored !== 'null') return stored;
+
+    try {
+        const match = document.cookie.match(/(?:^|; )mesh_sender_handle=([^;]*)/);
+        if (match && match[1]) {
+            localStorage.setItem('mesh_sender_handle', match[1]);
+            return match[1];
+        }
+    } catch (e) {}
+
+    const ua = navigator.userAgent || '';
+    let platform = "Win";
+    if (/android/i.test(ua)) platform = "Android";
+    else if (/iPad|iPhone|iPod/.test(ua)) platform = "iOS";
+    else if (/Macintosh/.test(ua)) platform = "Mac";
+    else if (/Windows/.test(ua)) platform = "Win";
+
+    const screenStr = `${screen.width}x${screen.height}x${screen.colorDepth}`;
+    const navStr = `${navigator.hardwareConcurrency || 4}_${navigator.language}_${new Date().getTimezoneOffset()}`;
+    const raw = ua + screenStr + navStr;
+
+    let hash = 5381;
+    for (let i = 0; i < raw.length; i++) {
+        hash = ((hash << 5) + hash) + raw.charCodeAt(i);
     }
+    const stableNum = Math.abs(hash % 9000) + 1000;
+    const finalHandle = `${platform}-${stableNum}`;
+
+    try {
+        localStorage.setItem('mesh_sender_handle', finalHandle);
+        document.cookie = `mesh_sender_handle=${finalHandle}; max-age=315360000; path=/`;
+    } catch (e) {}
+
+    return finalHandle;
 }
 
 function initMeshTab() {
@@ -3310,20 +3348,7 @@ function initMeshTab() {
         if (window.Android && typeof window.Android.getDeviceName === 'function') {
             senderInput.value = window.Android.getDeviceName();
         } else {
-            let storedHandle = localStorage.getItem('mesh_sender_handle');
-            if (!storedHandle) {
-                const userAgent = navigator.userAgent;
-                let platform = "PC";
-                if (/android/i.test(userAgent)) platform = "Android";
-                else if (/iPad|iPhone|iPod/.test(userAgent)) platform = "iOS";
-                else if (/Macintosh/.test(userAgent)) platform = "Mac";
-                else if (/Windows/.test(userAgent)) platform = "Win";
-
-                const rand = Math.floor(1000 + Math.random() * 9000);
-                storedHandle = `${platform}-${rand}`;
-                localStorage.setItem('mesh_sender_handle', storedHandle);
-            }
-            senderInput.value = storedHandle;
+            senderInput.value = getPermanentDeviceHandle();
         }
         // Force the input to be read-only to represent strict device identifiers
         senderInput.readOnly = true;
@@ -3410,7 +3435,8 @@ function sendMeshMessage() {
     const text = msgInput.value.trim();
     const urgency = urgencySelect.value;
     const msgType = msgTypeSelect ? msgTypeSelect.value : 'broadcast';
-    const recipient = (msgType === 'personalized' && recipientInput) ? recipientInput.value.trim() : '';
+    const rawRecipient = (msgType === 'personalized' && recipientInput) ? recipientInput.value.trim() : '';
+    const recipient = extractHardwareHandle(rawRecipient);
 
     if (!text) {
         alert('Please enter a message to broadcast.');
@@ -3602,21 +3628,22 @@ async function meshRunQASuiteModal() {
 
 // Public callback handler exposed to native Android background layers
 window.receiveMeshMessage = function (sender, text, urgency, timestamp, recipient) {
-    const myHandle = (document.getElementById('mesh-sender-name')?.value || '').trim();
+    const myHandle = extractHardwareHandle(document.getElementById('mesh-sender-name')?.value || getPermanentDeviceHandle());
 
-    // Deduplicate incoming messages. Strip "(You)" before comparing.
-    const cleanSender = (name) => name.replace(' (You)', '').trim();
+    const cleanSender = extractHardwareHandle(sender.replace(' (You)', ''));
+    const cleanTarget = extractHardwareHandle(recipient);
+
+    // Deduplicate incoming messages
     const isDuplicate = meshMessages.some(m =>
-        cleanSender(m.sender) === cleanSender(sender) &&
+        extractHardwareHandle(m.sender.replace(' (You)', '')) === cleanSender &&
         m.text === text &&
-        (m.recipient || '') === (recipient || '')
+        extractHardwareHandle(m.recipient || '') === cleanTarget
     );
     if (isDuplicate) return;
 
-    // Check if the message is private and addressed to someone else.
-    // If targeted to another handle, we simulate relaying it without showing it to this user.
-    if (recipient && recipient !== 'Broadcast' && recipient !== myHandle && !sender.endsWith('(You)')) {
-        console.log(`[Mesh Router] Relaying private message from ${sender} to ${recipient} (payload: "${text}")`);
+    // Check if the message is private and addressed to a different device handle
+    if (cleanTarget && cleanTarget.toLowerCase() !== 'broadcast' && cleanTarget.toLowerCase() !== myHandle.toLowerCase() && !sender.endsWith('(You)')) {
+        console.log(`[Mesh Router] Relaying private message from ${sender} to ${cleanTarget} (payload: "${text}")`);
         return;
     }
 
@@ -3624,7 +3651,7 @@ window.receiveMeshMessage = function (sender, text, urgency, timestamp, recipien
         sender,
         text,
         urgency,
-        recipient: recipient || '',
+        recipient: cleanTarget || '',
         timestamp: timestamp || new Date().toLocaleTimeString()
     });
 
@@ -3643,6 +3670,16 @@ window.receiveMeshMessage = function (sender, text, urgency, timestamp, recipien
     }
 };
 
+function getDisplayNameForHandle(handleStr) {
+    const raw = extractHardwareHandle(handleStr);
+    if (!raw) return handleStr;
+    const found = meshSavedContacts.find(c => c.handle.toLowerCase() === raw.toLowerCase());
+    if (found && found.alias) {
+        return `${found.alias} (${raw})`;
+    }
+    return raw;
+}
+
 function renderMeshFeed() {
     const listEl = document.getElementById('mesh-messages-list');
     const emptyEl = document.getElementById('mesh-feed-empty');
@@ -3659,12 +3696,14 @@ function renderMeshFeed() {
     let html = '';
     meshMessages.forEach(m => {
         const badgeLabel = m.urgency === 'emergency' ? 'Critical' : (m.urgency === 'warning' ? 'Alert' : 'Info');
-        const targetTag = m.recipient ? `<span class="mesh-badge" style="background: #3b82f6; margin-left: 0.5rem; text-transform: uppercase;">To: ${m.recipient}</span>` : '';
+        const displayTarget = m.recipient ? getDisplayNameForHandle(m.recipient) : '';
+        const targetTag = m.recipient ? `<span class="mesh-badge" style="background: #0284c7; color: #ffffff; margin-left: 0.5rem; font-weight: 700; text-transform: uppercase;">To: ${displayTarget}</span>` : '';
+        const displaySender = m.sender.endsWith('(You)') ? m.sender : getDisplayNameForHandle(m.sender);
 
         html += `
             <div class="mesh-msg-card ${m.urgency}">
                 <div class="mesh-msg-header">
-                    <span class="mesh-msg-sender">${m.sender}</span>
+                    <span class="mesh-msg-sender">${displaySender}</span>
                     <div style="display:flex; align-items:center; gap:0.5rem;">
                         ${targetTag}
                         <span class="mesh-badge ${m.urgency}">${badgeLabel}</span>
