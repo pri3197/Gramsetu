@@ -24,15 +24,19 @@ public class BirdSightingService {
 
     @EventListener(ApplicationReadyEvent.class)
     public void seedInitialSightings() {
-        if (sightingRepository.count() > 0) {
-            return;
-        }
-        log.info("Seeding initial bird sightings map data...");
-        List<BirdSighting> mockSightings = new ArrayList<>();
-        LocalDateTime baseTime = LocalDateTime.now();
+        try {
+            if (sightingRepository.count() > 0) {
+                return;
+            }
+            log.info("Seeding initial bird sightings map data...");
+            List<BirdSighting> mockSightings = new ArrayList<>();
+            LocalDateTime baseTime = LocalDateTime.now();
 
-        // No mock sightings to add
-        log.info("Successfully seeded {} initial bird sightings.", mockSightings.size());
+            // No mock sightings to add
+            log.info("Successfully seeded {} initial bird sightings.", mockSightings.size());
+        } catch (Throwable t) {
+            log.warn("Skipping initial bird sightings seed: {}", t.getMessage());
+        }
     }
 
     public BirdSighting saveSighting(BirdSighting sighting) {
