@@ -3190,6 +3190,97 @@ let meshMessages = [
 let meshSimulationInterval = null;
 let meshPollInterval = null;
 
+let meshSavedContacts = JSON.parse(localStorage.getItem('gramsetu_mesh_saved_contacts') || '[]');
+
+// Seed default sample contacts if empty
+if (meshSavedContacts.length === 0) {
+    meshSavedContacts = [
+        { handle: 'iOS-8512', alias: 'Priyanka (iOS-8512)' },
+        { handle: 'Farmer-Raju', alias: 'Raju (Farmer-Raju)' }
+    ];
+    localStorage.setItem('gramsetu_mesh_saved_contacts', JSON.stringify(meshSavedContacts));
+}
+
+function renderSavedContacts() {
+    const pillsContainer = document.getElementById('mesh-contacts-pills');
+    if (!pillsContainer) return;
+
+    if (meshSavedContacts.length === 0) {
+        pillsContainer.innerHTML = `<span style="font-size:0.75rem; color:var(--text-secondary);">No saved contacts yet. Enter a receiver handle above.</span>`;
+        return;
+    }
+
+    let html = '';
+    meshSavedContacts.forEach(c => {
+        const displayName = c.alias || c.handle;
+        html += `
+            <button onclick="selectSavedContact('${c.handle}')" class="btn-secondary" 
+                style="padding: 0.3rem 0.7rem; border-radius: 20px; font-size: 0.78rem; display: inline-flex; align-items: center; gap: 0.4rem; background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(59, 130, 246, 0.3); color: #3b82f6; cursor: pointer; white-space: nowrap;">
+                <i class="fa-solid fa-user-tag"></i> ${displayName}
+            </button>
+        `;
+    });
+    pillsContainer.innerHTML = html;
+}
+
+function selectSavedContact(handle) {
+    const typeSelect = document.getElementById('mesh-msg-type');
+    const recipientInput = document.getElementById('mesh-recipient-name');
+    
+    if (typeSelect) {
+        typeSelect.value = 'personalized';
+        toggleRecipientField('personalized');
+    }
+    if (recipientInput) {
+        recipientInput.value = handle;
+    }
+}
+
+function editCurrentContactAlias() {
+    const recipientInput = document.getElementById('mesh-recipient-name');
+    if (!recipientInput || !recipientInput.value.trim()) {
+        alert('Please enter or select a Receiver Handle first.');
+        return;
+    }
+
+    const handle = recipientInput.value.trim();
+    const existing = meshSavedContacts.find(c => c.handle.toLowerCase() === handle.toLowerCase());
+    const currentAlias = existing ? existing.alias : handle;
+
+    const newAlias = prompt(`Edit local contact handle/name for [${handle}]:`, currentAlias);
+    if (newAlias && newAlias.trim()) {
+        saveOrUpdateContact(handle, newAlias.trim());
+        alert(`Saved handle [${handle}] as "${newAlias.trim()}" on this device.`);
+    }
+}
+
+function saveOrUpdateContact(handle, aliasName = null) {
+    if (!handle) return;
+    const existingIndex = meshSavedContacts.findIndex(c => c.handle.toLowerCase() === handle.toLowerCase());
+    
+    if (existingIndex !== -1) {
+        if (aliasName) {
+            meshSavedContacts[existingIndex].alias = aliasName;
+        }
+    } else {
+        meshSavedContacts.push({
+            handle: handle,
+            alias: aliasName || handle
+        });
+    }
+    
+    localStorage.setItem('gramsetu_mesh_saved_contacts', JSON.stringify(meshSavedContacts));
+    renderSavedContacts();
+}
+
+function clearSavedContacts() {
+    if (confirm('Clear all saved local contacts on this device?')) {
+        meshSavedContacts = [];
+        localStorage.setItem('gramsetu_mesh_saved_contacts', JSON.stringify([]));
+        renderSavedContacts();
+    }
+}
+
 function toggleRecipientField(type) {
     const group = document.getElementById('mesh-recipient-group');
     if (group) {
@@ -3242,6 +3333,7 @@ function initMeshTab() {
         senderInput.title = "Device ID is strict and cannot be modified.";
     }
 
+    renderSavedContacts();
     renderMeshFeed();
 
     // Start local peer broadcast simulation and backend polling only if simulated
@@ -3331,11 +3423,16 @@ function sendMeshMessage() {
     }
 
     if (msgType === 'personalized' && !recipient) {
-        alert('Please specify a Recipient ID/Handle.');
+        alert('Please specify a Recipient ID/Handle (e.g. iOS-8512).');
         return;
     }
 
     localStorage.setItem('mesh_sender_handle', sender);
+
+    // Save contact locally for future direct messaging
+    if (recipient) {
+        saveOrUpdateContact(recipient);
+    }
 
     // Call native Android bridge layer if available
     if (window.Android && typeof window.Android.broadcastMeshMessage === 'function') {

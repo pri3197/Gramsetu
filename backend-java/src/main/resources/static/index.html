@@ -2185,6 +2185,41 @@
                                     style="background: rgba(11, 15, 25, 0.6); border: 1px solid var(--border-glass); color: var(--text-primary); padding: 0.6rem 0.9rem; border-radius: 8px; font-family: var(--font-body); outline: none;">
                             </div>
 
+                            <!-- Message Scope Mode -->
+                            <div class="filter-group" style="min-width: 100%;">
+                                <label for="mesh-msg-type">Message Scope / Target Mode</label>
+                                <select id="mesh-msg-type" onchange="toggleRecipientField(this.value)"
+                                    style="background: rgba(11, 15, 25, 0.6); border: 1px solid var(--border-glass); color: var(--text-primary); padding: 0.6rem 0.9rem; border-radius: 8px; font-family: var(--font-body); outline: none;">
+                                    <option value="broadcast">Broadcast Alert (All Nearby Peers)</option>
+                                    <option value="personalized">Personal Direct Message (Specific Receiver)</option>
+                                </select>
+                            </div>
+
+                            <!-- Receiver Handle & Edit Name Field -->
+                            <div id="mesh-recipient-group" class="filter-group" style="min-width: 100%; display: none;">
+                                <label for="mesh-recipient-name">Receiver Handle / Target Contact ID</label>
+                                <div style="display: flex; gap: 0.5rem;">
+                                    <input type="text" id="mesh-recipient-name" placeholder="E.g. iOS-8512"
+                                        style="flex: 1; background: rgba(11, 15, 25, 0.6); border: 1px solid var(--border-glass); color: var(--text-primary); padding: 0.6rem 0.9rem; border-radius: 8px; font-family: var(--font-body); outline: none;">
+                                    <button class="btn-secondary" onclick="editCurrentContactAlias()"
+                                        style="padding: 0.6rem 0.9rem; border-radius: 8px; font-size: 0.82rem; white-space: nowrap;"
+                                        title="Edit Contact Handle / Alias Name">
+                                        <i class="fa-solid fa-pen-to-square"></i> Edit Name
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Saved Local Device Contacts Bar -->
+                            <div id="mesh-contacts-bar" style="background: rgba(15,23,42,0.4); border: 1px solid var(--border-glass); padding: 0.6rem 0.8rem; border-radius: 10px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
+                                    <span style="font-size: 0.78rem; font-weight: 700; color: #10b981;"><i class="fa-solid fa-address-book"></i> Saved Local Contacts (Chat Later):</span>
+                                    <button onclick="clearSavedContacts()" style="background: none; border: none; color: var(--text-secondary); font-size: 0.72rem; cursor: pointer; text-decoration: underline;">Clear</button>
+                                </div>
+                                <div id="mesh-contacts-pills" style="display: flex; gap: 0.4rem; overflow-x: auto; padding-bottom: 0.2rem;">
+                                    <span style="font-size:0.75rem; color:var(--text-secondary);">No saved contacts yet. Enter a receiver handle above.</span>
+                                </div>
+                            </div>
+
                             <!-- Alert Level / Urgency -->
                             <div class="filter-group" style="min-width: 100%;">
                                 <label for="mesh-urgency-level" id="lbl-mesh-urgency-label">Alert Urgency Level</label>
@@ -2201,7 +2236,7 @@
                                 <label for="mesh-msg-text" id="lbl-mesh-message-label">Broadcast Text or AI
                                     Question</label>
                                 <textarea id="mesh-msg-text" rows="3" maxlength="250"
-                                    placeholder="Type alert or AI question (e.g. What is the tomato market price?)"
+                                    placeholder="Type alert or message (e.g. Hi Priyanka, Kaise ho?)"
                                     style="background: rgba(11, 15, 25, 0.6); border: 1px solid var(--border-glass); color: var(--text-primary); padding: 0.6rem 0.9rem; border-radius: 8px; font-family: var(--font-body); outline: none; resize: none;"></textarea>
                             </div>
                         </div>
