@@ -1401,6 +1401,16 @@ textarea:focus {
     border-radius: 10px;
 }
 
+.mesh-msg-card {
+    transition: all 0.2s ease;
+}
+
+.mesh-msg-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
+    border-color: rgba(59, 130, 246, 0.4);
+}
+
 .mesh-urgency-btn {
     transition: all 0.2s ease;
 }

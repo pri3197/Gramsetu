@@ -3680,6 +3680,41 @@ function getDisplayNameForHandle(handleStr) {
     return raw;
 }
 
+function replyToMeshMessage(senderStr, originalText) {
+    const rawSender = extractHardwareHandle(senderStr.replace(' (You)', ''));
+    if (!rawSender || rawSender === 'System' || rawSender.toLowerCase() === 'anonymous') return;
+
+    // 1. Switch mode to Personal Direct Message
+    const typeSelect = document.getElementById('mesh-msg-type');
+    if (typeSelect) {
+        typeSelect.value = 'personalized';
+        toggleRecipientField('personalized');
+    }
+
+    // 2. Set recipient handle input to raw sender hardware handle
+    const recipientInput = document.getElementById('mesh-recipient-name');
+    if (recipientInput) {
+        recipientInput.value = rawSender;
+    }
+
+    // 3. Save contact to local device contacts so handle is remembered
+    saveOrUpdateContact(rawSender);
+
+    // 4. Focus message textarea with contextual prompt
+    const msgTextarea = document.getElementById('mesh-msg-text');
+    if (msgTextarea) {
+        const shortQuote = originalText ? (originalText.length > 30 ? originalText.substring(0, 30) + '...' : originalText) : '';
+        msgTextarea.placeholder = shortQuote ? `Replying to ${rawSender}: "${shortQuote}"...` : `Type reply to ${rawSender}...`;
+        msgTextarea.focus();
+    }
+
+    // 5. Smoothly scroll form into view
+    const sendForm = document.getElementById('lbl-mesh-send-title');
+    if (sendForm) {
+        sendForm.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+}
+
 function renderMeshFeed() {
     const listEl = document.getElementById('mesh-messages-list');
     const emptyEl = document.getElementById('mesh-feed-empty');
@@ -3699,9 +3734,12 @@ function renderMeshFeed() {
         const displayTarget = m.recipient ? getDisplayNameForHandle(m.recipient) : '';
         const targetTag = m.recipient ? `<span class="mesh-badge" style="background: #0284c7; color: #ffffff; margin-left: 0.5rem; font-weight: 700; text-transform: uppercase;">To: ${displayTarget}</span>` : '';
         const displaySender = m.sender.endsWith('(You)') ? m.sender : getDisplayNameForHandle(m.sender);
+        const canReply = !m.sender.endsWith('(You)') && extractHardwareHandle(m.sender) !== 'System' && extractHardwareHandle(m.sender).toLowerCase() !== 'anonymous';
+        const escapedSender = m.sender.replace(/'/g, "\\'");
+        const escapedText = m.text.replace(/'/g, "\\'").replace(/\n/g, " ");
 
         html += `
-            <div class="mesh-msg-card ${m.urgency}">
+            <div class="mesh-msg-card ${m.urgency}" ${canReply ? `onclick="replyToMeshMessage('${escapedSender}', '${escapedText}')" style="cursor: pointer;" title="Click message to write a reply"` : ''}>
                 <div class="mesh-msg-header">
                     <span class="mesh-msg-sender">${displaySender}</span>
                     <div style="display:flex; align-items:center; gap:0.5rem;">
@@ -3711,6 +3749,11 @@ function renderMeshFeed() {
                     </div>
                 </div>
                 <div class="mesh-msg-body">${m.text}</div>
+                ${canReply ? `
+                    <div style="display: flex; justify-content: flex-end; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 0.35rem; margin-top: 0.4rem;">
+                        <span style="font-size: 0.75rem; font-weight: 700; color: #3b82f6; display: flex; align-items: center; gap: 0.35rem;"><i class="fa-solid fa-reply"></i> Click to Reply</span>
+                    </div>
+                ` : ''}
             </div>
         `;
     });
